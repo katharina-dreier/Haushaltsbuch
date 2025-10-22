@@ -14,6 +14,12 @@
 
   <center>
     <TableView fx:id="tbl"/>
+    <columns>
+        <TableColumn fx:id="colId" text="Kontonummer" prefWidth="150"/>
+        <TableColumn fx:id="colName" text="Name" prefWidth="150"/>
+        <TableColumn fx:id="colKontostand" text="Kontostand" prefWidth="100"/>
+        <TableColumn fx:id="colInstitut" text="Kreditinstitut" prefWidth="100"/>
+    </columns>
   </center>
 
   <bottom>

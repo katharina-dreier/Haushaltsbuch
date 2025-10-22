@@ -1,3 +1,5 @@
+package org.meinprojekt.haushalt.core;
+
 import java.util.Scanner;
 
 public class MenueFuehrung {

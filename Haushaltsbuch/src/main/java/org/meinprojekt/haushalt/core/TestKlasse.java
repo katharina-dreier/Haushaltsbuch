@@ -1,3 +1,5 @@
+package org.meinprojekt.haushalt.core;
+
 
 
 public class TestKlasse {

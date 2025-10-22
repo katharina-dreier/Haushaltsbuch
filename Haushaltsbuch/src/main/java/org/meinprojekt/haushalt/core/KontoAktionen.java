@@ -1,4 +1,9 @@
+package org.meinprojekt.haushalt.core;
+
 import java.util.Scanner;
+
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 
 public class KontoAktionen {
 	
@@ -36,7 +41,7 @@ public class KontoAktionen {
 			return gewaehltesKonto;
 		}
 
-		public static void kontenListeAnzeigen() {
+		/*public static void kontenListeAnzeigen() {
 			System.out.println("Folgende Konten sind gespeichert:");
 			for (Konto konto : Konto.konten.values()) {
 				if(konto.getKreditinstitut() != null) {
@@ -48,6 +53,24 @@ public class KontoAktionen {
                     + " (Verfügbarer Kontostand: " + konto.getKontostand() + " Euro)");
                 }
 			
+		}*/
+		
+		public static  ObservableList<String> kontenListeAnzeigen() {
+			ObservableList<String> kontenListe = FXCollections.observableArrayList();
+					
+			for (Konto konto : Konto.konten.values()) {
+				if(konto.getKreditinstitut() != null) {
+					kontenListe.add(konto.getKontonummer() + ": " + konto.getKontoName() + " ("
+						+ konto.getKreditinstitut() + ") - " + konto.getKontostand() + " Euro)");
+			}
+				else {
+					kontenListe.add(konto.getKontonummer() + ": " + konto.getKontoName() 
+                    + " - " + konto.getKontostand() + " Euro)");
+                }
+				
+			
 		}
+			return kontenListe;
 		}
+		
 }

@@ -1,3 +1,5 @@
+package org.meinprojekt.haushalt.core;
+
 import java.time.LocalDate;
 
 public class Umbuchung extends Buchung{
