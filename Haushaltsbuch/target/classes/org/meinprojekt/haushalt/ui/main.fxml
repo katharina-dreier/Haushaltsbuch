@@ -6,7 +6,7 @@
             fx:controller="org.meinprojekt.haushalt.ui.MainController">
   <top>
     <ToolBar>
-      <Button fx:id="btnNeu" text="Neue Buchung" onAction="#onNeu"/>
+      <Button fx:id="btnNeuesKonto" text="Neues Konto" onAction="#handleNeuesKonto"/>
       <Region HBox.hgrow="ALWAYS"/>
       <Label text="Haushaltsbuch" />
     </ToolBar>

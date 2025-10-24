@@ -10,8 +10,18 @@ public class KontoAktionen {
 	static Konto gewaehltesKonto;
 	static Scanner scan = new Scanner(System.in);
 	
-	//Notwendige Daten von der Konsole einlesen und Konto erstellen
-		public static void kontoErstellen() {
+	//Aus Dialogfenster erhaltene Daten verwenden um Konto zu erstellen
+		public static void kontoErstellen(String kontoName, String inhaber, double kontostand, String kreditinstitut) {		
+			Konto konto = new Konto(kontoName, inhaber, kontostand, kreditinstitut);
+			Konto.konten.put(konto.getKontonummer(), konto);
+			
+			// Konto in die Datei einfügen
+			Datenstroeme.kontoHinzufuegen(konto);
+			
+		}
+		
+		/*Alte Methode über Konsole:
+		 public static void kontoErstellen() {
 			System.out.println("Bitte geben Sie den Namen des Kontoinhabers ein: ");
 			String name = scan.nextLine();
 			System.out.println("Bitte geben Sie den Namen des Kontos ein: ");
@@ -26,7 +36,7 @@ public class KontoAktionen {
 			// Konto in die Datei einfügen
 			Datenstroeme.kontoHinzufuegen(konto);
 			System.out.println("Konto wurde erstellt: " + konto);
-		}
+		}*/
 		
 		//Kontenliste anzeigen und Konto nach Eingabe auswählen
 		public static Konto kontoAuswaehlen() {
@@ -55,7 +65,7 @@ public class KontoAktionen {
 			
 		}*/
 		
-		public static  ObservableList<String> kontenListeAnzeigen() {
+		/*public static  ObservableList<String> kontenListeAnzeigen() {
 			ObservableList<String> kontenListe = FXCollections.observableArrayList();
 					
 			for (Konto konto : Konto.konten.values()) {
@@ -71,6 +81,6 @@ public class KontoAktionen {
 			
 		}
 			return kontenListe;
-		}
+		}*/
 		
 }

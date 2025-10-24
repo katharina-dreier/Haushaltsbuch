@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<GridPane fx:controller="org.meinprojekt.haushalt.ui.DialogKonto"
+          xmlns:fx="http://javafx.com/fxml" hgap="10" vgap="10" alignment="CENTER">
+
+    <Label text="Kontoname:" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
+    <TextField fx:id="txtName" GridPane.rowIndex="0" GridPane.columnIndex="1"/>
+    
+    <Label text="Kontoinhaber:" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
+    <TextField fx:id="txtInhaber" GridPane.rowIndex="1" GridPane.columnIndex="1"/>
+
+    <Label text="Startsaldo:" GridPane.rowIndex="2" GridPane.columnIndex="0"/>
+    <TextField fx:id="txtSaldo" GridPane.rowIndex="2" GridPane.columnIndex="1"/>
+
+    <Label text="Kreditinstitut:" GridPane.rowIndex="3" GridPane.columnIndex="0"/>
+    <TextField fx:id="txtInstitut" GridPane.rowIndex="3" GridPane.columnIndex="1"/>
+
+    <HBox spacing="10" GridPane.rowIndex="4" GridPane.columnSpan="2" alignment="CENTER_RIGHT">
+        <Button fx:id="btnAbbrechen" text="Abbrechen" cancelButton="true" onAction="#handleAbbrechen"/>
+        <Button fx:id="btnOk" text="Speichern" defaultButton="true" onAction="#handleButtonActionOK"/>
+    </HBox>
+</GridPane>

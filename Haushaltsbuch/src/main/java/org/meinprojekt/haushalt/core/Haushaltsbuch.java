@@ -7,7 +7,7 @@ public class Haushaltsbuch {
 	// Hauptklasse für das Haushaltsbuch-Programm
 	// Hier wird das Hauptmenü und die Auswahl der Optionen gesteuert
 	
-	static Scanner scanner = new Scanner(System.in);
+	/*static Scanner scanner = new Scanner(System.in);
 
 	public static void main(String[] args) {
 		
@@ -121,5 +121,5 @@ public class Haushaltsbuch {
 			}
 
 		}*/
-	}
+	
 }

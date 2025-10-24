@@ -5,6 +5,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
+
 public class Konto {
 	private static int anzahlKonten = 0; //hier müssen noch methoden eingefügt werden um die Daten aus der Datei zu laden
 	private static double gesamtSumme = 0;  //hier müssen noch methoden eingefügt werden um die Daten aus der Datei zu laden
@@ -17,13 +20,15 @@ public class Konto {
     public List<Buchung> buchungen;
     static Map<Integer, Konto> konten = new HashMap<>();
    
-	
-	public Konto(String kontoName, String inhaber, double kontostand, String Kreditinstitut) {
+    
+        // Konstruktor
+
+	public Konto(String kontoName, String inhaber, double kontostand, String kreditinstitut) {
 		// Attribute belegen
 		this.kontoName = kontoName;
 		this.inhaber = inhaber;
 		this.kontostand = kontostand;
-		this.kreditinstitut = Kreditinstitut;
+		this.kreditinstitut = kreditinstitut;
 		anzahlKonten++;
 		kontonummer = anzahlKonten;
 		// Gesamtsumme aktualisieren
