@@ -2,6 +2,7 @@ package org.meinprojekt.haushalt.ui;
 
 import java.util.Optional;
 
+import org.meinprojekt.haushalt.core.Buchung;
 import org.meinprojekt.haushalt.core.Datenstroeme;
 import org.meinprojekt.haushalt.core.Konto;
 import javafx.collections.FXCollections;
@@ -17,13 +18,14 @@ import javafx.scene.control.Label;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.layout.VBox;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 
 public class MainController {
 
 	@FXML
-	private TableView<Konto> tbl; // später typisieren (z. B. TableView<Buchung>)
+	private TableView<Konto> tblKonten; 
 	@FXML
 	private Label sumLbl;
 	@FXML
@@ -36,6 +38,13 @@ public class MainController {
 	private TableColumn<Konto, Double> colKontostand;
 	@FXML
 	private TableColumn<Konto, String> colInstitut;
+	
+	@FXML private TableView<Buchung> tblBuchungen;
+	@FXML private TableColumn<Buchung, String> colBuchDatum;
+	@FXML private TableColumn<Buchung, String> colKat;
+	@FXML private TableColumn<Buchung, String> colEmpf;
+	@FXML private TableColumn<Buchung, String> colSend;
+	@FXML private TableColumn<Buchung, Double> colBetrag;
 
 	@FXML
 	private void initialize() {
@@ -43,19 +52,38 @@ public class MainController {
 		Datenstroeme.kontenUebersichtAnlegen();
 		Datenstroeme.ladeKontenAusDatei();
 		Datenstroeme.ladeBuchungenFuerAlleKonten();
+		
+	
+		tblKonten.setVisible(true);
+		tblKonten.setManaged(true);
+
+		tblBuchungen.setVisible(false);
+		tblBuchungen.setManaged(false);
 
 		// Spalten mit Attributen der Buchung verknüpfen
 		colId.setCellValueFactory(new PropertyValueFactory<>("kontonummer"));
 		colName.setCellValueFactory(new PropertyValueFactory<>("kontoName"));
 		colKontostand.setCellValueFactory(new PropertyValueFactory<>("kontostand"));
 		colInstitut.setCellValueFactory(new PropertyValueFactory<>("kreditinstitut"));
+		
+		colBuchDatum.setCellValueFactory(new PropertyValueFactory<>("buchungsDatum"));
+		colKat.setCellValueFactory(new PropertyValueFactory<>("kategorie"));
+		colEmpf.setCellValueFactory(new PropertyValueFactory<>("empfaenger"));
+		colSend.setCellValueFactory(new PropertyValueFactory<>("sender"));
+		colBetrag.setCellValueFactory(new PropertyValueFactory<>("betrag"));
+
 
 		ObservableList<Konto> kontoListe = FXCollections.observableArrayList(Konto.getAlleKonten());
 
 		// Liste der Tabelle zuweisen
-		tbl.setItems(kontoListe);
-
+		tblKonten.setItems(kontoListe);
 		sumLbl.setText("Summe: " + Konto.getGesamtSumme());
+		
+		// Listener für die Auswahl eines Kontos in der Tabelle
+		tblKonten.getSelectionModel().selectedItemProperty().addListener((obs, altesKonto, neuesKonto) -> {
+			buchungenAnzeigen(neuesKonto);
+		});
+		
 	}
 
 	@FXML
@@ -96,8 +124,26 @@ public class MainController {
 		 
 	    }
 	public void aktualisiereTabelle() {
-		tbl.setItems(FXCollections.observableArrayList(Konto.getAlleKonten()));
+		tblKonten.setItems(FXCollections.observableArrayList(Konto.getAlleKonten()));
 	}
+	
+	public void buchungenAnzeigen(Konto konto) {
+		if (konto != null) {
+			// Aktualisiere die Buchungstabelle mit den Buchungen des ausgewählten Kontos
+			tblBuchungen.setItems(FXCollections.observableArrayList(konto.getBuchungen()));
+			
+			tblBuchungen.setVisible(true); 
+			tblBuchungen.setManaged(true);
+			//tblKonten.setVisible(false);
+			//tblKonten.setManaged(false);
+		} else {
+			tblBuchungen.setVisible(false);
+			tblBuchungen.setManaged(false);
+			tblKonten.setVisible(true);
+			tblKonten.setManaged(true);
+		}
+		sumLbl.setText("Summe: " + konto.getKontostand());
 
 	}
+}
 

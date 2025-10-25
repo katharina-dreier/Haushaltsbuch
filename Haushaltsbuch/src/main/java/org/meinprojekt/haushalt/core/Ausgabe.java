@@ -25,7 +25,8 @@ public class Ausgabe extends Buchung{
 	public String getEmpfaenger() {
 		return empfaenger;
 	}
-
+	
+	@Override
 	public void setEmpfaenger(String empfaenger) {
 		this.empfaenger = empfaenger;
 	}

@@ -89,7 +89,7 @@ public class Datenstroeme {
 	    // Header für Buchungsdatei
 	    ensureDateiMitHeader(kontopfad, headerBuchungen);
 	    String date = LocalDate.now().format(DateTimeFormatter.ofPattern("dd.MM.yyyy"));
-	    String ersteZeile = date + ";Erstellung;" + "nicht vorhanden" + ";" + "nicht vorhanden" + ";" + "nicht vorhanden" + ";" + "0.0" + ";" +  konto.getKontostand(); //"Datum;Buchungsart;Kategorie;Empfänger;Sender;Betrag;Kontostand
+	    String ersteZeile = date + ";Erstellung;" + "" + ";" + "" + ";" + "" + ";" + konto.getKontostand() + ";" +  konto.getKontostand(); //"Datum;Buchungsart;Kategorie;Empfänger;Sender;Betrag;Kontostand
 	    zeileInDateiAnhaengen(kontopfad, ersteZeile);
 	    // Pfad zur zentralen Kontenliste
 	    String kontenlistePfad = sep + "Haushaltsbuch" + sep + "Kontoliste.csv";

@@ -23,10 +23,13 @@ public class Einnahme extends Buchung{
 	public void setKonto(Konto konto) {
 		this.konto = konto;
 	}
+	
+	@Override
 	public String getSender() {
 		return sender;
 	}
 
+	@Override
 	public void setSender(String sender) {
 		this.sender = sender;
 	}

@@ -7,19 +7,33 @@
   <top>
     <ToolBar>
       <Button fx:id="btnNeuesKonto" text="Neues Konto" onAction="#handleNeuesKonto"/>
-      <Region HBox.hgrow="ALWAYS"/>
+      
       <Label text="Haushaltsbuch" />
     </ToolBar>
   </top>
 
   <center>
-    <TableView fx:id="tbl"/>
+   <VBox spacing="12" fillWidth="true">
+    <Label text="Konten" style="-fx-font-weight: bold;"/>
+    <TableView fx:id="tblKonten" >
     <columns>
         <TableColumn fx:id="colId" text="Kontonummer" prefWidth="150"/>
         <TableColumn fx:id="colName" text="Name" prefWidth="150"/>
         <TableColumn fx:id="colKontostand" text="Kontostand" prefWidth="100"/>
         <TableColumn fx:id="colInstitut" text="Kreditinstitut" prefWidth="100"/>
     </columns>
+    </TableView>
+     <Label text="Buchungen" style="-fx-font-weight: bold;"/>
+    <TableView fx:id="tblBuchungen" visible="false" managed="false" >
+    <columns>
+        <TableColumn fx:id="colBuchDatum" text="Buchungsdatum" prefWidth="150"/>
+        <TableColumn fx:id="colKat" text="Kategorie" prefWidth="150"/>
+        <TableColumn fx:id="colEmpf" text="Empfänger" prefWidth="100"/>
+        <TableColumn fx:id="colSend" text="Sender" prefWidth="100"/>
+        <TableColumn fx:id="colBetrag" text="Betrag" prefWidth="100"/>
+    </columns>
+    </TableView>
+    </VBox>
   </center>
 
   <bottom>

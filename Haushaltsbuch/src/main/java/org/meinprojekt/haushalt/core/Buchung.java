@@ -20,14 +20,18 @@ public class Buchung {
 		this.betrag = betrag;
 		this.kategorie = Kategorie;
 		this.buchungsDatum = buchungsDatum;
+		this.buchungsart = "Buchung";
+		this.empfaenger = "";
+		this.sender = "";
+		
 	}
 	
 	public Buchung (LocalDate datum, String buchungsart, String kategorie , String empfänger , String sender , double betrag2, double kontostand) {
 		this.buchungsDatum = datum;
 		this.buchungsart = buchungsart;
 		this.kategorie = kategorie;
-		this.empfaenger = empfänger;
-		this.sender = sender;
+		this.setEmpfaenger(empfänger);
+		this.setSender(sender);
 		this.betrag = betrag2;
 		this.kontostandNachBuchung = kontostand;
 	}
@@ -64,6 +68,22 @@ public class Buchung {
 	@Override
 	public String toString() {
 		return "Buchung über " + betrag + " Euro, Kategorie: " + kategorie + ", Datum: " + getFormatiertesDatum();
+	}
+
+	public String getEmpfaenger() {
+		return empfaenger;
+	}
+
+	public void setEmpfaenger(String empfaenger) {
+		this.empfaenger = empfaenger;
+	}
+
+	public String getSender() {
+		return sender;
+	}
+
+	public void setSender(String sender) {
+		this.sender = sender;
 	}
 	
 
