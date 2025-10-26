@@ -1,6 +1,7 @@
 package org.meinprojekt.haushalt.core;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 
 public class Buchung {
 	
@@ -11,19 +12,17 @@ public class Buchung {
 	private String empfaenger;
 	private String sender;
 	private double kontostandNachBuchung; // optional
+	
+	public static ArrayList<String> listeMitKategorien = new ArrayList<>();
 
-	
-	
-	
-
-	public Buchung(double betrag, String Kategorie, LocalDate buchungsDatum) {
+	public Buchung(double betrag, String kategorie, LocalDate buchungsDatum) {
 		this.betrag = betrag;
-		this.kategorie = Kategorie;
+		this.kategorie = kategorie;
 		this.buchungsDatum = buchungsDatum;
 		this.buchungsart = "Buchung";
 		this.empfaenger = "";
 		this.sender = "";
-		
+		kategorieHinzufuegen(kategorie);
 	}
 	
 	public Buchung (LocalDate datum, String buchungsart, String kategorie , String empfänger , String sender , double betrag2, double kontostand) {
@@ -34,6 +33,7 @@ public class Buchung {
 		this.setSender(sender);
 		this.betrag = betrag2;
 		this.kontostandNachBuchung = kontostand;
+		kategorieHinzufuegen(kategorie);
 	}
 	
 	public String getFormatiertesDatum() {
@@ -86,6 +86,12 @@ public class Buchung {
 		this.sender = sender;
 	}
 	
+	
+	public void kategorieHinzufuegen(String kategorie) {
+		if (kategorie != null && !kategorie.isBlank() && !listeMitKategorien.contains(kategorie)) {
+			listeMitKategorien.add(kategorie);
+		}
+	}
 
 
 }

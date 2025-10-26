@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<GridPane fx:controller="org.meinprojekt.haushalt.ui.DialogBuchung"
+          xmlns:fx="http://javafx.com/fxml" hgap="10" vgap="10" alignment="CENTER">
+
+    <Label fx:id= "lblQuellKonto" text="Quell-Konto:" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
+    <ComboBox fx:id="cmbQuellKonto" GridPane.rowIndex="0" GridPane.columnIndex="1"/>
+    
+     <Label fx:id= "lblZielKonto" text="Ziel-Konto:" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
+    <ComboBox fx:id="cmbZielKonto" GridPane.rowIndex="1" GridPane.columnIndex="1"/>
+    
+    <Label  fx:id= "lblDatum" text="Datum:" GridPane.rowIndex="2" GridPane.columnIndex="0"/>
+    <DatePicker fx:id="dpDatum" promptText="Datum auswählen" GridPane.rowIndex="2" GridPane.columnIndex="1"/>
+
+    <Label  fx:id= "lblKategorie" text="Kategorie:" GridPane.rowIndex="3" GridPane.columnIndex="0"/>
+    <ComboBox fx:id="cmbKategorie" editable="true" promptText="Kategorie wählen oder eingeben..." GridPane.rowIndex="3" GridPane.columnIndex="1"/>
+
+    <Label fx:id= "lblEmpfaenger" text="Empfänger:" GridPane.rowIndex="4" GridPane.columnIndex="0"/>
+    <TextField fx:id="txtEmpfaenger" GridPane.rowIndex="4" GridPane.columnIndex="1"/>
+    
+    <Label fx:id= "lblSender" text="Sender:" GridPane.rowIndex="5" GridPane.columnIndex="0"/>
+    <TextField fx:id="txtSender" GridPane.rowIndex="5" GridPane.columnIndex="1"/>
+    
+     <Label  fx:id= "lblBetrag" text="Betrag:" GridPane.rowIndex="6" GridPane.columnIndex="0"/>
+    <TextField fx:id="txtBetrag" GridPane.rowIndex="6" GridPane.columnIndex="1"/>
+
+    <HBox spacing="10" GridPane.rowIndex="7" GridPane.columnSpan="2" alignment="CENTER_RIGHT">
+        <Button fx:id="btnAbbrechen" text="Abbrechen" cancelButton="true" onAction="#handleAbbrechen"/>
+        <Button fx:id="btnOk" text="Speichern" defaultButton="true" onAction="#handleButtonActionOK"/>
+    </HBox>
+</GridPane>

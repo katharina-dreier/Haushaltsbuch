@@ -13,19 +13,13 @@ import javafx.stage.Stage;
 
 public class DialogKonto {
 
-	@FXML
-	TextField txtName;
-	@FXML
-	TextField txtInhaber;
-	@FXML
-	TextField txtSaldo;
-	@FXML
-	TextField txtInstitut;
+	@FXML TextField txtName;
+	@FXML TextField txtInhaber;
+	@FXML TextField txtSaldo;
+	@FXML TextField txtInstitut;
 
-	@FXML
-	Button btnAbbrechen;
-	@FXML
-	Button btnOk;
+	@FXML Button btnAbbrechen;
+	@FXML Button btnOk;
 
 	private Stage stage; // wird vom MainController gesetzt
 	private boolean saved = false;

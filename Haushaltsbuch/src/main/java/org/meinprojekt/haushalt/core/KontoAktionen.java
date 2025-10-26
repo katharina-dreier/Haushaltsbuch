@@ -51,6 +51,12 @@ public class KontoAktionen {
 			return gewaehltesKonto;
 		}
 
+		public static ObservableList<Konto> getAlleKontenAlsObservableList() {
+			ObservableList<Konto> kontenListe = FXCollections.observableArrayList();
+			kontenListe.addAll(Konto.konten.values());
+			return kontenListe;
+		}
+
 		/*public static void kontenListeAnzeigen() {
 			System.out.println("Folgende Konten sind gespeichert:");
 			for (Konto konto : Konto.konten.values()) {

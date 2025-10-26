@@ -28,18 +28,7 @@ public class BuchungsAktionen {
 		    }
 	
 	//Notwendige Daten einlesen und Einnahme tätigen
-		public static void einnahmeTätigen() {
-			//Konto auswählen
-			gewaehltesKonto = KontoAktionen.kontoAuswaehlen();
-			System.out.println("Bitte geben Sie den Betrag ein: "); //Betrag eingeben
-			double betragEin = scan.nextDouble();
-			scan.nextLine();
-			System.out.println("Bitte geben Sie den Sender ein: "); //Sender eingeben
-			String sender = scan.nextLine();
-			System.out.println("Bitte geben Sie die Kategorie ein: "); //Kategorie eingeben
-			String kategorieEin = scan.nextLine();
-			System.out.println("Bitte geben Sie das Buchungsdatum ein: "); //Buchungsdatum festlegen
-			LocalDate date = datumAuswaehlen();
+		public static void einnahmeTätigen(Double betragEin, String kategorieEin, Konto gewaehltesKonto, String sender,  LocalDate date) {
 			Einnahme einnahme = new Einnahme(betragEin, kategorieEin, gewaehltesKonto, sender,  date); //Einnahme erstellen
 			gewaehltesKonto.einzahlen(einnahme);
 			Datenstroeme.einnahmeHinzufuegen(einnahme);
@@ -47,40 +36,18 @@ public class BuchungsAktionen {
 		}
 		
 		//Notwendige Daten einlesen und Ausgabe tätigen
-		public static void ausgabeTätigen() {
-			gewaehltesKonto = KontoAktionen.kontoAuswaehlen(); 		// Konto auswählen
-			System.out.println("Bitte geben Sie den Betrag ein: "); // Betrag eingeben
-			double betragAus = scan.nextDouble();
-			scan.nextLine();
-			System.out.println("Bitte geben Sie die Kategorie ein: "); // Kategorie eingeben
-			String kategorieAus = scan.nextLine();
-			System.out.println("Bitte geben Sie den Empfänger ein: ");
-			String empfaenger = scan.nextLine();
-			System.out.println("Bitte geben Sie das Buchungsdatum ein: "); // Buchungsdatum festlegen
-			LocalDate date = datumAuswaehlen();
-			Ausgabe ausgabe = new Ausgabe(betragAus, kategorieAus, gewaehltesKonto, empfaenger, date); // Ausgabe erstellen
-			gewaehltesKonto.auszahlen(ausgabe);
+		public static void ausgabeTätigen(Double betrag, String kat, Konto quell, String empfaenger, LocalDate datum) {
+			Ausgabe ausgabe = new Ausgabe(betrag, kat, quell, empfaenger, datum); // Ausgabe erstellen
+			quell.auszahlen(ausgabe);
 			Datenstroeme.ausgabeHinzufuegen(ausgabe);
 			System.out.println("Ausgabe wurde getätigt: " + ausgabe);
 		}
 		
 		//Umbuchung tätigen
-		public static void umbuchungTätigen() {
-			System.out.println("Bitte wähle das Konto aus, von dem abgebucht werden soll:");
-			Konto gewaehltesKontoVon = KontoAktionen.kontoAuswaehlen();
-			System.out.println("Du hast \"" + gewaehltesKontoVon + "\" gewählt.");
-			System.out.println("Bitte wähle das Konto aus, auf das eingezahlt werden soll:");
-			Konto gewaehltesKontoNach = KontoAktionen.kontoAuswaehlen();
-			System.out.println("Du hast \"" + gewaehltesKontoNach + "\" gewählt.");
-			System.out.println("Bitte geben Sie den Betrag ein: ");
-			double betragUmb = scan.nextDouble();
-			scan.nextLine();
-			System.out.println("Bitte geben Sie das Buchungsdatum ein: ");
-			LocalDate date = datumAuswaehlen();
-			Umbuchung umbuchung = new Umbuchung(betragUmb, gewaehltesKontoVon, gewaehltesKontoNach,
-					date);
-			gewaehltesKontoVon.auszahlen(umbuchung);
-			gewaehltesKontoNach.einzahlen(umbuchung);
+		public static void umbuchungTätigen(Double betrag, Konto quell, Konto ziel, LocalDate datum) {
+			Umbuchung umbuchung = new Umbuchung(betrag, quell, ziel,  datum);
+			quell.auszahlen(umbuchung);
+			ziel.einzahlen(umbuchung);
 			Datenstroeme.umbuchungHinzufuegen(umbuchung);
 		}
 		
