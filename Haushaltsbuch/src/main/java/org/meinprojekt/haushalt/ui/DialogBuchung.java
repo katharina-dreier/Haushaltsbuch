@@ -57,11 +57,11 @@ public class DialogBuchung {
 		
 		dpDatum.setValue(LocalDate.now());
 
-		ComboBox<String> cmbKategorie = new ComboBox<>();
 		cmbKategorie.setEditable(true);
-		cmbKategorie.getItems().setAll(Buchung.listeMitKategorien);
-		
-		
+		cmbKategorie.setItems(
+		        javafx.collections.FXCollections.observableArrayList(Buchung.listeMitKategorien)
+		    );
+        cmbKategorie.setPromptText("Kategorie eingeben...");		
 
 		if (btnOk != null)
 			btnOk.setDefaultButton(true);

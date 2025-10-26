@@ -9,8 +9,8 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 
 public class Konto {
-	private static int anzahlKonten = 0; //hier müssen noch methoden eingefügt werden um die Daten aus der Datei zu laden
-	private static double gesamtSumme = 0;  //hier müssen noch methoden eingefügt werden um die Daten aus der Datei zu laden
+	private static int anzahlKonten = 0; 
+	private static double gesamtSumme = 0;  
 	private int kontonummer;
 	private String kontoName;
 	private String inhaber;

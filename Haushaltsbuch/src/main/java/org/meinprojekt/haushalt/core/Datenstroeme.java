@@ -14,6 +14,7 @@ public class Datenstroeme {
 	
 	public static String headerBuchungen = "Datum;Buchungsart;Kategorie;Empfaenger;Sender;Betrag;Kontostand";
 	public static String headerKonten = "Kontonummer;Kreditinstitut;Kontoname;Kontoinhaber;Kontostand";
+	public static String headerKategorien = "Kategorie";
 
 	// Diese Methode formatiert eine Buchung in CSV-Format
 	public static String buchungToCSV(String date, String buchungsart, String kategorie, String empfaenger,
@@ -66,6 +67,17 @@ public class Datenstroeme {
 		ensureDateiMitHeader(dateiName, headerKonten);
 		return dateiName;
 	}
+	
+	// Diese Methode erstellt eine neue Datei für die Kategorienübersicht
+	public static String kategorieUebersichtAnlegen() {
+		String sep = File.separator;
+		String verzeichnis = sep + "Haushaltsbuch";
+		File dir = ensureVerzeichnisVorhanden(verzeichnis);
+		String dirName = dir.getAbsolutePath();
+		String dateiName = dirName + sep + "Kategorienliste" + ".csv";
+		ensureDateiMitHeader(dateiName, headerKategorien);
+		return dateiName;
+	}
 
 	// Diese Methode erstellt eine neue Datei für ein Konto
 	public static void KontoDateiAnlegen(Konto konto) {
@@ -110,7 +122,9 @@ public class Datenstroeme {
 				einnahme.getKonto().getKontostand());
 		zeileInDateiAnhaengen(kontopfad, buchungsZeile);	
 		kontenNeuSpeichern();
+		kategorieZurDateiHinzufuegen(einnahme.getKategorie());
 	}
+	
 	
 	public static void ausgabeHinzufuegen(Ausgabe ausgabe) {
 		String sep = File.separator;
@@ -125,6 +139,8 @@ public class Datenstroeme {
 				ausgabe.getKonto().getKontostand());
 		zeileInDateiAnhaengen(kontopfad, buchungsZeile);
 		kontenNeuSpeichern();
+		kategorieZurDateiHinzufuegen(ausgabe.getKategorie());
+
 	}
 	
 	public static void umbuchungHinzufuegen(Umbuchung umbuchung) {
@@ -148,8 +164,7 @@ public class Datenstroeme {
 				umbuchung.getKontoNach().getKontostand());
 		zeileInDateiAnhaengen(kontopfad2, buchungsZeile2);
 		kontenNeuSpeichern();
-
-	}
+			}
 
 	// Diese Methode lädt die Konten aus der Datei in die zentrale Map
 	public static void ladeKontenAusDatei() {
@@ -251,5 +266,41 @@ public class Datenstroeme {
 	        }
 	    }
 	}
+	public static void ladeKategorienAusDatei() {
+		String dateiName = kategorieUebersichtAnlegen(); // Pfad zur Kategorienübersicht
+		File kategorienDatei = new File(dateiName);
+		if (!kategorienDatei.exists()) {
+			System.out.println("⚠️ Kategorien-Datei nicht gefunden.");
+			return;
+		}
+
+		try (BufferedReader br = new BufferedReader(new FileReader(kategorienDatei))) {
+			String zeile;
+			boolean ersteZeile = true;
+
+			while ((zeile = br.readLine()) != null) {
+				if (ersteZeile) {
+					ersteZeile = false; // Header überspringen
+					continue;
+				}
+				String kategorie = zeile.trim();
+				if (!kategorie.isEmpty()) {
+					Buchung.listeMitKategorien.add(kategorie);
+				}
+			}
+
+			System.out.println("✅ Kategorien geladen.");
+
+		} catch (IOException e) {
+			System.out.println("Fehler beim Laden der Kategorien: " + e.getMessage());
+		}
+		
+	}
+
+	private static void kategorieZurDateiHinzufuegen(String kategorie) {
+		String pfad = kategorieUebersichtAnlegen();
+		zeileInDateiAnhaengen(pfad, kategorie);
+	}
+		
 
 }

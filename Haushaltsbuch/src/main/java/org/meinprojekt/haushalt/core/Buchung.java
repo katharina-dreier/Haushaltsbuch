@@ -5,6 +5,7 @@ import java.util.ArrayList;
 
 public class Buchung {
 	
+	
 	private double betrag;
 	private String kategorie;
 	private LocalDate buchungsDatum;

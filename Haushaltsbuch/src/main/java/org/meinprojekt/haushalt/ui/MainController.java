@@ -56,8 +56,12 @@ public class MainController {
 	private void initialize() {
 		// Daten laden
 		Datenstroeme.kontenUebersichtAnlegen();
+		Datenstroeme.kategorieUebersichtAnlegen();
 		Datenstroeme.ladeKontenAusDatei();
+		Datenstroeme.ladeKategorienAusDatei();
 		Datenstroeme.ladeBuchungenFuerAlleKonten();
+		System.out.println("Kategorien beim Start: " + Buchung.listeMitKategorien.size());
+
 		
 	
 		tblKonten.setVisible(true);
