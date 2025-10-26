@@ -10,6 +10,7 @@ import org.meinprojekt.haushalt.core.Konto;
 import org.meinprojekt.haushalt.core.KontoAktionen;
 
 import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -47,6 +48,9 @@ public class MainController {
 	@FXML private TableColumn<Buchung, String> colEmpf;
 	@FXML private TableColumn<Buchung, String> colSend;
 	@FXML private TableColumn<Buchung, Double> colBetrag;
+	
+	private final ObservableList<Konto> kontenListe = FXCollections.observableArrayList();
+
 
 	@FXML
 	private void initialize() {
@@ -78,7 +82,9 @@ public class MainController {
 
 
 		// Liste der Tabelle zuweisen
-		tblKonten.setItems(KontoAktionen.getAlleKontenAlsObservableList());
+		kontenListe.setAll(Konto.getAlleKonten());   // einmalig befüllen
+		tblKonten.setItems(kontenListe);
+
 		sumLbl.setText("Summe: " + Konto.getGesamtSumme());
 		
 		// Listener für die Auswahl eines Kontos in der Tabelle
@@ -102,6 +108,7 @@ public class MainController {
 		dialogOeffnen(btnNeueEin, fxmlPfad, titel, (DialogBuchung c) -> {
             c.setBuchungsart("Einnahme");}
 		);  
+		aktualisiereTabelle();
 		}
 	
 	@FXML
@@ -111,6 +118,7 @@ public class MainController {
 		dialogOeffnen(btnNeueAus, fxmlPfad, titel, (DialogBuchung c) -> {
             c.setBuchungsart("Ausgabe");}
 		);
+		aktualisiereTabelle();
 		}
 	
 	@FXML
@@ -120,10 +128,12 @@ public class MainController {
 		dialogOeffnen(btnNeueUmb, fxmlPfad, titel, (DialogBuchung c) -> {
             c.setBuchungsart("Umbuchung");}
 		);
+		aktualisiereTabelle();
 	}
 	
 	public void aktualisiereTabelle() {
-		tblKonten.setItems(KontoAktionen.getAlleKontenAlsObservableList());
+		kontenListe.setAll(Konto.getAlleKonten());
+		tblKonten.refresh();
 	}
 	
 	public void buchungenAnzeigen(Konto konto) {

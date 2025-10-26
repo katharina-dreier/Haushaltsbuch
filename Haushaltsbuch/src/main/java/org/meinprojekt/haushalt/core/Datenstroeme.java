@@ -109,6 +109,7 @@ public class Datenstroeme {
 				einnahme.getKonto().getInhaber(), einnahme.getSender(), einnahme.getBetrag(),
 				einnahme.getKonto().getKontostand());
 		zeileInDateiAnhaengen(kontopfad, buchungsZeile);	
+		kontenNeuSpeichern();
 	}
 	
 	public static void ausgabeHinzufuegen(Ausgabe ausgabe) {
@@ -123,6 +124,7 @@ public class Datenstroeme {
 				ausgabe.getKonto().getInhaber(), ausgabe.getEmpfaenger(), ausgabe.getBetrag(),
 				ausgabe.getKonto().getKontostand());
 		zeileInDateiAnhaengen(kontopfad, buchungsZeile);
+		kontenNeuSpeichern();
 	}
 	
 	public static void umbuchungHinzufuegen(Umbuchung umbuchung) {
@@ -145,6 +147,7 @@ public class Datenstroeme {
 				umbuchung.getKontoNach().getInhaber(), umbuchung.getKontoVon().getKontoName(), umbuchung.getBetrag(),
 				umbuchung.getKontoNach().getKontostand());
 		zeileInDateiAnhaengen(kontopfad2, buchungsZeile2);
+		kontenNeuSpeichern();
 
 	}
 
@@ -175,6 +178,21 @@ public class Datenstroeme {
 	    } catch (IOException e) {
 	        System.out.println("Fehler beim Laden der Konten: " + e.getMessage());
 	    }
+	}
+	
+	public static void kontenNeuSpeichern() {
+		String pfad = kontenUebersichtAnlegen(); // Pfad zur Kontenübersicht
+		try (BufferedWriter bw = new BufferedWriter(new FileWriter(pfad))) {
+			bw.write(headerKonten);
+			bw.newLine();
+			for (Konto konto : Konto.konten.values()) {
+				String kontoZeile = konto.toCSV();
+				bw.write(kontoZeile);
+				bw.newLine();
+			}
+		} catch (IOException e) {
+			System.out.println("Fehler beim Speichern der Konten: " + e.getMessage());
+		}
 	}
 	
 	public static Buchung buchungAusCSV(String csvZeile) {
