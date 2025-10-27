@@ -1,50 +1,63 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.scene.control.Button?>
-<?import javafx.scene.control.Label?>
-<?import javafx.scene.control.TableColumn?>
-<?import javafx.scene.control.TableView?>
-<?import javafx.scene.control.ToolBar?>
-<?import javafx.scene.layout.BorderPane?>
-<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
 
-<BorderPane xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.meinprojekt.haushalt.ui.MainController">
+<BorderPane xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="org.meinprojekt.haushalt.ui.MainController">
+
   <top>
     <ToolBar>
-      <Button fx:id="btnNeuesKonto" onAction="#handleNeuesKonto" text="Neues Konto" />
-         <Button fx:id="btnNeueEin" onAction="#handleNeueEinnahme" text="Neue Einnahme" />
-         <Button fx:id="btnNeueAus" onAction="#handleNeueAusgabe" text="Neue Ausgabe" />
-         <Button fx:id="btnNeueUmb" onAction="#handleNeueUmbuchung" text="Neue Umbuchung" />
-      
-      <Label text="Haushaltsbuch" />
+      <Button fx:id="btnNeuesKonto" onAction="#handleNeuesKonto" text="Neues Konto"/>
+      <Button fx:id="btnNeueEin"   onAction="#handleNeueEinnahme"  text="Neue Einnahme"/>
+      <Button fx:id="btnNeueAus"   onAction="#handleNeueAusgabe"   text="Neue Ausgabe"/>
+      <Button fx:id="btnNeueUmb"   onAction="#handleNeueUmbuchung" text="Neue Umbuchung"/>
+      <Label text="Haushaltsbuch"/>
     </ToolBar>
   </top>
 
   <center>
-   <VBox fillWidth="true" spacing="12">
-    <Label style="-fx-font-weight: bold;" text="Konten" />
-    <TableView fx:id="tblKonten">
+    <!-- Links Konten, rechts Tabs + Buchungen -->
+    <SplitPane fx:id="split" dividerPositions="0.33">  <!-- ca. 1/3 links -->
+      <!-- Linke Seite: Konten -->
+      <VBox fx:id="kontenArea" spacing="8">
+        <Label text="Konten" style="-fx-font-weight: bold;"/>
+        <TableView fx:id="tblKonten">
+          <columns>
+            <TableColumn fx:id="colId"          text="Kontonummer"  prefWidth="150"/>
+            <TableColumn fx:id="colName"        text="Name"         prefWidth="150"/>
+            <TableColumn fx:id="colKontostand"  text="Kontostand"   prefWidth="100"/>
+            <TableColumn fx:id="colInstitut"    text="Kreditinstitut" prefWidth="120"/>
+          </columns>
+        </TableView>
+      </VBox>
+
+      <!-- Rechte Seite: Tabs + Buchungen -->
+      <VBox fx:id="buchungenArea" spacing="10">
+  <TabPane fx:id="tabPane" VBox.vgrow="NEVER">
+    <tabs>
+      <Tab fx:id="tabGesamt" text="Gesamt"/>
+      <Tab fx:id="tabEinnahmen" text="Einnahmen"/>
+      <Tab fx:id="tabAusgaben" text="Ausgaben"/>
+      <Tab fx:id="tabUmbuchungen" text="Umbuchungen"/>
+    </tabs>
+  </TabPane>
+
+  <TableView fx:id="tblBuchungen" VBox.vgrow="ALWAYS">
     <columns>
-        <TableColumn fx:id="colId" prefWidth="150" text="Kontonummer" />
-        <TableColumn fx:id="colName" prefWidth="150" text="Name" />
-        <TableColumn fx:id="colKontostand" prefWidth="100" text="Kontostand" />
-        <TableColumn fx:id="colInstitut" prefWidth="100" text="Kreditinstitut" />
+      <TableColumn fx:id="colBuchDatum" text="Buchungsdatum" prefWidth="150"/>
+      <TableColumn fx:id="colKat"       text="Kategorie"     prefWidth="150"/>
+      <TableColumn fx:id="colEmpf"      text="Empfänger"     prefWidth="120"/>
+      <TableColumn fx:id="colSend"      text="Sender"        prefWidth="120"/>
+      <TableColumn fx:id="colBetrag"    text="Betrag"        prefWidth="100"/>
     </columns>
-    </TableView>
-     <Label style="-fx-font-weight: bold;" text="Buchungen" />
-    <TableView fx:id="tblBuchungen" managed="false" visible="false">
-    <columns>
-        <TableColumn fx:id="colBuchDatum" prefWidth="150" text="Buchungsdatum" />
-        <TableColumn fx:id="colKat" prefWidth="150" text="Kategorie" />
-        <TableColumn fx:id="colEmpf" prefWidth="100" text="Empfänger" />
-        <TableColumn fx:id="colSend" prefWidth="100" text="Sender" />
-        <TableColumn fx:id="colBetrag" prefWidth="100" text="Betrag" />
-    </columns>
-    </TableView>
-    </VBox>
+  </TableView>
+</VBox>
+
+    </SplitPane>
   </center>
 
   <bottom>
-    <Label fx:id="sumLbl" style="-fx-padding: 8;" text="Summe: 0,00 €" />
+    <Label fx:id="sumLbl" text="Summe: 0,00 €" style="-fx-padding: 8;"/>
   </bottom>
 </BorderPane>

@@ -18,6 +18,7 @@ import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.control.Tab;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.cell.PropertyValueFactory;
@@ -26,21 +27,20 @@ import javafx.stage.Modality;
 import javafx.stage.Stage;
 
 public class MainController {
-
-	@FXML
-	private TableView<Konto> tblKonten; 
-	@FXML
-	private Label sumLbl;
-	@FXML
-	private Button btnNeuesKonto, btnNeueAus, btnNeueEin, btnNeueUmb;
-	@FXML
-	private TableColumn<Konto, Integer> colId;
-	@FXML
-	private TableColumn<Konto, String> colName;
-	@FXML
-	private TableColumn<Konto, Double> colKontostand;
-	@FXML
-	private TableColumn<Konto, String> colInstitut;
+	
+	@FXML private VBox kontenArea;
+	@FXML private VBox buchungenArea;
+	
+	@FXML private Tab tabGesamt, tabEinnahmen, tabAusgaben, tabUmbuchungen;
+	
+	@FXML private Label sumLbl;
+	@FXML private Button btnNeuesKonto, btnNeueAus, btnNeueEin, btnNeueUmb;
+	
+	@FXML private TableView<Konto> tblKonten; 
+	@FXML private TableColumn<Konto, Integer> colId;
+	@FXML private TableColumn<Konto, String> colName;
+	@FXML private TableColumn<Konto, Double> colKontostand;
+	@FXML private TableColumn<Konto, String> colInstitut;
 	
 	@FXML private TableView<Buchung> tblBuchungen;
 	@FXML private TableColumn<Buchung, String> colBuchDatum;
@@ -60,9 +60,9 @@ public class MainController {
 		Datenstroeme.ladeKontenAusDatei();
 		Datenstroeme.ladeKategorienAusDatei();
 		Datenstroeme.ladeBuchungenFuerAlleKonten();
-		System.out.println("Kategorien beim Start: " + Buchung.listeMitKategorien.size());
-
+		tblBuchungen.setPlaceholder(new Label("Keine Buchungen"));
 		
+		showKonten();
 	
 		tblKonten.setVisible(true);
 		tblKonten.setManaged(true);
@@ -81,9 +81,6 @@ public class MainController {
 		colEmpf.setCellValueFactory(new PropertyValueFactory<>("empfaenger"));
 		colSend.setCellValueFactory(new PropertyValueFactory<>("sender"));
 		colBetrag.setCellValueFactory(new PropertyValueFactory<>("betrag"));
-
-
-
 
 		// Liste der Tabelle zuweisen
 		kontenListe.setAll(Konto.getAlleKonten());   // einmalig befüllen
@@ -144,11 +141,7 @@ public class MainController {
 		if (konto != null) {
 			// Aktualisiere die Buchungstabelle mit den Buchungen des ausgewählten Kontos
 			tblBuchungen.setItems(FXCollections.observableArrayList(konto.getBuchungen()));
-			
-			tblBuchungen.setVisible(true); 
-			tblBuchungen.setManaged(true);
-			//tblKonten.setVisible(false);
-			//tblKonten.setManaged(false);
+			showBuchungen();
 		} else {
 			tblBuchungen.setVisible(false);
 			tblBuchungen.setManaged(false);
@@ -191,5 +184,21 @@ public class MainController {
             return null;
         }
     }
+	
+	private void showKonten() {
+	    kontenArea.setVisible(true);
+	    kontenArea.setManaged(true);
+	    buchungenArea.setVisible(false);
+	    buchungenArea.setManaged(false);
+	}
+	
+	private void showBuchungen() {
+	    kontenArea.setVisible(true);
+	    kontenArea.setManaged(true);
+	    buchungenArea.setVisible(true);
+	    buchungenArea.setManaged(true);
+	    tblBuchungen.setVisible(true);
+		tblBuchungen.setManaged(true);
+	}
 	}
 
