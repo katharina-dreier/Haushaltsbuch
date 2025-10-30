@@ -31,6 +31,7 @@ public class BuchungsAktionen {
 		public static void einnahmeTätigen(Double betragEin, String kategorieEin, Konto gewaehltesKonto, String sender,  LocalDate date) {
 			Einnahme einnahme = new Einnahme(betragEin, kategorieEin, gewaehltesKonto, sender,  date); //Einnahme erstellen
 			gewaehltesKonto.einzahlen(einnahme);
+			einnahme.setBuchungsart("Einnahme");
 			Datenstroeme.einnahmeHinzufuegen(einnahme);
 			System.out.println("Einnahme wurde getätigt: " + einnahme);
 		}
@@ -39,6 +40,7 @@ public class BuchungsAktionen {
 		public static void ausgabeTätigen(Double betrag, String kat, Konto quell, String empfaenger, LocalDate datum) {
 			Ausgabe ausgabe = new Ausgabe(betrag, kat, quell, empfaenger, datum); // Ausgabe erstellen
 			quell.auszahlen(ausgabe);
+			ausgabe.setBuchungsart("Ausgabe");
 			Datenstroeme.ausgabeHinzufuegen(ausgabe);
 			System.out.println("Ausgabe wurde getätigt: " + ausgabe);
 		}
@@ -46,6 +48,7 @@ public class BuchungsAktionen {
 		//Umbuchung tätigen
 		public static void umbuchungTätigen(Double betrag, Konto quell, Konto ziel, LocalDate datum) {
 			Umbuchung umbuchung = new Umbuchung(betrag, quell, ziel,  datum);
+			umbuchung.setBuchungsart("Umbuchung");
 			quell.auszahlen(umbuchung);
 			ziel.einzahlen(umbuchung);
 			Datenstroeme.umbuchungHinzufuegen(umbuchung);

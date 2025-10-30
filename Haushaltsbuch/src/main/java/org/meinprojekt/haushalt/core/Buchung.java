@@ -93,6 +93,19 @@ public class Buchung {
 			listeMitKategorien.add(kategorie);
 		}
 	}
+	
+	public String getBuchungsart() {
+        return buchungsart;
+	}
+
+	public void setBuchungsart(String buchungsart) {
+		this.buchungsart = buchungsart;
+	}
+	
+	private boolean istUmbuchung(Buchung b) {
+	    return b.getKategorie() != null && b.getKategorie().toLowerCase().startsWith("umbuchung");
+	}
+
 
 
 }

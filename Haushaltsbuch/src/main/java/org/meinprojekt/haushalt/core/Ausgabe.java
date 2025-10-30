@@ -11,6 +11,8 @@ public class Ausgabe extends Buchung{
 		super(betrag, Kategorie, buchungsDatum);
 		this.konto = konto;
 		this.empfaenger = empfaenger;
+		super.setSender(konto.getInhaber());
+		super.setBuchungsart("Ausgabe");
 		konto.buchungen.add(this); // Buchung zur Liste hinzufügen
 	}
 

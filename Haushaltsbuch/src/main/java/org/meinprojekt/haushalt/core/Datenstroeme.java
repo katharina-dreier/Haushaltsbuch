@@ -118,7 +118,7 @@ public class Datenstroeme {
 		String kontopfad = ordnerpfad + sep + dateiname;
 		ensureDateiMitHeader(kontopfad, headerBuchungen);
 		String buchungsZeile = buchungToCSV(einnahme.getFormatiertesDatum(), "Einnahme", einnahme.getKategorie(),
-				einnahme.getKonto().getInhaber(), einnahme.getSender(), einnahme.getBetrag(),
+				einnahme.getEmpfaenger() , einnahme.getSender(), einnahme.getBetrag(),
 				einnahme.getKonto().getKontostand());
 		zeileInDateiAnhaengen(kontopfad, buchungsZeile);	
 		kontenNeuSpeichern();
@@ -135,7 +135,7 @@ public class Datenstroeme {
 		String kontopfad = ordnerpfad + sep + dateiname;
 		ensureDateiMitHeader(kontopfad, headerBuchungen);
 		String buchungsZeile = buchungToCSV(ausgabe.getFormatiertesDatum(), "Ausgabe", ausgabe.getKategorie(),
-				ausgabe.getKonto().getInhaber(), ausgabe.getEmpfaenger(), ausgabe.getBetrag(),
+				ausgabe.getEmpfaenger(), ausgabe.getSender(), ausgabe.getBetrag(),
 				ausgabe.getKonto().getKontostand());
 		zeileInDateiAnhaengen(kontopfad, buchungsZeile);
 		kontenNeuSpeichern();
@@ -152,7 +152,7 @@ public class Datenstroeme {
 		String kontopfad = ordnerpfad + sep + dateiname;
 		ensureDateiMitHeader(kontopfad, headerBuchungen);
 		String buchungsZeile = buchungToCSV(umbuchung.getFormatiertesDatum(), "Ausgabe", umbuchung.getKategorie(),
-				umbuchung.getKontoVon().getInhaber(), umbuchung.getKontoNach().getKontoName(), umbuchung.getBetrag(),
+				umbuchung.getEmpfaenger(), umbuchung.getSender(), umbuchung.getBetrag(),
 				umbuchung.getKontoVon().getKontostand());
 		zeileInDateiAnhaengen(kontopfad, buchungsZeile);
 		String dateiname2 = umbuchung.getKontoNach().getKontonummer() + "_"
@@ -160,7 +160,7 @@ public class Datenstroeme {
 		String kontopfad2 = ordnerpfad + sep + dateiname2;
 		ensureDateiMitHeader(kontopfad2, headerBuchungen);
 		String buchungsZeile2 = buchungToCSV(umbuchung.getFormatiertesDatum(), "Einnahme", umbuchung.getKategorie(),
-				umbuchung.getKontoNach().getInhaber(), umbuchung.getKontoVon().getKontoName(), umbuchung.getBetrag(),
+				umbuchung.getEmpfaenger(), umbuchung.getSender(), umbuchung.getBetrag(),
 				umbuchung.getKontoNach().getKontostand());
 		zeileInDateiAnhaengen(kontopfad2, buchungsZeile2);
 		kontenNeuSpeichern();

@@ -1,6 +1,7 @@
 package org.meinprojekt.haushalt.ui;
 
 import java.lang.ModuleLayer.Controller;
+import java.util.List;
 import java.util.Optional;
 import java.util.function.Consumer;
 
@@ -9,8 +10,11 @@ import org.meinprojekt.haushalt.core.Datenstroeme;
 import org.meinprojekt.haushalt.core.Konto;
 import org.meinprojekt.haushalt.core.KontoAktionen;
 
+import javafx.beans.property.ReadOnlyObjectWrapper;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.collections.transformation.FilteredList;
+import javafx.collections.transformation.SortedList;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -19,6 +23,8 @@ import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.Tab;
+import javafx.scene.control.TabPane;
+import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.cell.PropertyValueFactory;
@@ -31,6 +37,7 @@ public class MainController {
 	@FXML private VBox kontenArea;
 	@FXML private VBox buchungenArea;
 	
+	@FXML TabPane tabPane;
 	@FXML private Tab tabGesamt, tabEinnahmen, tabAusgaben, tabUmbuchungen;
 	
 	@FXML private Label sumLbl;
@@ -50,6 +57,9 @@ public class MainController {
 	@FXML private TableColumn<Buchung, Double> colBetrag;
 	
 	private final ObservableList<Konto> kontenListe = FXCollections.observableArrayList();
+	private final ObservableList<Buchung> buchungsListe = FXCollections.observableArrayList();
+	private FilteredList<Buchung> gefilterteBuchungsListe;
+	private SortedList<Buchung> sortierteBuchungsListe;
 
 
 	@FXML
@@ -62,11 +72,18 @@ public class MainController {
 		Datenstroeme.ladeBuchungenFuerAlleKonten();
 		tblBuchungen.setPlaceholder(new Label("Keine Buchungen"));
 		
+		gefilterteBuchungsListe = new FilteredList<>(buchungsListe, b -> true);
+		sortierteBuchungsListe = new SortedList<>(gefilterteBuchungsListe);
+		
+		sortierteBuchungsListe.comparatorProperty().bind(tblBuchungen.comparatorProperty());
+		tblBuchungen.setItems(sortierteBuchungsListe);
+		tblBuchungen.setPlaceholder(new Label("Keine Buchungen vorhanden"));
+		tabPane.getSelectionModel().selectedItemProperty().addListener((obs, alt, neu) -> applyTabFilter());
+
 		showKonten();
 	
 		tblKonten.setVisible(true);
 		tblKonten.setManaged(true);
-
 		tblBuchungen.setVisible(false);
 		tblBuchungen.setManaged(false);
 
@@ -80,13 +97,39 @@ public class MainController {
 		colKat.setCellValueFactory(new PropertyValueFactory<>("kategorie"));
 		colEmpf.setCellValueFactory(new PropertyValueFactory<>("empfaenger"));
 		colSend.setCellValueFactory(new PropertyValueFactory<>("sender"));
-		colBetrag.setCellValueFactory(new PropertyValueFactory<>("betrag"));
+		colBetrag.setCellValueFactory(cellData -> {
+		    Buchung b = cellData.getValue();
+		    double value = b.getBetrag();
+
+		    if (b.getBuchungsart().equalsIgnoreCase("Ausgabe")) {
+		        value = -value;
+		    } 		    
+
+		    return new ReadOnlyObjectWrapper<>(value);
+		});
+		
+		colBetrag.setCellFactory(column -> new TableCell<>() {
+		    @Override
+		    protected void updateItem(Double betrag, boolean empty) {
+		        super.updateItem(betrag, empty);
+		        if (empty || betrag == null) {
+		            setText(null);
+		        } else {
+		            setText(String.format("%.2f €", betrag));
+		            if (betrag < 0) setStyle("-fx-text-fill: red;");
+		            else setStyle("-fx-text-fill: green;");
+		        }
+		    }
+		});
+
 
 		// Liste der Tabelle zuweisen
 		kontenListe.setAll(Konto.getAlleKonten());   // einmalig befüllen
 		tblKonten.setItems(kontenListe);
 
-		sumLbl.setText("Summe: " + Konto.getGesamtSumme());
+	    // Gesamtsumme anzeigen
+		String sumText = String.format("Summe: %.2f €", Konto.getGesamtSumme());
+		sumLbl.setText(sumText);
 		
 		// Listener für die Auswahl eines Kontos in der Tabelle
 		tblKonten.getSelectionModel().selectedItemProperty().addListener((obs, altesKonto, neuesKonto) -> {
@@ -140,7 +183,9 @@ public class MainController {
 	public void buchungenAnzeigen(Konto konto) {
 		if (konto != null) {
 			// Aktualisiere die Buchungstabelle mit den Buchungen des ausgewählten Kontos
-			tblBuchungen.setItems(FXCollections.observableArrayList(konto.getBuchungen()));
+			List<Buchung> liste = konto.getBuchungen();
+			buchungsListe.setAll(liste);
+			applyTabFilter();
 			showBuchungen();
 		} else {
 			tblBuchungen.setVisible(false);
@@ -200,5 +245,21 @@ public class MainController {
 	    tblBuchungen.setVisible(true);
 		tblBuchungen.setManaged(true);
 	}
+	private void applyTabFilter() {
+	    if (gefilterteBuchungsListe == null) return; // falls noch nicht initialisiert
+
+	    var aktTab = tabPane.getSelectionModel().getSelectedItem();
+	    if (aktTab == tabEinnahmen) {
+	    	gefilterteBuchungsListe.setPredicate(b -> "EINNAHME".equalsIgnoreCase(b.getBuchungsart()));
+	    } else if (aktTab == tabAusgaben) {
+	    	gefilterteBuchungsListe.setPredicate(b -> "AUSGABE".equalsIgnoreCase(b.getBuchungsart()));
+	    } else if (aktTab == tabUmbuchungen) {
+	    	gefilterteBuchungsListe.setPredicate(b -> "UMBUCHUNG".equalsIgnoreCase(b.getKategorie()));
+	    } else {
+	        // Gesamt
+	    	gefilterteBuchungsListe.setPredicate(b -> true);
+	    }
+	}
+
 	}
 

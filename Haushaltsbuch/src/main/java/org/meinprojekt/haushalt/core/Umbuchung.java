@@ -11,8 +11,11 @@ public class Umbuchung extends Buchung{
 		super(betrag, "Umbuchung", buchungsDatum);
 		this.kontoVon = kontoVon;
 		this.kontoNach = kontoNach;
+		super.setSender(kontoVon.getKontoName() + "(" + kontoVon.getKreditinstitut() + ")");
+		super.setEmpfaenger(kontoNach.getKontoName() + "(" + kontoNach.getKreditinstitut() + ")");
 		kontoVon.buchungen.add(this); // Buchung zur Liste hinzufügen
 		kontoNach.buchungen.add(this); // Buchung zur Liste hinzufügen
+		
 	}
 
 	public Konto getKontoVon() {
@@ -35,6 +38,8 @@ public class Umbuchung extends Buchung{
 	public String toString() {
 		return "Umbuchung von " + this.getBetrag() + " Euro von " + kontoVon + " zu " + kontoNach + " am " + super.getFormatiertesDatum();
 	}
+
+
 
 
 

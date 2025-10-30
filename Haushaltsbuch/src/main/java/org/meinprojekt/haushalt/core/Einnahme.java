@@ -13,6 +13,8 @@ public class Einnahme extends Buchung{
 		super(betragEin, Kategorie, buchungsDatum);
 		this.konto = konto;
 		this.sender = sender;
+		super.setEmpfaenger(konto.getInhaber());
+		super.setBuchungsart("Einnahme");
 		konto.buchungen.add(this); //Buchung zur Liste hinzufügen
 	}
 
