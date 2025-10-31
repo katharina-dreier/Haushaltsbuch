@@ -11,9 +11,11 @@ public class App extends Application {
     FXMLLoader fxml = new FXMLLoader(
         getClass().getResource("/org/meinprojekt/haushalt/ui/main.fxml")
     );
-    Scene scene = new Scene(fxml.load(), 900, 600);
+    Scene scene = new Scene(fxml.load());
     stage.setTitle("Haushaltsbuch");
     stage.setScene(scene);
+    stage.setMaximized(true);
+
     stage.show();
   }
 

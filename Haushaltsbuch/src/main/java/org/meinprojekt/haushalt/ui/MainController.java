@@ -6,6 +6,7 @@ import java.util.Optional;
 import java.util.function.Consumer;
 
 import org.meinprojekt.haushalt.core.Buchung;
+import org.meinprojekt.haushalt.core.BuchungsAktionen;
 import org.meinprojekt.haushalt.core.Datenstroeme;
 import org.meinprojekt.haushalt.core.Konto;
 import org.meinprojekt.haushalt.core.KontoAktionen;
@@ -21,6 +22,7 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
+import javafx.scene.control.ButtonType;
 import javafx.scene.control.Label;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
@@ -55,6 +57,7 @@ public class MainController {
 	@FXML private TableColumn<Buchung, String> colEmpf;
 	@FXML private TableColumn<Buchung, String> colSend;
 	@FXML private TableColumn<Buchung, Double> colBetrag;
+	@FXML private TableColumn<Buchung, Void> colDelete;
 	
 	private final ObservableList<Konto> kontenListe = FXCollections.observableArrayList();
 	private final ObservableList<Buchung> buchungsListe = FXCollections.observableArrayList();
@@ -122,6 +125,7 @@ public class MainController {
 		    }
 		});
 
+		setupDeleteColumn();
 
 		// Liste der Tabelle zuweisen
 		kontenListe.setAll(Konto.getAlleKonten());   // einmalig befüllen
@@ -142,7 +146,7 @@ public class MainController {
 	private void handleNeuesKonto() {
 		String fxmlPfad = "/org/meinprojekt/haushalt/ui/konto-dialog.fxml";
 		String titel = "Neues Konto anlegen";
-		DialogKonto controller = dialogOeffnen(btnNeuesKonto, fxmlPfad, titel, null);
+		dialogOeffnen(btnNeuesKonto, fxmlPfad, titel, (DialogKonto c) -> {});
 	}
 	
 	@FXML
@@ -260,6 +264,59 @@ public class MainController {
 	    	gefilterteBuchungsListe.setPredicate(b -> true);
 	    }
 	}
+	
+	private void setupDeleteColumn() {
+	    colDelete = new TableColumn<>("");
+	    colDelete.setPrefWidth(36);                // schmal
+	    colDelete.setSortable(false);
+	    colDelete.setResizable(false);
 
+	    colDelete.setCellFactory(tc -> new TableCell<>() {
+	        private final Button btn = new Button("✖"); // oder "X"
+	        {
+	            btn.setFocusTraversable(false);
+	            btn.setMinSize(24, 24);
+	            btn.setMaxSize(24, 24);
+	            btn.setStyle("-fx-font-weight: bold; -fx-text-fill: #a00; -fx-padding: 0;");
+
+	            btn.setOnAction(e -> {
+	                Buchung b = getTableView().getItems().get(getIndex());
+	                bestaetigeUndLoesche(b);
+	            });
+	        }
+
+	        @Override
+	        protected void updateItem(Void item, boolean empty) {
+	            super.updateItem(item, empty);
+	            setGraphic(empty ? null : btn);
+	            setText(null);
+	        }
+	    });
+	    
+	    if (!tblBuchungen.getColumns().contains(colDelete)) {
+	        tblBuchungen.getColumns().add(colDelete);
+	    }
+}
+	
+	private void bestaetigeUndLoesche(Buchung b) {
+	    Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
+	    confirm.setTitle("Buchung löschen");
+	    confirm.setHeaderText("Buchung wirklich löschen?");
+	    confirm.setContentText(String.format(
+	        "Datum: %s%nArt: %s%nKategorie: %s%nBetrag: %.2f €",
+	        b.getFormatiertesDatum(), b.getBuchungsart(), b.getKategorie(), b.getBetrag()
+	    ));
+
+	    confirm.showAndWait().ifPresent(result -> {
+	        if (result == ButtonType.OK) {
+	            BuchungsAktionen.loescheBuchung(b);   // <- Diese Methode implementieren wir im nächsten Schritt.
+	        }
+	        buchungsListe.setAll(b.getKonto().getBuchungen());
+	        tblKonten.refresh();
+	        sumLbl.setText(String.format("Summe: %.2f €", Konto.getGesamtSumme()));
+
+	    });
 	}
 
+
+	}

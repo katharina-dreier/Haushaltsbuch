@@ -18,6 +18,7 @@ public class Einnahme extends Buchung{
 		konto.buchungen.add(this); //Buchung zur Liste hinzufügen
 	}
 
+	@Override
 	public Konto getKonto() {
 		return konto;
 	}

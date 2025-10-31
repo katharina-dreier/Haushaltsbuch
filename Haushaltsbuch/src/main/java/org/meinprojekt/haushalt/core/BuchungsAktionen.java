@@ -32,7 +32,7 @@ public class BuchungsAktionen {
 			Einnahme einnahme = new Einnahme(betragEin, kategorieEin, gewaehltesKonto, sender,  date); //Einnahme erstellen
 			gewaehltesKonto.einzahlen(einnahme);
 			einnahme.setBuchungsart("Einnahme");
-			Datenstroeme.einnahmeHinzufuegen(einnahme);
+			Datenstroeme.buchungHinzufuegen(einnahme);
 			System.out.println("Einnahme wurde getätigt: " + einnahme);
 		}
 		
@@ -41,7 +41,7 @@ public class BuchungsAktionen {
 			Ausgabe ausgabe = new Ausgabe(betrag, kat, quell, empfaenger, datum); // Ausgabe erstellen
 			quell.auszahlen(ausgabe);
 			ausgabe.setBuchungsart("Ausgabe");
-			Datenstroeme.ausgabeHinzufuegen(ausgabe);
+			Datenstroeme.buchungHinzufuegen(ausgabe);
 			System.out.println("Ausgabe wurde getätigt: " + ausgabe);
 		}
 		
@@ -52,7 +52,50 @@ public class BuchungsAktionen {
 			quell.auszahlen(umbuchung);
 			ziel.einzahlen(umbuchung);
 			Datenstroeme.umbuchungHinzufuegen(umbuchung);
+			System.out.println("Umbuchung wurde getätigt: " + umbuchung);
 		}
 		
+		public static void loescheBuchung(Buchung b) {
+		    if (b instanceof Umbuchung u) {
+		        Konto von  = u.getKontoVon();
+		        Konto nach = u.getKontoNach();
+		        double betrag = u.getBetrag();
+
+		        // 1) aus Listen entfernen
+		        if (von != null)  von.getBuchungen().remove(u);
+		        if (nach != null) nach.getBuchungen().remove(u);
+
+		        // 2) Salden rückgängig
+		        if (von != null)  von.setKontostand(von.getKontostand() + betrag);
+		        if (nach != null) nach.setKontostand(nach.getKontostand() - betrag);
+
+		        // 3) CSV neu schreiben (beide)
+		        if (von != null)  Datenstroeme.kontoBuchungenNeuSpeichern(von);
+		        if (nach != null) Datenstroeme.kontoBuchungenNeuSpeichern(nach);
+
+		    } else {
+		        Konto k = b.getKonto();
+		        if (k == null) {
+		           
+		            System.out.println("Warnung: Buchung ohne Konto, Abbruch.");
+		            return;
+		        }
+
+		        double betrag = b.getBetrag();
+		        switch (String.valueOf(b.getBuchungsart())) {
+		            case "Einnahme" -> k.setKontostand(k.getKontostand() - betrag);
+		            case "Ausgabe"  -> k.setKontostand(k.getKontostand() + betrag);
+		            default -> { /* optional: loggen */ }
+		        }
+
+		        k.getBuchungen().remove(b);
+		        Datenstroeme.kontoBuchungenNeuSpeichern(k);
+		    }
+
+		    // 4) Kontenübersicht neu schreiben (neue Salden)
+		    Datenstroeme.kontenNeuSpeichern();
+
+		    System.out.println("Buchung gelöscht: " + b);
+		}
 
 }

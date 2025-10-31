@@ -13,6 +13,7 @@ public class Buchung {
 	private String empfaenger;
 	private String sender;
 	private double kontostandNachBuchung; // optional
+	private Konto konto; 
 	
 	public static ArrayList<String> listeMitKategorien = new ArrayList<>();
 
@@ -26,7 +27,8 @@ public class Buchung {
 		kategorieHinzufuegen(kategorie);
 	}
 	
-	public Buchung (LocalDate datum, String buchungsart, String kategorie , String empfänger , String sender , double betrag2, double kontostand) {
+	public Buchung (Konto konto, LocalDate datum, String buchungsart, String kategorie , String empfänger , String sender , double betrag2, double kontostand) {
+		this.konto = konto;
 		this.buchungsDatum = datum;
 		this.buchungsart = buchungsart;
 		this.kategorie = kategorie;
@@ -41,6 +43,10 @@ public class Buchung {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy");
         return buchungsDatum.format(formatter); 
     }
+	
+	public Konto getKonto() {
+		return konto;
+	}
 	
 	public String getKategorie() {
 		return kategorie;
@@ -105,6 +111,8 @@ public class Buchung {
 	private boolean istUmbuchung(Buchung b) {
 	    return b.getKategorie() != null && b.getKategorie().toLowerCase().startsWith("umbuchung");
 	}
+
+
 
 
 
