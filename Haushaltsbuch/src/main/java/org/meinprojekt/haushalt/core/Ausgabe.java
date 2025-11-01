@@ -4,25 +4,21 @@ import java.time.LocalDate;
 
 public class Ausgabe extends Buchung{
 	
-	private Konto konto;
+	
 	private String empfaenger;
 	
 	public Ausgabe(double betrag, String Kategorie, Konto konto, String empfaenger, LocalDate buchungsDatum) {
 		super(betrag, Kategorie, buchungsDatum);
-		this.konto = konto;
 		this.empfaenger = empfaenger;
 		super.setSender(konto.getInhaber());
 		super.setBuchungsart("Ausgabe");
+		super.setKonto(konto);
 		konto.buchungen.add(this); // Buchung zur Liste hinzufügen
 	}
 
-	@Override
-	public Konto getKonto() {
-		return konto;
-	}
-
-	public void setKonto(Konto konto) {
-		this.konto = konto;
+	public Ausgabe(Konto konto2, LocalDate datum, String art, String kategorie, String empfaenger2, String sender,
+			double betrag, double kontostand) {
+		super(konto2, datum, art, kategorie, empfaenger2, sender, betrag, kontostand);
 	}
 
 	public String getEmpfaenger() {

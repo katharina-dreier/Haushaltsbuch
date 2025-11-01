@@ -106,11 +106,15 @@ public class Konto {
 	
 	public void einzahlen(Buchung buchung) {
 		kontostand += buchung.getBetrag();
+		System.out.println("Einzahlung von " + buchung.getBetrag() + " Euro auf Konto: " + kontoName);
+		System.out.println("Neuer Kontostand nach Einzahlung: " + kontostand + " Euro");
 		gesamtSumme += buchung.getBetrag();
 	}
 	
 	public void auszahlen(Buchung buchung) {
 		kontostand -= buchung.getBetrag();
+		System.out.println("Auszahlung von " + buchung.getBetrag() + " Euro von Konto: " + kontoName);
+		System.out.println("Neuer Kontostand nach Auszahlung: " + kontostand + " Euro");
 		gesamtSumme -= buchung.getBetrag();
 	}
 	

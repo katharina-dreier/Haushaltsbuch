@@ -28,6 +28,7 @@ import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
 import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
+import javafx.scene.control.TableRow;
 import javafx.scene.control.TableView;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.VBox;
@@ -140,6 +141,19 @@ public class MainController {
 			buchungenAnzeigen(neuesKonto);
 		});
 		
+		// Doppelklick auf Buchung zum Bearbeiten
+		tblBuchungen.setRowFactory(tv -> {
+		    TableRow<Buchung> row = new TableRow<>();
+		    row.setOnMouseClicked(event -> {
+		        // Nur echte Zeilen + Doppelklick
+		        if (event.getClickCount() == 2 && !row.isEmpty()) {
+		            Buchung selected = row.getItem();
+		            oeffneBearbeitenDialog(selected);
+		        }
+		    });
+		    return row;
+		});
+
 	}
 
 	@FXML
@@ -319,4 +333,32 @@ public class MainController {
 	}
 
 
+	private void oeffneBearbeitenDialog(Buchung b) {
+	    
+	
+		//String art = b.getBuchungsart();
+	   String fxmlPfad = "/org/meinprojekt/haushalt/ui/buchung-dialog.fxml";
+	   String titel = "Buchung bearbeiten";
+	    
+	   switch (b.getBuchungsart()) {
+		case "Einnahme":
+			dialogOeffnen(btnNeueEin, fxmlPfad, titel, (DialogBuchung c) -> {
+				c.setEditMode(true);
+				c.prefillFields(b);
+				c.setOriginal(b);
+			})
+			; break;
+			
+		case "Ausgabe":
+	   dialogOeffnen(btnNeueAus, fxmlPfad, titel, (DialogBuchung c) -> {
+           c.setEditMode(true);
+			c.prefillFields(b);
+			c.setOriginal(b);
+
+});
+	                 ; break;
+              
+		  default:
+	            System.out.println("⚠️ Unbekannte Buchungsart: " + b.getBuchungsart());
+	}}
 	}

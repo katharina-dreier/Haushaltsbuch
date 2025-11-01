@@ -47,6 +47,10 @@ public class Buchung {
 	public Konto getKonto() {
 		return konto;
 	}
+
+	public void setKonto(Konto konto) {
+		this.konto = konto;
+	}
 	
 	public String getKategorie() {
 		return kategorie;

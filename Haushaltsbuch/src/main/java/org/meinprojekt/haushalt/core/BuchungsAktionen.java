@@ -98,4 +98,41 @@ public class BuchungsAktionen {
 		    System.out.println("Buchung gelöscht: " + b);
 		}
 
+		public static void buchungBearbeiten(Buchung original, double betrag, String kat, Konto konto, String beteiligter,
+				LocalDate datum) {
+			// Alte Buchung rückgängig machen
+			double alterBetrag = original.getBetrag();
+			Konto altesKonto = original.getKonto();
+			switch (original.getBuchungsart()) {
+			case "Einnahme" -> altesKonto.auszahlen(original);
+			case "Ausgabe" -> altesKonto.einzahlen(original);
+			default -> {
+				/* optional: loggen */ }
+			}
+
+			// Neue Buchungsdaten setzen
+			original.setBetrag(betrag);
+			original.setKategorie(kat);
+			original.setBuchungsDatum(datum);
+			if (original instanceof Einnahme e) {
+				e.setSender(beteiligter);
+				e.setKonto(konto);
+				konto.einzahlen(e);
+			} else if (original instanceof Ausgabe a) {
+				a.setEmpfaenger(beteiligter);
+				a.setKonto(konto);
+				konto.auszahlen(a);
+			}
+			
+			// CSV-Datei aktualisieren
+			Datenstroeme.kontoBuchungenNeuSpeichern(konto);
+			if (altesKonto != konto) {
+				Datenstroeme.kontoBuchungenNeuSpeichern(altesKonto);
+			}
+			Datenstroeme.kontenNeuSpeichern();
+
+			System.out.println("Buchung bearbeitet: " + original);
+			
+		}
+
 }

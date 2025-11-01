@@ -212,9 +212,19 @@ public class Datenstroeme {
 		double betrag = Double.parseDouble(teile[5]);
 		double kontostand = Double.parseDouble(teile[6]);
 		
-
-		return new Buchung(konto, datum, art, kategorie, empfaenger, sender, betrag, kontostand);
-	}
+		if (art.equalsIgnoreCase("Einnahme")) {
+			return new Einnahme(konto, datum, art, kategorie, empfaenger, sender, betrag, kontostand);
+		} else if (art.equalsIgnoreCase("Ausgabe")) {
+			return new Ausgabe(konto, datum, art, kategorie, empfaenger, sender, betrag, kontostand);
+		} 
+		else if (art.equalsIgnoreCase("Erstellung")) {
+			return new Buchung(konto, datum, art, kategorie, empfaenger, sender, betrag, kontostand);
+		}
+	else
+	{
+		System.out.println("⚠️ Unbekannte Buchungsart: " + art);
+		return null;
+	}}
 
 	// Diese Methode lädt die Buchungen aus der Datei in die entsprechenden Konten
 	public static void ladeBuchungenFuerAlleKonten() {
