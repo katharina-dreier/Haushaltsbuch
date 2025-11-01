@@ -43,7 +43,7 @@ public class MainController {
 	@FXML TabPane tabPane;
 	@FXML private Tab tabGesamt, tabEinnahmen, tabAusgaben, tabUmbuchungen;
 	
-	@FXML private Label sumLbl;
+	@FXML private Label sumLbl, buchSumLbl;
 	@FXML private Button btnNeuesKonto, btnNeueAus, btnNeueEin, btnNeueUmb;
 	
 	@FXML private TableView<Konto> tblKonten; 
@@ -205,6 +205,7 @@ public class MainController {
 			buchungsListe.setAll(liste);
 			applyTabFilter();
 			showBuchungen();
+			
 		} else {
 			tblBuchungen.setVisible(false);
 			tblBuchungen.setManaged(false);
@@ -269,6 +270,7 @@ public class MainController {
 	    var aktTab = tabPane.getSelectionModel().getSelectedItem();
 	    if (aktTab == tabEinnahmen) {
 	    	gefilterteBuchungsListe.setPredicate(b -> "EINNAHME".equalsIgnoreCase(b.getBuchungsart()));
+	    	
 	    } else if (aktTab == tabAusgaben) {
 	    	gefilterteBuchungsListe.setPredicate(b -> "AUSGABE".equalsIgnoreCase(b.getBuchungsart()));
 	    } else if (aktTab == tabUmbuchungen) {
@@ -277,6 +279,7 @@ public class MainController {
 	        // Gesamt
 	    	gefilterteBuchungsListe.setPredicate(b -> true);
 	    }
+	    buchSumLbl.setText(String.format("Summe: %.2f €", berechneSumme(gefilterteBuchungsListe)));
 	}
 	
 	private void setupDeleteColumn() {
@@ -361,4 +364,20 @@ public class MainController {
 		  default:
 	            System.out.println("⚠️ Unbekannte Buchungsart: " + b.getBuchungsart());
 	}}
+	
+	public double berechneSumme(FilteredList <Buchung> Liste) {
+		 double summe = 0.0;
+
+		    for (Buchung b : Liste) {
+		        if (b == null) continue;
+
+		        double betrag = b.getBetrag();
+		        if ("Ausgabe".equals(b.getBuchungsart())) {
+		            betrag *= -1; // Ausgaben negativ zählen
+		        }
+
+		        summe += betrag;
+		    }
+		    return summe;
+	}
 	}

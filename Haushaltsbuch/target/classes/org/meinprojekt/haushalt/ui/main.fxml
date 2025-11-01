@@ -52,6 +52,7 @@
       <TableColumn fx:id="colBetrag"    text="Betrag"        prefWidth="100"/>
     </columns>
   </TableView>
+  <Label fx:id="buchSumLbl" text="Summe: 0,00 €" style="-fx-padding: 8;"/>
 </VBox>
 
     </SplitPane>
