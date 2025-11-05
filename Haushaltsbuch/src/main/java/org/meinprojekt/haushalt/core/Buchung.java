@@ -14,6 +14,8 @@ public class Buchung {
 	private String sender;
 	private double kontostandNachBuchung; // optional
 	private Konto konto; 
+	private boolean isUmbuchung = false;
+	private String transferID = "";
 	
 	public static ArrayList<String> listeMitKategorien = new ArrayList<>();
 
@@ -27,7 +29,7 @@ public class Buchung {
 		kategorieHinzufuegen(kategorie);
 	}
 	
-	public Buchung (Konto konto, LocalDate datum, String buchungsart, String kategorie , String empfänger , String sender , double betrag2, double kontostand) {
+	public Buchung (Konto konto, LocalDate datum, String buchungsart, String kategorie , String empfänger , String sender , double betrag2, double kontostand, String transferID, boolean isUmbuchung) {
 		this.konto = konto;
 		this.buchungsDatum = datum;
 		this.buchungsart = buchungsart;
@@ -37,6 +39,24 @@ public class Buchung {
 		this.betrag = betrag2;
 		this.kontostandNachBuchung = kontostand;
 		kategorieHinzufuegen(kategorie);
+		this.transferID = transferID;
+		this.isUmbuchung = isUmbuchung;
+	}
+	
+	public String getTransferID() {
+		return transferID;
+	}
+	
+	public void setTransferID(String transferID) {
+		this.transferID = transferID;
+	}
+	
+	public boolean getIsUmbuchung() {
+		return isUmbuchung;
+	}
+	
+	public void setIsUmbuchung(boolean isUmbuchung) {
+		this.isUmbuchung = isUmbuchung;
 	}
 	
 	public String getFormatiertesDatum() {
@@ -112,11 +132,9 @@ public class Buchung {
 		this.buchungsart = buchungsart;
 	}
 	
-	private boolean istUmbuchung(Buchung b) {
-	    return b.getKategorie() != null && b.getKategorie().toLowerCase().startsWith("umbuchung");
-	}
 
 
+	
 
 
 

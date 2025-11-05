@@ -11,15 +11,15 @@ public class Datenstroeme {
 
 //Hilfsmethoden für die Datenströme:
 	public static String sep = File.separator;
-	public static String headerBuchungen = "Datum;Buchungsart;Kategorie;Empfaenger;Sender;Betrag;Kontostand";
+	public static String headerBuchungen = "Datum;Buchungsart;Kategorie;Empfaenger;Sender;Betrag;Kontostand;Umbuchung;transferID";
 	public static String headerKonten = "Kontonummer;Kreditinstitut;Kontoname;Kontoinhaber;Kontostand";
 	public static String headerKategorien = "Kategorie";
 
 	// Diese Methode formatiert eine Buchung in CSV-Format
 	public static String buchungToCSV(String date, String buchungsart, String kategorie, String empfaenger,
-			String sender, double betrag, double kontostand) {
+			String sender, double betrag, double kontostand, boolean isUmbuchung, String transferID) {
 		return date + ";" + buchungsart + ";" + kategorie + ";" + empfaenger + ";" + sender + ";" + betrag + ";"
-				+ kontostand;
+				+ kontostand + ";" +  isUmbuchung + ";" + transferID;
 	}
 
 	// Diese Methode stellt sicher, dass ein Verzeichnis vorhanden ist
@@ -100,7 +100,7 @@ public class Datenstroeme {
 		ensureDateiMitHeader(kontopfad, headerBuchungen);
 		String date = LocalDate.now().format(DateTimeFormatter.ofPattern("dd.MM.yyyy"));
 		String ersteZeile = date + ";Erstellung;" + "" + ";" + "" + ";" + "" + ";" + konto.getKontostand() + ";"
-				+ konto.getKontostand(); // "Datum;Buchungsart;Kategorie;Empfänger;Sender;Betrag;Kontostand
+				+ konto.getKontostand() + ";" + "false" + ";" + "" ; // "Datum;Buchungsart;Kategorie;Empfänger;Sender;Betrag;Kontostand;Umbuchung;transferID
 		zeileInDateiAnhaengen(kontopfad, ersteZeile);
 		// Pfad zur zentralen Kontenliste
 		String kontenlistePfad = sep + "Haushaltsbuch" + sep + "Kontoliste.csv";
@@ -112,10 +112,7 @@ public class Datenstroeme {
 
 	public static void buchungHinzufuegen(Buchung buchung) {
 
-		if (buchung.getBuchungsart().equalsIgnoreCase("Umbuchung")) {
-			umbuchungHinzufuegen((Umbuchung) buchung);
-		} else {
-			String ordnerpfad = sep + "Haushaltsbuch" + sep + "Konten";
+		String ordnerpfad = sep + "Haushaltsbuch" + sep + "Konten";
 			ensureVerzeichnisVorhanden(ordnerpfad);
 			String dateiname = buchung.getKonto().getKontonummer() + "_" + buchung.getKonto().getKreditinstitut() + "_"
 					+ buchung.getKonto().getKontoName() + ".csv";
@@ -123,34 +120,13 @@ public class Datenstroeme {
 			ensureDateiMitHeader(kontopfad, headerBuchungen);
 			String buchungsZeile = buchungToCSV(buchung.getFormatiertesDatum(), buchung.getBuchungsart(),
 					buchung.getKategorie(), buchung.getEmpfaenger(), buchung.getSender(), buchung.getBetrag(),
-					buchung.getKonto().getKontostand());
+					buchung.getKonto().getKontostand(),buchung.getIsUmbuchung(), buchung.getTransferID());
 			zeileInDateiAnhaengen(kontopfad, buchungsZeile);
 			kontenNeuSpeichern();
 			kategorieZurDateiHinzufuegen(buchung.getKategorie());
 		}
-	}
+	
 
-	public static void umbuchungHinzufuegen(Umbuchung umbuchung) {
-		String ordnerpfad = sep + "Haushaltsbuch" + sep + "Konten";
-		ensureVerzeichnisVorhanden(ordnerpfad);
-		String dateiname = umbuchung.getKontoVon().getKontonummer() + "_" + umbuchung.getKontoVon().getKreditinstitut()
-				+ "_" + umbuchung.getKontoVon().getKontoName() + ".csv";
-		String kontopfad = ordnerpfad + sep + dateiname;
-		ensureDateiMitHeader(kontopfad, headerBuchungen);
-		String buchungsZeile = buchungToCSV(umbuchung.getFormatiertesDatum(), "Ausgabe", umbuchung.getKategorie(),
-				umbuchung.getEmpfaenger(), umbuchung.getSender(), umbuchung.getBetrag(),
-				umbuchung.getKontoVon().getKontostand());
-		zeileInDateiAnhaengen(kontopfad, buchungsZeile);
-		String dateiname2 = umbuchung.getKontoNach().getKontonummer() + "_"
-				+ umbuchung.getKontoNach().getKreditinstitut() + "_" + umbuchung.getKontoNach().getKontoName() + ".csv";
-		String kontopfad2 = ordnerpfad + sep + dateiname2;
-		ensureDateiMitHeader(kontopfad2, headerBuchungen);
-		String buchungsZeile2 = buchungToCSV(umbuchung.getFormatiertesDatum(), "Einnahme", umbuchung.getKategorie(),
-				umbuchung.getEmpfaenger(), umbuchung.getSender(), umbuchung.getBetrag(),
-				umbuchung.getKontoNach().getKontostand());
-		zeileInDateiAnhaengen(kontopfad2, buchungsZeile2);
-		kontenNeuSpeichern();
-	}
 
 	// Diese Methode lädt die Konten aus der Datei in die zentrale Map
 	public static void ladeKontenAusDatei() {
@@ -202,23 +178,25 @@ public class Datenstroeme {
 	}
 
 	public static Buchung buchungAusCSV(Konto konto, String csvZeile) {
-		String[] teile = csvZeile.split(";");
+		String[] teile = csvZeile.split(";", -1); // -1 um leere Felder zu behalten
 		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy");
-		LocalDate datum = LocalDate.parse(teile[0], formatter);
-		String art = teile[1];
-		String kategorie = teile[2];
-		String empfaenger = teile[3];
-		String sender = teile[4];
-		double betrag = Double.parseDouble(teile[5]);
-		double kontostand = Double.parseDouble(teile[6]);
+		LocalDate datum = LocalDate.parse(teile[0].trim(), formatter);
+		String art = teile.length > 1 ? teile[1].trim() : "";
+		String kategorie = teile.length > 2 ? teile[2].trim() : "";
+		String empfaenger = teile.length > 3 ? teile[3].trim() : "";
+		String sender = teile.length > 4 ? teile[4].trim() : "";
+		double betrag        = teile.length > 5 ? Double.parseDouble(teile[5].trim().replace(",", ".")) : 0.0;
+		double kontostand    = teile.length > 6 ? Double.parseDouble(teile[6].trim().replace(",", ".")) : 0.0;
+		boolean isUmbuchung = teile.length >7 ? Boolean.parseBoolean(teile[7].trim()) : false;
+		String transferID =  teile.length > 8 && !teile[8].isBlank() ? teile[8].trim() : null;;
 		
 		if (art.equalsIgnoreCase("Einnahme")) {
-			return new Einnahme(konto, datum, art, kategorie, empfaenger, sender, betrag, kontostand);
+			return new Einnahme(konto, datum, art, kategorie, empfaenger, sender, betrag, kontostand, transferID, isUmbuchung);
 		} else if (art.equalsIgnoreCase("Ausgabe")) {
-			return new Ausgabe(konto, datum, art, kategorie, empfaenger, sender, betrag, kontostand);
+			return new Ausgabe(konto, datum, art, kategorie, empfaenger, sender, betrag, kontostand, transferID, isUmbuchung);
 		} 
 		else if (art.equalsIgnoreCase("Erstellung")) {
-			return new Buchung(konto, datum, art, kategorie, empfaenger, sender, betrag, kontostand);
+			return new Buchung(konto, datum, art, kategorie, empfaenger, sender, betrag, kontostand, transferID, isUmbuchung);
 		}
 	else
 	{
@@ -315,7 +293,7 @@ public class Datenstroeme {
 			for (Buchung buchung : konto.getBuchungen()) {
 				String buchungsZeile = buchungToCSV(buchung.getFormatiertesDatum(), buchung.getBuchungsart(),
 						buchung.getKategorie(), buchung.getEmpfaenger(), buchung.getSender(), buchung.getBetrag(),
-						konto.getKontostand());
+						konto.getKontostand(), buchung.getIsUmbuchung() ,buchung.getTransferID());
 				bw.write(buchungsZeile);
 				bw.newLine();
 			}

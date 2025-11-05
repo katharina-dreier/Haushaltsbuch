@@ -1,11 +1,13 @@
 package org.meinprojekt.haushalt.core;
 
 import java.time.LocalDate;
+import java.util.UUID;
 
 public class Umbuchung extends Buchung{
 	
 	private Konto kontoVon;
 	private Konto kontoNach;
+	
 
 	public Umbuchung(double betrag, Konto kontoVon, Konto kontoNach, LocalDate buchungsDatum) {
 		super(betrag, "Umbuchung", buchungsDatum);
@@ -13,10 +15,11 @@ public class Umbuchung extends Buchung{
 		this.kontoNach = kontoNach;
 		super.setSender(kontoVon.getKontoName() + "(" + kontoVon.getKreditinstitut() + ")");
 		super.setEmpfaenger(kontoNach.getKontoName() + "(" + kontoNach.getKreditinstitut() + ")");
-		kontoVon.buchungen.add(this); // Buchung zur Liste hinzufügen
-		kontoNach.buchungen.add(this); // Buchung zur Liste hinzufügen
-		
+		super.setTransferID(UUID.randomUUID().toString());
+		super.setIsUmbuchung(true);
 	}
+	
+	
 
 	public Konto getKontoVon() {
 		return kontoVon;

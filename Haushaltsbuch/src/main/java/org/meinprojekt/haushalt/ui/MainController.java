@@ -37,9 +37,7 @@ import javafx.stage.Stage;
 
 public class MainController {
 	
-	@FXML private VBox kontenArea;
-	@FXML private VBox buchungenArea;
-	
+	@FXML private VBox kontenArea, buchungenArea;	
 	@FXML TabPane tabPane;
 	@FXML private Tab tabGesamt, tabEinnahmen, tabAusgaben, tabUmbuchungen;
 	
@@ -75,6 +73,7 @@ public class MainController {
 		Datenstroeme.ladeKategorienAusDatei();
 		Datenstroeme.ladeBuchungenFuerAlleKonten();
 		tblBuchungen.setPlaceholder(new Label("Keine Buchungen"));
+		
 		
 		gefilterteBuchungsListe = new FilteredList<>(buchungsListe, b -> true);
 		sortierteBuchungsListe = new SortedList<>(gefilterteBuchungsListe);
@@ -133,8 +132,7 @@ public class MainController {
 		tblKonten.setItems(kontenListe);
 
 	    // Gesamtsumme anzeigen
-		String sumText = String.format("Summe: %.2f €", Konto.getGesamtSumme());
-		sumLbl.setText(sumText);
+		updateGesamtSummeLabel();
 		
 		// Listener für die Auswahl eines Kontos in der Tabelle
 		tblKonten.getSelectionModel().selectedItemProperty().addListener((obs, altesKonto, neuesKonto) -> {
@@ -161,6 +159,7 @@ public class MainController {
 		String fxmlPfad = "/org/meinprojekt/haushalt/ui/konto-dialog.fxml";
 		String titel = "Neues Konto anlegen";
 		dialogOeffnen(btnNeuesKonto, fxmlPfad, titel, (DialogKonto c) -> {});
+		updateGesamtSummeLabel();
 	}
 	
 	@FXML
@@ -171,6 +170,7 @@ public class MainController {
             c.setBuchungsart("Einnahme");}
 		);  
 		aktualisiereTabelle();
+		updateGesamtSummeLabel();
 		}
 	
 	@FXML
@@ -181,6 +181,7 @@ public class MainController {
             c.setBuchungsart("Ausgabe");}
 		);
 		aktualisiereTabelle();
+		updateGesamtSummeLabel();
 		}
 	
 	@FXML
@@ -191,6 +192,7 @@ public class MainController {
             c.setBuchungsart("Umbuchung");}
 		);
 		aktualisiereTabelle();
+		updateGesamtSummeLabel();
 	}
 	
 	public void aktualisiereTabelle() {
@@ -380,4 +382,22 @@ public class MainController {
 		    }
 		    return summe;
 	}
+	
+	public double berechneGesamtsummeKonten(ObservableList<Konto> kontenListe) {
+	    double summe = 0.0;
+	    for (Konto k : kontenListe) {
+	        if (k != null) {
+	            summe += k.getKontostand();
+	        }
+	    }
+	    return summe;
 	}
+	
+	private void updateGesamtSummeLabel() {
+	    double summe = berechneGesamtsummeKonten(tblKonten.getItems());
+	    sumLbl.setText(String.format("Gesamt: %.2f €", summe));
+	}
+
+	
+	}
+

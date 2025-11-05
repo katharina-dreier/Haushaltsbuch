@@ -102,23 +102,31 @@ public class DialogBuchung {
 				case "Einnahme" -> {
 					Konto ziel = cmbZielKonto.getValue();
 					String sender = txtSender.getText().trim();
-					if (!editMode) { BuchungsAktionen.einnahmeTätigen(betrag, kat, ziel, sender, datum);}
+					if (!editMode) { 
+						BuchungsAktionen.einnahmeTätigen(betrag, kat, ziel, sender, datum, "", false);}
 					else {
-						BuchungsAktionen.buchungBearbeiten(original, betrag, kat, ziel, sender, datum);
+						if (original.getIsUmbuchung()) {
+							BuchungsAktionen.umbuchungBearbeiten(original, betrag, datum);
+						}
+						else {BuchungsAktionen.buchungBearbeiten(original, betrag, kat, ziel, sender, datum);}
 					}
 				}
 				case "Ausgabe" -> {
 					Konto quell = cmbQuellKonto.getValue();
 					String empfaenger = txtEmpfaenger.getText().trim();
 					if (!editMode) {
-						BuchungsAktionen.ausgabeTätigen(betrag, kat, quell, empfaenger, datum);
+						BuchungsAktionen.ausgabeTätigen(betrag, kat, quell, empfaenger, datum, "", false);
 					} else {
+						if (original.getIsUmbuchung()) {
+							BuchungsAktionen.umbuchungBearbeiten(original, betrag, datum);
+						} else
 						BuchungsAktionen.buchungBearbeiten(original, betrag, kat, quell, empfaenger, datum);
 					}
 				}
 				case "Umbuchung" -> {
 					Konto quell = cmbQuellKonto.getValue();
 					Konto ziel = cmbZielKonto.getValue();
+					
 					if (quell == ziel) {
 						new Alert(Alert.AlertType.WARNING, "Quelle und Ziel dürfen nicht gleich sein.").showAndWait();
 						return;

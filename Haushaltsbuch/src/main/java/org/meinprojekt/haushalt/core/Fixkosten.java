@@ -9,7 +9,7 @@ public class Fixkosten extends Ausgabe{
 	
 	public Fixkosten(double betrag, String Kategorie, Konto konto, String empfaenger, LocalDate buchungsDatum,
 			LocalDate faelligkeitsDatum, String häufigkeit) {
-		super(betrag, Kategorie, konto, empfaenger, buchungsDatum);
+		super(betrag, Kategorie, konto, empfaenger, buchungsDatum, "", false);
 		this.faelligkeitsDatum = faelligkeitsDatum;
 		this.häufigkeit = häufigkeit;
 	}

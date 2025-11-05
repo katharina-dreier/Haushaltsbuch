@@ -3,6 +3,7 @@ package org.meinprojekt.haushalt.core;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
+import java.util.List;
 import java.util.Scanner;
 
 public class BuchungsAktionen {
@@ -28,8 +29,8 @@ public class BuchungsAktionen {
 		    }
 	
 	//Notwendige Daten einlesen und Einnahme tätigen
-		public static void einnahmeTätigen(Double betragEin, String kategorieEin, Konto gewaehltesKonto, String sender,  LocalDate date) {
-			Einnahme einnahme = new Einnahme(betragEin, kategorieEin, gewaehltesKonto, sender,  date); //Einnahme erstellen
+		public static void einnahmeTätigen(Double betragEin, String kategorieEin, Konto gewaehltesKonto, String sender,  LocalDate datum, String transferID, boolean isUmbuchung) {
+			Einnahme einnahme = new Einnahme(betragEin, kategorieEin, gewaehltesKonto, sender,  datum, transferID, isUmbuchung); //Einnahme erstellen
 			gewaehltesKonto.einzahlen(einnahme);
 			einnahme.setBuchungsart("Einnahme");
 			Datenstroeme.buchungHinzufuegen(einnahme);
@@ -37,8 +38,8 @@ public class BuchungsAktionen {
 		}
 		
 		//Notwendige Daten einlesen und Ausgabe tätigen
-		public static void ausgabeTätigen(Double betrag, String kat, Konto quell, String empfaenger, LocalDate datum) {
-			Ausgabe ausgabe = new Ausgabe(betrag, kat, quell, empfaenger, datum); // Ausgabe erstellen
+		public static void ausgabeTätigen(Double betrag, String kat, Konto quell, String empfaenger, LocalDate datum, String transferID, boolean isUmbuchung) {
+			Ausgabe ausgabe = new Ausgabe(betrag, kat, quell, empfaenger, datum, transferID, isUmbuchung); // Ausgabe erstellen
 			quell.auszahlen(ausgabe);
 			ausgabe.setBuchungsart("Ausgabe");
 			Datenstroeme.buchungHinzufuegen(ausgabe);
@@ -48,10 +49,9 @@ public class BuchungsAktionen {
 		//Umbuchung tätigen
 		public static void umbuchungTätigen(Double betrag, Konto quell, Konto ziel, LocalDate datum) {
 			Umbuchung umbuchung = new Umbuchung(betrag, quell, ziel,  datum);
-			umbuchung.setBuchungsart("Umbuchung");
-			quell.auszahlen(umbuchung);
-			ziel.einzahlen(umbuchung);
-			Datenstroeme.umbuchungHinzufuegen(umbuchung);
+			String ID = umbuchung.getTransferID();
+			ausgabeTätigen(betrag, "Umbuchung", quell, umbuchung.getEmpfaenger(), datum, ID, true);
+			einnahmeTätigen(betrag, "Umbuchung", ziel, umbuchung.getSender(), datum, ID, true) ;
 			System.out.println("Umbuchung wurde getätigt: " + umbuchung);
 		}
 		
@@ -100,6 +100,7 @@ public class BuchungsAktionen {
 
 		public static void buchungBearbeiten(Buchung original, double betrag, String kat, Konto konto, String beteiligter,
 				LocalDate datum) {
+			
 			// Alte Buchung rückgängig machen
 			double alterBetrag = original.getBetrag();
 			Konto altesKonto = original.getKonto();
@@ -123,16 +124,37 @@ public class BuchungsAktionen {
 				a.setKonto(konto);
 				konto.auszahlen(a);
 			}
-			
 			// CSV-Datei aktualisieren
 			Datenstroeme.kontoBuchungenNeuSpeichern(konto);
 			if (altesKonto != konto) {
 				Datenstroeme.kontoBuchungenNeuSpeichern(altesKonto);
 			}
 			Datenstroeme.kontenNeuSpeichern();
-
 			System.out.println("Buchung bearbeitet: " + original);
+		}
+		
+		
+		public static void umbuchungBearbeiten(Buchung original, double betrag, LocalDate datum) {
+			
+			List<Buchung> buchungen = findeBuchungenZuTransferID(original.getTransferID());
+			if (buchungen.size() != 2) {
+				System.out.println("Fehler: Umbuchung nicht gefunden oder unvollständig.");
+				return;
+			}
+			Buchung buchung1 = buchungen.get(0);
+			Buchung buchung2 = buchungen.get(1);
+			String beteiligter1 = buchung1 instanceof Einnahme ? buchung1.getSender() : buchung1.getEmpfaenger();
+			String beteiligter2 = buchung2 instanceof Einnahme ? buchung2.getSender() : buchung2.getEmpfaenger();
+			
+			buchungBearbeiten(buchung1, betrag, buchung1.getKategorie(), buchung1.getKonto(), beteiligter1, datum);
+			buchungBearbeiten(buchung2, betrag, buchung2.getKategorie(), buchung2.getKonto(), beteiligter2, datum);
 			
 		}
+		
+		// Alle Buchungen mit einer bestimmten transferId finden 
+		public static List<Buchung> findeBuchungenZuTransferID(String transferId) {
+			return Konto.getAlleBuchungen().stream().filter(b -> transferId.equals(b.getTransferID())).toList();
+		}
+
 
 }

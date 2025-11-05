@@ -100,6 +100,14 @@ public class Konto {
 	public static List<Konto> getAlleKonten() {
 	    return new ArrayList<>(konten.values());
 	}
+	
+	public static List<Buchung> getAlleBuchungen() {
+		List<Buchung> alleBuchungen = new ArrayList<>();
+		for (Konto konto : konten.values()) {
+			alleBuchungen.addAll(konto.getBuchungen());
+		}
+		return alleBuchungen;
+	}
 
 	
 	// Einzahlungen, Auszahlungen und Umbuchungen

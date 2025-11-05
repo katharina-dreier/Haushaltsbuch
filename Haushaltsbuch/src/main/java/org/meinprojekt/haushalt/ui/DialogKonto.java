@@ -2,7 +2,6 @@ package org.meinprojekt.haushalt.ui;
 
 import java.text.ParseException;
 
-import org.meinprojekt.haushalt.core.Konto;
 import org.meinprojekt.haushalt.core.KontoAktionen;
 
 import javafx.fxml.FXML;
@@ -13,13 +12,8 @@ import javafx.stage.Stage;
 
 public class DialogKonto {
 
-	@FXML TextField txtName;
-	@FXML TextField txtInhaber;
-	@FXML TextField txtSaldo;
-	@FXML TextField txtInstitut;
-
-	@FXML Button btnAbbrechen;
-	@FXML Button btnOk;
+	@FXML TextField txtName, txtInhaber, txtSaldo, txtInstitut;
+	@FXML Button btnAbbrechen, btnOk;
 
 	private Stage stage; // wird vom MainController gesetzt
 	private boolean saved = false;
