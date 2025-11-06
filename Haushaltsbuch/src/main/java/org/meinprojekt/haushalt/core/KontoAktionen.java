@@ -58,10 +58,11 @@ public class KontoAktionen {
 		}
 
 		public static void loescheKonto(Konto k) {
+			for (Buchung b : k.buchungen) {
+				BuchungsAktionen.loescheBuchung(b);
+				}
 			Konto.konten.remove(k.getKontonummer());
-			k.buchungen.clear();
 			Datenstroeme.kontoLoeschen(k);
-			
 		}
 
 		/*public static void kontenListeAnzeigen() {
