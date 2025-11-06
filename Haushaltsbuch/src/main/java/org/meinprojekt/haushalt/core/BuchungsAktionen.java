@@ -56,22 +56,44 @@ public class BuchungsAktionen {
 		}
 		
 		public static void loescheBuchung(Buchung b) {
-		    if (b instanceof Umbuchung u) {
-		        Konto von  = u.getKontoVon();
-		        Konto nach = u.getKontoNach();
-		        double betrag = u.getBetrag();
+		    if (b.getIsUmbuchung()) {
+		    	String transferId = b.getTransferID();
+		    	List<Buchung> buchungen = findeBuchungenZuTransferID(transferId);
+				if (buchungen.size() != 2) {
+					System.out.println("Fehler: Umbuchung nicht gefunden oder unvollständig.");
+					return;
+				}
+				Buchung buchung1 = buchungen.get(0);
+				Buchung buchung2 = buchungen.get(1);
+		    	
+		        // Beide Buchungen der Umbuchung rückgängig machen
+				Konto konto1 = buchung1.getKonto();
+				Konto konto2 = buchung2.getKonto();
 
-		        // 1) aus Listen entfernen
-		        if (von != null)  von.getBuchungen().remove(u);
-		        if (nach != null) nach.getBuchungen().remove(u);
+		        // aus Listen entfernen
+		        if (konto1 != null)  konto1.getBuchungen().remove(buchung1);
+		        if (konto2 != null) konto2.getBuchungen().remove(buchung2);
 
-		        // 2) Salden rückgängig
-		        if (von != null)  von.setKontostand(von.getKontostand() + betrag);
-		        if (nach != null) nach.setKontostand(nach.getKontostand() - betrag);
-
-		        // 3) CSV neu schreiben (beide)
-		        if (von != null)  Datenstroeme.kontoBuchungenNeuSpeichern(von);
-		        if (nach != null) Datenstroeme.kontoBuchungenNeuSpeichern(nach);
+		        // Salden rückgängig
+		        double betrag1 = buchung1.getBetrag();
+		        double betrag2 = buchung2.getBetrag();
+				if (konto1 != null) {
+					switch (String.valueOf(buchung1.getBuchungsart())) {
+					case "Einnahme" -> konto1.setKontostand(konto1.getKontostand() - betrag1);
+					case "Ausgabe" -> konto1.setKontostand(konto1.getKontostand() + betrag1);
+					}
+					}
+				if (konto2 != null) {
+					switch (String.valueOf(buchung2.getBuchungsart())) {
+					case "Einnahme" -> konto2.setKontostand(konto2.getKontostand() - betrag2);
+					case "Ausgabe" -> konto2.setKontostand(konto2.getKontostand() + betrag2);
+					}
+				}
+		        // CSV neu schreiben (beide)
+		        if (konto1 != null)  Datenstroeme.kontoBuchungenNeuSpeichern(konto1);
+		        if (konto2 != null) Datenstroeme.kontoBuchungenNeuSpeichern(konto2);
+		        
+		        System.out.println("Umbuchung gelöscht: " + buchung1 + " und " + buchung2);
 
 		    } else {
 		        Konto k = b.getKonto();
@@ -80,7 +102,6 @@ public class BuchungsAktionen {
 		            System.out.println("Warnung: Buchung ohne Konto, Abbruch.");
 		            return;
 		        }
-
 		        double betrag = b.getBetrag();
 		        switch (String.valueOf(b.getBuchungsart())) {
 		            case "Einnahme" -> k.setKontostand(k.getKontostand() - betrag);
@@ -90,12 +111,11 @@ public class BuchungsAktionen {
 
 		        k.getBuchungen().remove(b);
 		        Datenstroeme.kontoBuchungenNeuSpeichern(k);
+		        System.out.println("Buchung gelöscht: " + b);
 		    }
 
-		    // 4) Kontenübersicht neu schreiben (neue Salden)
+		    // Kontenübersicht neu schreiben (neue Salden)
 		    Datenstroeme.kontenNeuSpeichern();
-
-		    System.out.println("Buchung gelöscht: " + b);
 		}
 
 		public static void buchungBearbeiten(Buchung original, double betrag, String kat, Konto konto, String beteiligter,

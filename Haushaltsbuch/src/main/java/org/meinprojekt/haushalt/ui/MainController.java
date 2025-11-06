@@ -328,11 +328,11 @@ public class MainController {
 
 	    confirm.showAndWait().ifPresent(result -> {
 	        if (result == ButtonType.OK) {
-	            BuchungsAktionen.loescheBuchung(b);   // <- Diese Methode implementieren wir im nächsten Schritt.
+	            BuchungsAktionen.loescheBuchung(b);   
 	        }
 	        buchungsListe.setAll(b.getKonto().getBuchungen());
 	        tblKonten.refresh();
-	        sumLbl.setText(String.format("Summe: %.2f €", Konto.getGesamtSumme()));
+	        sumLbl.setText(String.format("Summe: %.2f €", berechneGesamtsummeKonten(tblKonten.getItems())));
 
 	    });
 	}
