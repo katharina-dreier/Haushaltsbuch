@@ -57,6 +57,13 @@ public class KontoAktionen {
 			return kontenListe;
 		}
 
+		public static void loescheKonto(Konto k) {
+			Konto.konten.remove(k.getKontonummer());
+			k.buchungen.clear();
+			Datenstroeme.kontoLoeschen(k);
+			
+		}
+
 		/*public static void kontenListeAnzeigen() {
 			System.out.println("Folgende Konten sind gespeichert:");
 			for (Konto konto : Konto.konten.values()) {

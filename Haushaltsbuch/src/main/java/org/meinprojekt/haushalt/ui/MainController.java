@@ -49,6 +49,7 @@ public class MainController {
 	@FXML private TableColumn<Konto, String> colName;
 	@FXML private TableColumn<Konto, Double> colKontostand;
 	@FXML private TableColumn<Konto, String> colInstitut;
+	@FXML private TableColumn<Konto, Void> colDeleteKonto;
 	
 	@FXML private TableView<Buchung> tblBuchungen;
 	@FXML private TableColumn<Buchung, String> colBuchDatum;
@@ -56,7 +57,7 @@ public class MainController {
 	@FXML private TableColumn<Buchung, String> colEmpf;
 	@FXML private TableColumn<Buchung, String> colSend;
 	@FXML private TableColumn<Buchung, Double> colBetrag;
-	@FXML private TableColumn<Buchung, Void> colDelete;
+	@FXML private TableColumn<Buchung, Void> colDeleteBuchung;
 	
 	private final ObservableList<Konto> kontenListe = FXCollections.observableArrayList();
 	private final ObservableList<Buchung> buchungsListe = FXCollections.observableArrayList();
@@ -90,11 +91,12 @@ public class MainController {
 		tblBuchungen.setVisible(false);
 		tblBuchungen.setManaged(false);
 
-		// Spalten mit Attributen der Buchung verknüpfen
+		// Spalten mit Attributen verknüpfen
 		colId.setCellValueFactory(new PropertyValueFactory<>("kontonummer"));
 		colName.setCellValueFactory(new PropertyValueFactory<>("kontoName"));
-		colKontostand.setCellValueFactory(new PropertyValueFactory<>("kontostand"));
 		colInstitut.setCellValueFactory(new PropertyValueFactory<>("kreditinstitut"));
+		colKontostand.setCellValueFactory(new PropertyValueFactory<>("kontostand"));
+		setupKontoLoeschen();
 		
 		colBuchDatum.setCellValueFactory(new PropertyValueFactory<>("buchungsDatum"));
 		colKat.setCellValueFactory(new PropertyValueFactory<>("kategorie"));
@@ -125,7 +127,7 @@ public class MainController {
 		    }
 		});
 
-		setupDeleteColumn();
+		setupBuchungLoeschen();
 
 		// Liste der Tabelle zuweisen
 		kontenListe.setAll(Konto.getAlleKonten());   // einmalig befüllen
@@ -284,13 +286,13 @@ public class MainController {
 	    buchSumLbl.setText(String.format("Summe: %.2f €", berechneSumme(gefilterteBuchungsListe)));
 	}
 	
-	private void setupDeleteColumn() {
-	    colDelete = new TableColumn<>("");
-	    colDelete.setPrefWidth(36);                // schmal
-	    colDelete.setSortable(false);
-	    colDelete.setResizable(false);
+	private void setupBuchungLoeschen() {
+	    colDeleteBuchung = new TableColumn<>("");
+	    colDeleteBuchung.setPrefWidth(36);                // schmal
+	    colDeleteBuchung.setSortable(false);
+	    colDeleteBuchung.setResizable(false);
 
-	    colDelete.setCellFactory(tc -> new TableCell<>() {
+	    colDeleteBuchung.setCellFactory(tc -> new TableCell<>() {
 	        private final Button btn = new Button("✖"); // oder "X"
 	        {
 	            btn.setFocusTraversable(false);
@@ -299,6 +301,7 @@ public class MainController {
 	            btn.setStyle("-fx-font-weight: bold; -fx-text-fill: #a00; -fx-padding: 0;");
 
 	            btn.setOnAction(e -> {
+	            	
 	                Buchung b = getTableView().getItems().get(getIndex());
 	                bestaetigeUndLoesche(b);
 	            });
@@ -312,10 +315,46 @@ public class MainController {
 	        }
 	    });
 	    
-	    if (!tblBuchungen.getColumns().contains(colDelete)) {
-	        tblBuchungen.getColumns().add(colDelete);
+	    if (!tblBuchungen.getColumns().contains(colDeleteBuchung)) {
+	        tblBuchungen.getColumns().add(colDeleteBuchung);
 	    }
 }
+
+		private void setupKontoLoeschen() {
+
+			  colDeleteKonto = new TableColumn<>("");
+			  colDeleteKonto.setPrefWidth(36);                // schmal
+			  colDeleteKonto.setSortable(false);
+			  colDeleteKonto.setResizable(false);
+
+			  colDeleteKonto.setCellFactory(tc -> new TableCell<>() {
+			        private final Button btn = new Button("✖"); // oder "X"
+			        {
+			            btn.setFocusTraversable(false);
+			            btn.setMinSize(24, 24);
+			            btn.setMaxSize(24, 24);
+			            btn.setStyle("-fx-font-weight: bold; -fx-text-fill: #a00; -fx-padding: 0;");
+
+			            btn.setOnAction(e -> {
+			                Konto k = getTableView().getItems().get(getIndex());
+			                bestaetigeUndLoesche(k);
+			            });
+			        }
+
+			        @Override
+			        protected void updateItem(Void item, boolean empty) {
+			            super.updateItem(item, empty);
+			            setGraphic(empty ? null : btn);
+			            setText(null);
+			        }
+			    });
+			    
+			    if (!tblKonten.getColumns().contains(colDeleteKonto)) {
+			        tblKonten.getColumns().add(colDeleteKonto);
+			    }
+
+			
+		}
 	
 	private void bestaetigeUndLoesche(Buchung b) {
 	    Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
@@ -335,6 +374,24 @@ public class MainController {
 	        sumLbl.setText(String.format("Summe: %.2f €", berechneGesamtsummeKonten(tblKonten.getItems())));
 
 	    });
+	}
+	
+	private void bestaetigeUndLoesche(Konto k) {
+		Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
+		confirm.setTitle("Konto löschen");
+		confirm.setHeaderText("Konto wirklich löschen? Alle beteiligten Buchungen werden ebenfalls gelöscht!");
+		confirm.setContentText(String.format("Konto: %s%nInhaber: %s%nInstitut: %s", k.getKontoName(),
+				k.getInhaber(), k.getKreditinstitut()));
+
+		confirm.showAndWait().ifPresent(result -> {
+			if (result == ButtonType.OK) {
+				KontoAktionen.loescheKonto(k);
+			}
+			kontenListe.setAll(Konto.getAlleKonten());
+			tblKonten.refresh();
+			sumLbl.setText(String.format("Summe: %.2f €", berechneGesamtsummeKonten(tblKonten.getItems())));
+
+		});
 	}
 
 

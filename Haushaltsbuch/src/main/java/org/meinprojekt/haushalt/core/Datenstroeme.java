@@ -303,4 +303,19 @@ public class Datenstroeme {
 		}
 	}
 
+	public static void kontoLoeschen(Konto k) {
+
+		String ordnerpfad = sep + "Haushaltsbuch" + sep + "Konten";
+		String dateiname = k.getKontonummer() + "_" + k.getKreditinstitut() + "_" + k.getKontoName() + ".csv";
+		String kontopfad = ordnerpfad + sep + dateiname;
+		File datei = new File(kontopfad);
+		if (datei.delete()) {
+			System.out.println("Datei gelöscht: " + kontopfad);
+		} else {
+			System.out.println("Fehler beim Löschen der Datei: " + kontopfad);
+		}
+		kontenNeuSpeichern();
+		
+	}
+
 }
