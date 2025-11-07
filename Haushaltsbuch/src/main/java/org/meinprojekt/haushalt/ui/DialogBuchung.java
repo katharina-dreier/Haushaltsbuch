@@ -106,7 +106,7 @@ public class DialogBuchung {
 						BuchungsAktionen.einnahmeTätigen(betrag, kat, ziel, sender, datum, "", false);}
 					else {
 						if (original.getIsUmbuchung()) {
-							BuchungsAktionen.umbuchungBearbeiten(original, betrag, datum);
+							BuchungsAktionen.umbuchungBearbeiten(original, ziel, betrag, datum);
 						}
 						else {BuchungsAktionen.buchungBearbeiten(original, betrag, kat, ziel, sender, datum);}
 					}
@@ -118,7 +118,7 @@ public class DialogBuchung {
 						BuchungsAktionen.ausgabeTätigen(betrag, kat, quell, empfaenger, datum, "", false);
 					} else {
 						if (original.getIsUmbuchung()) {
-							BuchungsAktionen.umbuchungBearbeiten(original, betrag, datum);
+							BuchungsAktionen.umbuchungBearbeiten(original, quell, betrag, datum);
 						} else
 						BuchungsAktionen.buchungBearbeiten(original, betrag, kat, quell, empfaenger, datum);
 					}

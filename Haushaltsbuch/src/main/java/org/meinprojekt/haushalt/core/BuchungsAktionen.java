@@ -144,6 +144,11 @@ public class BuchungsAktionen {
 				a.setKonto(konto);
 				konto.auszahlen(a);
 			}
+			
+			if (altesKonto != konto) {
+				altesKonto.getBuchungen().remove(original);
+				konto.getBuchungen().add(original);
+			}
 			// CSV-Datei aktualisieren
 			Datenstroeme.kontoBuchungenNeuSpeichern(konto);
 			if (altesKonto != konto) {
@@ -154,8 +159,8 @@ public class BuchungsAktionen {
 		}
 		
 		
-		public static void umbuchungBearbeiten(Buchung original, double betrag, LocalDate datum) {
-			
+		public static void umbuchungBearbeiten(Buchung original, Konto konto, double betrag, LocalDate datum) {
+			// Beide Buchungen der Umbuchung finden
 			List<Buchung> buchungen = findeBuchungenZuTransferID(original.getTransferID());
 			if (buchungen.size() != 2) {
 				System.out.println("Fehler: Umbuchung nicht gefunden oder unvollständig.");
@@ -163,11 +168,33 @@ public class BuchungsAktionen {
 			}
 			Buchung buchung1 = buchungen.get(0);
 			Buchung buchung2 = buchungen.get(1);
-			String beteiligter1 = buchung1 instanceof Einnahme ? buchung1.getSender() : buchung1.getEmpfaenger();
-			String beteiligter2 = buchung2 instanceof Einnahme ? buchung2.getSender() : buchung2.getEmpfaenger();
+			Buchung buchungOriginal;
+			Buchung buchungGegenpart;
 			
-			buchungBearbeiten(buchung1, betrag, buchung1.getKategorie(), buchung1.getKonto(), beteiligter1, datum);
-			buchungBearbeiten(buchung2, betrag, buchung2.getKategorie(), buchung2.getKonto(), beteiligter2, datum);
+			// Originalbuchung und Gegenpart identifizieren
+			if (buchung1 == original) {
+				buchungOriginal = buchung1;
+				buchungGegenpart = buchung2;
+			} else if (buchung2 == original) {
+				buchungOriginal = buchung2;
+				buchungGegenpart = buchung1;
+			} else {
+				System.out.println("Fehler: Originalbuchung nicht in der Umbuchung gefunden.");
+				return;
+			}
+			
+			// Beteiligte aktualisieren
+			String beteiligter1 = buchungOriginal instanceof Einnahme ? buchungOriginal.getSender() : buchungOriginal.getEmpfaenger();
+			String beteiligter2 = buchungGegenpart instanceof Einnahme ? buchungGegenpart.getSender() : buchungGegenpart.getEmpfaenger();
+			// Wenn das Konto geändert wurde, Beteiligten der Gegenpart-Buchung anpassen
+			Konto kontoAlt = buchungOriginal.getKonto();
+			if (kontoAlt != konto) {
+					beteiligter2 = konto.getKontoName() + "(" + konto.getKreditinstitut() + ")";
+			}
+			
+			// Beide Buchungen bearbeiten
+			buchungBearbeiten(buchungOriginal, betrag, buchungOriginal.getKategorie(), konto, beteiligter1, datum);
+			buchungBearbeiten(buchungGegenpart, betrag, buchungGegenpart.getKategorie(), buchungGegenpart.getKonto(), beteiligter2, datum);
 			
 		}
 		
