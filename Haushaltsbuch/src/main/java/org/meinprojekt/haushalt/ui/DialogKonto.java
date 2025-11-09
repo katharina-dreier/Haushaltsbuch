@@ -1,7 +1,13 @@
 package org.meinprojekt.haushalt.ui;
 
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
 import java.text.ParseException;
+import java.util.Locale;
 
+import org.meinprojekt.haushalt.core.Buchung;
+import org.meinprojekt.haushalt.core.BuchungsAktionen;
+import org.meinprojekt.haushalt.core.Konto;
 import org.meinprojekt.haushalt.core.KontoAktionen;
 
 import javafx.fxml.FXML;
@@ -17,6 +23,21 @@ public class DialogKonto {
 
 	private Stage stage; // wird vom MainController gesetzt
 	private boolean saved = false;
+	private boolean editMode = false;
+	
+	private Konto original;
+
+	public void setOriginal(Konto konto) {
+		this.original = konto;
+	}
+	
+	public boolean isEditMode() {
+		return editMode;
+	}
+	
+	public void setEditMode(boolean editMode) {
+		this.editMode = editMode;
+	}
 
 	public void setStage(Stage stage) {
 		this.stage = stage;
@@ -62,11 +83,20 @@ public class DialogKonto {
 
 	@FXML
 	private void handleButtonActionOK() throws ParseException {
-		var nf = java.text.NumberFormat.getNumberInstance(java.util.Locale.GERMANY);
+		System.out.println("handleButtonActionOK aufgerufen");
+		var nf = NumberFormat.getNumberInstance(Locale.GERMANY);
 		nf.setGroupingUsed(true);
-		Number n = nf.parse(txtSaldo.getText().trim());
+		System.out.println("txtSaldo raw: [" + txtSaldo.getText() + "]");
+		Number n = nf.parse(txtSaldo.getText());
+		System.out.println("parsed saldo: " + n.doubleValue());
+
 		double saldo = n.doubleValue();
-		KontoAktionen.kontoErstellen(txtName.getText(), txtInhaber.getText(), saldo, txtInstitut.getText());
+		String kontoname = txtName.getText();
+		String inhaber = txtInhaber.getText();
+		String institut = txtInstitut.getText();
+		if (!editMode) { 
+		KontoAktionen.kontoErstellen(kontoname, inhaber, saldo, institut);}
+		else {KontoAktionen.kontoBearbeiten(original, saldo, inhaber);}
 		btnOk.getScene().getWindow().hide();
 	}
 
@@ -75,5 +105,16 @@ public class DialogKonto {
 		var window = btnAbbrechen.getScene().getWindow();
 		window.hide();
 
+	}
+	
+	public void prefillKontodaten(Konto konto) throws ParseException {
+        txtName.setText(konto.getKontoName());
+        txtInhaber.setText(konto.getInhaber());
+    	txtSaldo.setText(String.format("%.2f", konto.getKontostandBeiErstellung()));
+        
+        txtInstitut.setText(konto.getKreditinstitut());
+        txtName.setDisable(true); // Kontoname im Bearbeitungsmodus nicht änderbar
+        txtInstitut.setDisable(true); // Institut im Bearbeitungsmodus nicht änderbar
+        
 	}
 }

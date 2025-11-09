@@ -10,11 +10,11 @@ import javafx.collections.ObservableList;
 
 public class Konto {
 	private static int anzahlKonten = 0; 
-	private static double gesamtSumme = 0;  
 	private int kontonummer;
 	private String kontoName;
 	private String inhaber;
 	private double kontostand;
+	private double kontostandBeiErstellung;
 	private String kreditinstitut;
 	
     public List<Buchung> buchungen;
@@ -27,12 +27,10 @@ public class Konto {
 		// Attribute belegen
 		this.kontoName = kontoName;
 		this.inhaber = inhaber;
-		this.kontostand = kontostand;
+		this.kontostandBeiErstellung = kontostand;
 		this.kreditinstitut = kreditinstitut;
 		anzahlKonten++;
-		kontonummer = anzahlKonten;
-		// Gesamtsumme aktualisieren
-		gesamtSumme += kontostand;
+		kontonummer = anzahlKonten;		
 		// Konto in die Liste einfügen
 		this.buchungen = new ArrayList<>();
 	}
@@ -73,9 +71,6 @@ public class Konto {
 		this.inhaber = inhaber;
 	}
 
-	public double getKontostand() {
-		return kontostand;
-	}
 
 	public void setKontostand(double kontostand) {
 		this.kontostand = kontostand;
@@ -93,9 +88,6 @@ public class Konto {
 	        return buchungen;
 	    }
 
-	public static double getGesamtSumme() {
-		return gesamtSumme;
-	}
 	
 	public static List<Konto> getAlleKonten() {
 	    return new ArrayList<>(konten.values());
@@ -112,26 +104,24 @@ public class Konto {
 	
 	// Einzahlungen, Auszahlungen und Umbuchungen
 	
-	public void einzahlen(Buchung buchung) {
+	/*public void einzahlen(Buchung buchung) {
 		kontostand += buchung.getBetrag();
 		System.out.println("Einzahlung von " + buchung.getBetrag() + " Euro auf Konto: " + kontoName);
 		System.out.println("Neuer Kontostand nach Einzahlung: " + kontostand + " Euro");
-		gesamtSumme += buchung.getBetrag();
 	}
 	
 	public void auszahlen(Buchung buchung) {
 		kontostand -= buchung.getBetrag();
 		System.out.println("Auszahlung von " + buchung.getBetrag() + " Euro von Konto: " + kontoName);
 		System.out.println("Neuer Kontostand nach Auszahlung: " + kontostand + " Euro");
-		gesamtSumme -= buchung.getBetrag();
-	}
+	}*/
 	
 	@Override
 	public String toString() {
-		return "Konto von " + inhaber + ", Institut: "+ kreditinstitut+", Kontostand: " + kontostand + " Euro";
+		return "Konto " + kontoName + " von " + inhaber + ", Institut: "+ kreditinstitut+", Kontostand: " + this.getKontostand() + " Euro";
 	}
 	public String toCSV() {		
-		return kontonummer + ";" + kreditinstitut + ";" + kontoName + ";" + inhaber + ";" + kontostand;
+		return kontonummer + ";" + kreditinstitut + ";" + kontoName + ";" + inhaber + ";" + kontostandBeiErstellung;
 	}
 	
 	public void addBuchung(Buchung b) {
@@ -140,6 +130,25 @@ public class Konto {
 
 	public void removeBuchung(Buchung b) {
 		buchungen.remove(b);
+	}
+	public double getKontostandBeiErstellung() {
+		return kontostandBeiErstellung;
+	}
+	public void setKontostandBeiErstellung(double saldo) {
+		this.kontostandBeiErstellung = saldo;
+		
+	}
+	
+	public double getKontostand() {
+		double berechneterKontostand = 0.0;
+		for (Buchung b : buchungen) {
+			if (b.getBuchungsart().equals("Einnahme")) {
+				berechneterKontostand += b.getBetrag();
+			} else if (b.getBuchungsart().equals("Ausgabe")) {
+				berechneterKontostand -= b.getBetrag();
+			}
+		}
+		return berechneterKontostand;
 	}
 	
 	

@@ -254,10 +254,7 @@ public class DialogBuchung {
 		default -> {
 			System.out.println("Fehler beim befüllen. Unbekannte Buchungsart: " + buchung.getBuchungsart());
 		}
-		/*
-		 * case "UMBUCHUNG" -> { cmbQuellKonto.setValue(buchung.getKonto());
-		 * cmbZielKonto.setValue(buchung.getZielKonto()); setBuchungsart("Umbuchung"); }
-		 */ // Umbuchungen werden später hinzugefügt
+		
 		}
 	}
 

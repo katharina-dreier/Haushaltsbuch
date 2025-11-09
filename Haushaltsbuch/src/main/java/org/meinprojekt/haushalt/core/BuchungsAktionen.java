@@ -11,7 +11,7 @@ public class BuchungsAktionen {
 	public static Konto gewaehltesKonto;
 	public static Scanner scan = new Scanner(System.in);
 	
-	//Datum für Buchungen einlesen und prüfen
+	/*/Datum für Buchungen einlesen und prüfen
 		public static LocalDate datumAuswaehlen() {
 		    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy");
 		    while (true) {
@@ -26,21 +26,20 @@ public class BuchungsAktionen {
 		            System.out.println("Beispiel für gültige Eingabe: 28.03.2025");
 		    }
 		        }
-		    }
+		    }*/
 	
 	//Notwendige Daten einlesen und Einnahme tätigen
 		public static void einnahmeTätigen(Double betragEin, String kategorieEin, Konto gewaehltesKonto, String sender,  LocalDate datum, String transferID, boolean isUmbuchung) {
+			System.out.println("Einnahme wird getätigt mit folgenden Daten: Betrag: " + betragEin + ", Kategorie: " + kategorieEin + ", Konto: " + gewaehltesKonto.getKontoName() + ", Sender: " + sender + ", Datum: " + datum);
 			Einnahme einnahme = new Einnahme(betragEin, kategorieEin, gewaehltesKonto, sender,  datum, transferID, isUmbuchung); //Einnahme erstellen
-			gewaehltesKonto.einzahlen(einnahme);
-			einnahme.setBuchungsart("Einnahme");
 			Datenstroeme.buchungHinzufuegen(einnahme);
 			System.out.println("Einnahme wurde getätigt: " + einnahme);
 		}
 		
 		//Notwendige Daten einlesen und Ausgabe tätigen
 		public static void ausgabeTätigen(Double betrag, String kat, Konto quell, String empfaenger, LocalDate datum, String transferID, boolean isUmbuchung) {
+			System.out.println("Ausgabe wird getätigt mit folgenden Daten: Betrag: " + betrag + ", Kategorie: " + kat + ", Konto: " + quell.getKontoName() + ", Empfänger: " + empfaenger + ", Datum: " + datum);
 			Ausgabe ausgabe = new Ausgabe(betrag, kat, quell, empfaenger, datum, transferID, isUmbuchung); // Ausgabe erstellen
-			quell.auszahlen(ausgabe);
 			ausgabe.setBuchungsart("Ausgabe");
 			Datenstroeme.buchungHinzufuegen(ausgabe);
 			System.out.println("Ausgabe wurde getätigt: " + ausgabe);
@@ -48,6 +47,7 @@ public class BuchungsAktionen {
 		
 		//Umbuchung tätigen
 		public static void umbuchungTätigen(Double betrag, Konto quell, Konto ziel, LocalDate datum) {
+			System.out.println("Umbuchung wird getätigt mit folgenden Daten: Betrag: " + betrag + ", Von Konto: " + quell.getKontoName() + ", Zu Konto: " + ziel.getKontoName() + ", Datum: " + datum);
 			Umbuchung umbuchung = new Umbuchung(betrag, quell, ziel,  datum);
 			String ID = umbuchung.getTransferID();
 			ausgabeTätigen(betrag, "Umbuchung", quell, umbuchung.getEmpfaenger(), datum, ID, true);
@@ -55,9 +55,10 @@ public class BuchungsAktionen {
 			System.out.println("Umbuchung wurde getätigt: " + umbuchung);
 		}
 		
-		public static void loescheBuchung(Buchung b) {
-		    if (b.getIsUmbuchung()) {
-		    	String transferId = b.getTransferID();
+		public static void loescheBuchung(Buchung buchung) {
+			System.out.println("Starte mit Löschen von Buchung: " + buchung);
+		    if (buchung.getIsUmbuchung()) {
+		    	String transferId = buchung.getTransferID();
 		    	List<Buchung> buchungen = findeBuchungenZuTransferID(transferId);
 				if (buchungen.size() != 2) {
 					System.out.println("Fehler: Umbuchung nicht gefunden oder unvollständig.");
@@ -65,71 +66,70 @@ public class BuchungsAktionen {
 				}
 				Buchung buchung1 = buchungen.get(0);
 				Buchung buchung2 = buchungen.get(1);
+				
+				Buchung buchungOriginal;
+				Buchung buchungGegenpart;
+				
+				// Originalbuchung und Gegenpart identifizieren
+				if (buchung1 == buchung) {
+					buchungOriginal = buchung1;
+					buchungGegenpart = buchung2;
+				} else if (buchung2 == buchung) {
+					buchungOriginal = buchung2;
+					buchungGegenpart = buchung1;
+				} else {
+					System.out.println("Fehler: Originalbuchung nicht in der Umbuchung gefunden.");
+					return;
+				}
 		    	
 		        // Beide Buchungen der Umbuchung rückgängig machen
-				Konto konto1 = buchung1.getKonto();
-				Konto konto2 = buchung2.getKonto();
+				Konto konto1 = buchungOriginal.getKonto();
+				Konto konto2 = buchungGegenpart.getKonto();
 
-		        // aus Listen entfernen
-		        if (konto1 != null)  konto1.getBuchungen().remove(buchung1);
-		        if (konto2 != null) konto2.getBuchungen().remove(buchung2);
-
-		        // Salden rückgängig
-		        double betrag1 = buchung1.getBetrag();
-		        double betrag2 = buchung2.getBetrag();
-				if (konto1 != null) {
-					switch (String.valueOf(buchung1.getBuchungsart())) {
-					case "Einnahme" -> konto1.setKontostand(konto1.getKontostand() - betrag1);
-					case "Ausgabe" -> konto1.setKontostand(konto1.getKontostand() + betrag1);
-					}
-					}
-				if (konto2 != null) {
-					switch (String.valueOf(buchung2.getBuchungsart())) {
-					case "Einnahme" -> konto2.setKontostand(konto2.getKontostand() - betrag2);
-					case "Ausgabe" -> konto2.setKontostand(konto2.getKontostand() + betrag2);
-					}
-				}
+		        // Buchung aus zu löschendem Konto entfernen
+		        if (konto1 != null)  konto1.getBuchungen().remove(buchungOriginal);
+		        //Gegenbuchung ändern
+		        buchungGegenpart.setIsUmbuchung(false);
+		        buchungGegenpart.setTransferID("");
+		        String beteiligterGegenpart = buchungGegenpart instanceof Einnahme ? "gelöschtes Konto: " + buchungGegenpart.getSender() : "gelöschtes Konto: " + buchungGegenpart.getEmpfaenger();
+		        if (buchungGegenpart instanceof Einnahme e) {
+					e.setSender(beteiligterGegenpart);
+				} else if (buchungGegenpart instanceof Ausgabe a) {
+					a.setEmpfaenger(beteiligterGegenpart);
+		                     }
 		        // CSV neu schreiben (beide)
-		        if (konto1 != null)  Datenstroeme.kontoBuchungenNeuSpeichern(konto1);
 		        if (konto2 != null) Datenstroeme.kontoBuchungenNeuSpeichern(konto2);
 		        
-		        System.out.println("Umbuchung gelöscht: " + buchung1 + " und " + buchung2);
+		        System.out.println("Umbuchung gelöscht: " + buchungOriginal + " und geändert" + buchungGegenpart);
 
 		    } else {
-		        Konto k = b.getKonto();
+		        Konto k = buchung.getKonto();
 		        if (k == null) {
 		           
 		            System.out.println("Warnung: Buchung ohne Konto, Abbruch.");
 		            return;
 		        }
-		        double betrag = b.getBetrag();
-		        switch (String.valueOf(b.getBuchungsart())) {
+		        double betrag = buchung.getBetrag();
+		        switch (String.valueOf(buchung.getBuchungsart())) {
 		            case "Einnahme" -> k.setKontostand(k.getKontostand() - betrag);
 		            case "Ausgabe"  -> k.setKontostand(k.getKontostand() + betrag);
 		            default -> { /* optional: loggen */ }
 		        }
 
-		        k.getBuchungen().remove(b);
+		        k.getBuchungen().remove(buchung);
 		        Datenstroeme.kontoBuchungenNeuSpeichern(k);
-		        System.out.println("Buchung gelöscht: " + b);
+		        System.out.println("Buchung gelöscht: " + buchung);
 		    }
-
-		    // Kontenübersicht neu schreiben (neue Salden)
+		    // Kontenübersicht neu schreiben
 		    Datenstroeme.kontenNeuSpeichern();
 		}
 
 		public static void buchungBearbeiten(Buchung original, double betrag, String kat, Konto konto, String beteiligter,
 				LocalDate datum) {
-			
+			System.out.println("Starte mit Bearbeiten der Buchung: " + original);
 			// Alte Buchung rückgängig machen
 			double alterBetrag = original.getBetrag();
 			Konto altesKonto = original.getKonto();
-			switch (original.getBuchungsart()) {
-			case "Einnahme" -> altesKonto.auszahlen(original);
-			case "Ausgabe" -> altesKonto.einzahlen(original);
-			default -> {
-				/* optional: loggen */ }
-			}
 
 			// Neue Buchungsdaten setzen
 			original.setBetrag(betrag);
@@ -138,11 +138,11 @@ public class BuchungsAktionen {
 			if (original instanceof Einnahme e) {
 				e.setSender(beteiligter);
 				e.setKonto(konto);
-				konto.einzahlen(e);
+				
 			} else if (original instanceof Ausgabe a) {
 				a.setEmpfaenger(beteiligter);
 				a.setKonto(konto);
-				konto.auszahlen(a);
+				
 			}
 			
 			if (altesKonto != konto) {
@@ -160,6 +160,7 @@ public class BuchungsAktionen {
 		
 		
 		public static void umbuchungBearbeiten(Buchung original, Konto konto, double betrag, LocalDate datum) {
+			System.out.println("Starte mit Bearbeiten der Umbuchung, Originalbuchung: " + original);
 			// Beide Buchungen der Umbuchung finden
 			List<Buchung> buchungen = findeBuchungenZuTransferID(original.getTransferID());
 			if (buchungen.size() != 2) {
@@ -183,19 +184,21 @@ public class BuchungsAktionen {
 				return;
 			}
 			
+			String beteiligter1;
+			String beteiligter2;
+			
 			// Beteiligte aktualisieren
-			String beteiligter1 = buchungOriginal instanceof Einnahme ? buchungOriginal.getSender() : buchungOriginal.getEmpfaenger();
-			String beteiligter2 = buchungGegenpart instanceof Einnahme ? buchungGegenpart.getSender() : buchungGegenpart.getEmpfaenger();
+			beteiligter1 = buchungOriginal instanceof Einnahme ? buchungOriginal.getSender() : buchungOriginal.getEmpfaenger();
+			buchungBearbeiten(buchungOriginal, betrag, buchungOriginal.getKategorie(), konto, beteiligter1, datum);
 			// Wenn das Konto geändert wurde, Beteiligten der Gegenpart-Buchung anpassen
 			Konto kontoAlt = buchungOriginal.getKonto();
 			if (kontoAlt != konto) {
 					beteiligter2 = konto.getKontoName() + "(" + konto.getKreditinstitut() + ")";
 			}
+			else  beteiligter2 = buchungGegenpart instanceof Einnahme ? buchungGegenpart.getSender() : buchungGegenpart.getEmpfaenger();
 			
-			// Beide Buchungen bearbeiten
-			buchungBearbeiten(buchungOriginal, betrag, buchungOriginal.getKategorie(), konto, beteiligter1, datum);
 			buchungBearbeiten(buchungGegenpart, betrag, buchungGegenpart.getKategorie(), buchungGegenpart.getKonto(), beteiligter2, datum);
-			
+			System.out.println("Umbuchung bearbeitet: " + buchungOriginal + " und " + buchungGegenpart);
 		}
 		
 		// Alle Buchungen mit einer bestimmten transferId finden 

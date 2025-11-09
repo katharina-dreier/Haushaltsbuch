@@ -3,6 +3,7 @@ package org.meinprojekt.haushalt.core;
 import java.io.*;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.Locale;
 
 public class Datenstroeme {
 
@@ -12,14 +13,41 @@ public class Datenstroeme {
 //Hilfsmethoden für die Datenströme:
 	public static String sep = File.separator;
 	public static String headerBuchungen = "Datum;Buchungsart;Kategorie;Empfaenger;Sender;Betrag;Kontostand;Umbuchung;transferID";
-	public static String headerKonten = "Kontonummer;Kreditinstitut;Kontoname;Kontoinhaber;Kontostand";
+	public static String headerKonten = "Kontonummer;Kreditinstitut;Kontoname;Kontoinhaber;Kontostand_bei_Erstellung";
 	public static String headerKategorien = "Kategorie";
+	
+	static String kontenlistePfad = sep + "Haushaltsbuch" + sep + "Kontoliste.csv";
+	static String ordnerpfad = sep + "Haushaltsbuch" + sep + "Konten" + sep;
+	
+	public static String bildeDateiName (Konto konto) {
+		return  konto.getKontonummer() + "_" + konto.getKreditinstitut() + "_" + konto.getKontoName() + ".csv";
+	}
+	public static String bildeDateiName (Buchung buchung) {
+		String dateiname = buchung.getKonto().getKontonummer() + "_" + buchung.getKonto().getKreditinstitut() + "_"
+				+ buchung.getKonto().getKontoName() + ".csv";
+		return dateiname;
+	}
+	
+	public static String bildeDateiPfad(String dateiname) {
+		String verzeichnis = sep + "Haushaltsbuch";
+		File ordner = ensureVerzeichnisVorhanden(verzeichnis);
+		String ordnerName = ordner.getAbsolutePath();
+		String dateipfad = ordnerName + sep + dateiname + ".csv";
+        return dateipfad;
+	}
 
 	// Diese Methode formatiert eine Buchung in CSV-Format
 	public static String buchungToCSV(String date, String buchungsart, String kategorie, String empfaenger,
 			String sender, double betrag, double kontostand, boolean isUmbuchung, String transferID) {
-		return date + ";" + buchungsart + ";" + kategorie + ";" + empfaenger + ";" + sender + ";" + betrag + ";"
+		String betragCsv = String.format(Locale.ROOT, "%.2f", betrag);
+		return date + ";" + buchungsart + ";" + kategorie + ";" + empfaenger + ";" + sender + ";" + betragCsv + ";"
 				+ kontostand + ";" +  isUmbuchung + ";" + transferID;
+	}
+	
+	public static String buchungToCSV(Buchung buchung) {
+		return buchungToCSV(buchung.getFormatiertesDatum(), buchung.getBuchungsart(), buchung.getKategorie(),
+				buchung.getEmpfaenger(), buchung.getSender(), buchung.getBetrag(), buchung.getKonto().getKontostand(),
+				buchung.getIsUmbuchung(), buchung.getTransferID());
 	}
 
 	// Diese Methode stellt sicher, dass ein Verzeichnis vorhanden ist
@@ -46,77 +74,76 @@ public class Datenstroeme {
 		}
 		return datei;
 	}
+	
+	public static File dateiMitHeaderNeuErstellen(String dateipfad, String headerZeile) {
+		File datei = new File(dateipfad);
+		try (BufferedWriter bw = new BufferedWriter(new FileWriter(datei))) {
+			bw.write(headerZeile);
+			bw.newLine();
+			System.out.println("Datei wurde neu erstellt: " + dateipfad);
+		} catch (IOException e) {
+			System.out.println("Fehler beim Erstellen der Datei: " + e.getMessage());
+		}
+		return datei;
+	}
 
 	// Diese Methode fügt eine Zeile an eine bestehende Datei an
 	public static void zeileInDateiAnhaengen(String dateipfad, String zeile) {
 		try (BufferedWriter bw = new BufferedWriter(new FileWriter(dateipfad, true))) {
 			bw.write(zeile);
 			bw.newLine();
+			System.out.println("Zeile: " + zeile + " wurde angehängt an Datei: " + dateipfad);
 		} catch (IOException e) {
 			System.out.println("Fehler beim Schreiben in Datei: " + e.getMessage());
 		}
 	}
+	
+	public static void kontenNeuSpeichern() {
+		String pfad = kontenUebersichtAnlegen(); // Pfad zur Kontenübersicht
+		dateiMitHeaderNeuErstellen(pfad, headerKonten);
+			for (Konto konto : Konto.konten.values()) {
+				String kontoZeile = konto.toCSV();
+				zeileInDateiAnhaengen(pfad, kontoZeile);
+			}
+	}
+
 
 //Konten und Buchungsmethoden 
 	// Diese Methode erstellt eine neue Datei für die Kontenübersicht
 	public static String kontenUebersichtAnlegen() {
-		String verzeichnis = sep + "Haushaltsbuch";
-		File dir = ensureVerzeichnisVorhanden(verzeichnis);
-		String dirName = dir.getAbsolutePath();
-		String dateiName = dirName + sep + "Kontoliste" + ".csv";
-		ensureDateiMitHeader(dateiName, headerKonten);
-		return dateiName;
+		String dateipfad = bildeDateiPfad("Kontoliste");
+		ensureDateiMitHeader(dateipfad, headerKonten);
+		return dateipfad;
 	}
 
 	// Diese Methode erstellt eine neue Datei für die Kategorienübersicht
 	public static String kategorieUebersichtAnlegen() {
-		String verzeichnis = sep + "Haushaltsbuch";
-		File dir = ensureVerzeichnisVorhanden(verzeichnis);
-		String dirName = dir.getAbsolutePath();
-		String dateiName = dirName + sep + "Kategorienliste" + ".csv";
-		ensureDateiMitHeader(dateiName, headerKategorien);
-		return dateiName;
+		String dateiPfad = bildeDateiPfad("Kategorienliste");
+		ensureDateiMitHeader(dateiPfad, headerKategorien);
+		return dateiPfad;
 	}
 
 	// Diese Methode erstellt eine neue Datei für ein Konto
 	public static void KontoDateiAnlegen(Konto konto) {
-
-		String verzeichnis = sep + "Haushaltsbuch" + sep + "Konten";
-		File newDir = ensureVerzeichnisVorhanden(verzeichnis);
-		String newDirName = newDir.getAbsolutePath();
-		String dateiName = newDirName + sep + konto.getKontonummer() + "_" + konto.getKreditinstitut() + "_"
-				+ konto.getKontoName() + ".csv";
-		ensureDateiMitHeader(dateiName, headerBuchungen);
+		String dateiPfad = bildeDateiPfad("Konten" + sep + konto.getKontonummer() + "_" + konto.getKreditinstitut() + "_"
+				+ konto.getKontoName());
+		ensureDateiMitHeader(dateiPfad, headerBuchungen);
+		System.out.println("Konto-Datei wurde angelegt: " + dateiPfad);
 	}
 
 	// Diese Methode fügt ein Konto zur Kontenübersicht hinzu
-	public static void kontoHinzufuegen(Konto konto) {
-		String ordnerpfad = sep + "Haushaltsbuch" + sep + "Konten";
-		ensureVerzeichnisVorhanden(ordnerpfad);
-		String dateiname = konto.getKontonummer() + "_" + konto.getKreditinstitut() + "_" + konto.getKontoName()
-				+ ".csv";
-		String kontopfad = ordnerpfad + sep + dateiname;
-		// Header für Buchungsdatei
-		ensureDateiMitHeader(kontopfad, headerBuchungen);
-		String date = LocalDate.now().format(DateTimeFormatter.ofPattern("dd.MM.yyyy"));
-		String ersteZeile = date + ";Erstellung;" + "" + ";" + "" + ";" + "" + ";" + konto.getKontostand() + ";"
-				+ konto.getKontostand() + ";" + "false" + ";" + "" ; // "Datum;Buchungsart;Kategorie;Empfänger;Sender;Betrag;Kontostand;Umbuchung;transferID
-		zeileInDateiAnhaengen(kontopfad, ersteZeile);
+	/*public static void kontoHinzufuegen(Konto konto) {
 		// Pfad zur zentralen Kontenliste
-		String kontenlistePfad = sep + "Haushaltsbuch" + sep + "Kontoliste.csv";
 		String kontoZeile = konto.toCSV();
 		zeileInDateiAnhaengen(kontenlistePfad, kontoZeile);
-	}
+	}*/
 	// Diese Methoden fügen eine Buchung (Einnahme, Ausgabe, Umbuchung) zur
 	// entsprechenden Datei hinzu
 
 	public static void buchungHinzufuegen(Buchung buchung) {
-
-		String ordnerpfad = sep + "Haushaltsbuch" + sep + "Konten";
 			ensureVerzeichnisVorhanden(ordnerpfad);
-			String dateiname = buchung.getKonto().getKontonummer() + "_" + buchung.getKonto().getKreditinstitut() + "_"
-					+ buchung.getKonto().getKontoName() + ".csv";
-			String kontopfad = ordnerpfad + sep + dateiname;
+			String dateiname = bildeDateiName(buchung);
+			String kontopfad = ordnerpfad  + dateiname;
 			ensureDateiMitHeader(kontopfad, headerBuchungen);
 			String buchungsZeile = buchungToCSV(buchung.getFormatiertesDatum(), buchung.getBuchungsart(),
 					buchung.getKategorie(), buchung.getEmpfaenger(), buchung.getSender(), buchung.getBetrag(),
@@ -146,14 +173,9 @@ public class Datenstroeme {
 				String kreditInstitut = teile[1];
 				String kontoName = teile[2];
 				String kontoinhaber = teile[3];
-				double kontostand = Double.parseDouble(teile[4]);
+				double kontostandErstellung = Double.parseDouble(teile[4]);
 
-				Konto konto = new Konto(kontoName, kontoinhaber, kontostand, kreditInstitut); // Konstruktor Konto:
-																								// String kontoName,
-																								// String inhaber,
-																								// double kontostand,
-																								// String
-																								// Kreditinstitut)
+				Konto konto = new Konto(kontoName, kontoinhaber, kontostandErstellung, kreditInstitut); 
 				Konto.konten.put(kontonummer, konto); // in die zentrale Map einfügen
 			}
 
@@ -162,21 +184,7 @@ public class Datenstroeme {
 		}
 	}
 
-	public static void kontenNeuSpeichern() {
-		String pfad = kontenUebersichtAnlegen(); // Pfad zur Kontenübersicht
-		try (BufferedWriter bw = new BufferedWriter(new FileWriter(pfad))) {
-			bw.write(headerKonten);
-			bw.newLine();
-			for (Konto konto : Konto.konten.values()) {
-				String kontoZeile = konto.toCSV();
-				bw.write(kontoZeile);
-				bw.newLine();
-			}
-		} catch (IOException e) {
-			System.out.println("Fehler beim Speichern der Konten: " + e.getMessage());
-		}
-	}
-
+	
 	public static Buchung buchungAusCSV(Konto konto, String csvZeile) {
 		String[] teile = csvZeile.split(";", -1); // -1 um leere Felder zu behalten
 		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy");
@@ -189,7 +197,9 @@ public class Datenstroeme {
 		double kontostand    = teile.length > 6 ? Double.parseDouble(teile[6].trim().replace(",", ".")) : 0.0;
 		boolean isUmbuchung = teile.length >7 ? Boolean.parseBoolean(teile[7].trim()) : false;
 		String transferID =  teile.length > 8 && !teile[8].isBlank() ? teile[8].trim() : null;;
-		
+		System.out.println("RAW CSV: " + teile[5]);
+		System.out.println("PARSED: " + betrag);
+
 		if (art.equalsIgnoreCase("Einnahme")) {
 			return new Einnahme(konto, datum, art, kategorie, empfaenger, sender, betrag, kontostand, transferID, isUmbuchung);
 		} else if (art.equalsIgnoreCase("Ausgabe")) {
@@ -206,20 +216,12 @@ public class Datenstroeme {
 
 	// Diese Methode lädt die Buchungen aus der Datei in die entsprechenden Konten
 	public static void ladeBuchungenFuerAlleKonten() {
-		String basisPfad = sep + "Haushaltsbuch" + sep + "Konten" + sep;
-
 		for (Konto konto : Konto.konten.values()) {
-			// Dateiname zusammensetzen
-			String dateiname = konto.getKontonummer() + "_" + konto.getKreditinstitut() + "_" + konto.getKontoName()
-					+ ".csv";
-			String pfad = basisPfad + dateiname;
-
-			File buchungsDatei = new File(pfad);
+			File buchungsDatei = new File(ordnerpfad + bildeDateiName(konto));
 			if (!buchungsDatei.exists()) {
-				System.out.println("⚠️ Buchungsdatei für Konto " + konto.getKontoName() + " nicht gefunden.");
+				System.out.println("⚠️ Buchungsdatei für Konto " + ordnerpfad + bildeDateiName(konto) + " nicht gefunden.");
 				continue;
 			}
-
 			try (BufferedReader br = new BufferedReader(new FileReader(buchungsDatei))) {
 				String zeile;
 				boolean ersteZeile = true;
@@ -229,14 +231,11 @@ public class Datenstroeme {
 						ersteZeile = false; // Header überspringen
 						continue;
 					}
-
 					System.out.println("Lade Buchung: " + zeile);
 					Buchung buchung = buchungAusCSV(konto, zeile);
 					konto.getBuchungen().add(buchung);
 				}
-
 				System.out.println("✅ Buchungen für Konto " + konto.getKontoName() + " geladen.");
-
 			} catch (IOException e) {
 				System.out.println("Fehler beim Laden der Buchungen für Konto " + konto.getKontoName());
 				e.printStackTrace();
@@ -245,13 +244,11 @@ public class Datenstroeme {
 	}
 
 	public static void ladeKategorienAusDatei() {
-		String dateiName = kategorieUebersichtAnlegen(); // Pfad zur Kategorienübersicht
-		File kategorienDatei = new File(dateiName);
+		File kategorienDatei = new File(kategorieUebersichtAnlegen());
 		if (!kategorienDatei.exists()) {
 			System.out.println("⚠️ Kategorien-Datei nicht gefunden.");
 			return;
 		}
-
 		try (BufferedReader br = new BufferedReader(new FileReader(kategorienDatei))) {
 			String zeile;
 			boolean ersteZeile = true;
@@ -262,7 +259,7 @@ public class Datenstroeme {
 					continue;
 				}
 				String kategorie = zeile.trim();
-				if (!kategorie.isEmpty()) {
+				if (!kategorie.isEmpty() && !Buchung.listeMitKategorien.contains(kategorie)) {
 					Buchung.listeMitKategorien.add(kategorie);
 				}
 			}
@@ -272,29 +269,20 @@ public class Datenstroeme {
 		} catch (IOException e) {
 			System.out.println("Fehler beim Laden der Kategorien: " + e.getMessage());
 		}
-
 	}
 
 	private static void kategorieZurDateiHinzufuegen(String kategorie) {
-		String pfad = kategorieUebersichtAnlegen();
-		zeileInDateiAnhaengen(pfad, kategorie);
+		zeileInDateiAnhaengen(kategorieUebersichtAnlegen(), kategorie);
 	}
 
 	public static void kontoBuchungenNeuSpeichern(Konto konto) {
-
-		String ordnerpfad = sep + "Haushaltsbuch" + sep + "Konten";
 		ensureVerzeichnisVorhanden(ordnerpfad);
-		String dateiname = konto.getKontonummer() + "_" + konto.getKreditinstitut() + "_" + konto.getKontoName()
-				+ ".csv";
-		String kontopfad = ordnerpfad + sep + dateiname;
+		String kontopfad = ordnerpfad + bildeDateiName(konto);
 		try (BufferedWriter bw = new BufferedWriter(new FileWriter(kontopfad))) {
 			bw.write(headerBuchungen);
 			bw.newLine();
 			for (Buchung buchung : konto.getBuchungen()) {
-				String buchungsZeile = buchungToCSV(buchung.getFormatiertesDatum(), buchung.getBuchungsart(),
-						buchung.getKategorie(), buchung.getEmpfaenger(), buchung.getSender(), buchung.getBetrag(),
-						konto.getKontostand(), buchung.getIsUmbuchung() ,buchung.getTransferID());
-				bw.write(buchungsZeile);
+				bw.write(buchungToCSV(buchung));
 				bw.newLine();
 			}
 		} catch (IOException e) {
@@ -304,10 +292,7 @@ public class Datenstroeme {
 	}
 
 	public static void kontoLoeschen(Konto k) {
-
-		String ordnerpfad = sep + "Haushaltsbuch" + sep + "Konten";
-		String dateiname = k.getKontonummer() + "_" + k.getKreditinstitut() + "_" + k.getKontoName() + ".csv";
-		String kontopfad = ordnerpfad + sep + dateiname;
+		String kontopfad = ordnerpfad + bildeDateiName(k);
 		File datei = new File(kontopfad);
 		if (datei.delete()) {
 			System.out.println("Datei gelöscht: " + kontopfad);
@@ -315,7 +300,18 @@ public class Datenstroeme {
 			System.out.println("Fehler beim Löschen der Datei: " + kontopfad);
 		}
 		kontenNeuSpeichern();
-		
 	}
+	
+	/*public static void kontoAendern(Konto altesKonto, Konto neuesKonto) {
+		String altesKontopfad = ordnerpfad + bildeDateiName(altesKonto);
+		String neuesKontopfad = ordnerpfad  + bildeDateiName(neuesKonto);
+		File altesDatei = new File(altesKontopfad);
+		File neuesDatei = new File(neuesKontopfad);
+		if (altesDatei.renameTo(neuesDatei)) {
+			System.out.println("Datei umbenannt: " + neuesKontopfad);
+		} else {
+			System.out.println("Fehler beim Umbenennen der Datei: " + altesKontopfad);
+		}
 
+}*/
 }
