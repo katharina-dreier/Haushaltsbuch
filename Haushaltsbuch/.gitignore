@@ -1,1 +1,11 @@
-/bin/
+# Maven build output
+/Haushaltsbuch/target/
+
+# Eclipse specific files
+/.classpath
+/.project
+/.settings/
+
+# Backup and log files
+*.log
+*.tmp
