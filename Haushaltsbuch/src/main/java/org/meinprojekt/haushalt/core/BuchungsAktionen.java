@@ -1,32 +1,10 @@
 package org.meinprojekt.haushalt.core;
 
 import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeParseException;
 import java.util.List;
-import java.util.Scanner;
 
 public class BuchungsAktionen {
 	
-	public static Konto gewaehltesKonto;
-	public static Scanner scan = new Scanner(System.in);
-	
-	/*/Datum für Buchungen einlesen und prüfen
-		public static LocalDate datumAuswaehlen() {
-		    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy");
-		    while (true) {
-		        System.out.print("Gib ein Datum ein (Format: dd.MM.yyyy): ");
-		        String eingabe = scan.nextLine();
-		        try {
-		            LocalDate datum = LocalDate.parse(eingabe, formatter);
-		            System.out.println("Eingegebenes Datum: " + datum);
-		            return datum;
-		        } catch (DateTimeParseException e) {
-		            System.out.println("⚠️ Fehler: Ungültiges Datum!");
-		            System.out.println("Beispiel für gültige Eingabe: 28.03.2025");
-		    }
-		        }
-		    }*/
 	
 	//Notwendige Daten einlesen und Einnahme tätigen
 		public static void einnahmeTätigen(Double betragEin, String kategorieEin, Konto gewaehltesKonto, String sender,  LocalDate datum, String transferID, boolean isUmbuchung) {
@@ -109,13 +87,6 @@ public class BuchungsAktionen {
 		            System.out.println("Warnung: Buchung ohne Konto, Abbruch.");
 		            return;
 		        }
-		        double betrag = buchung.getBetrag();
-		        switch (String.valueOf(buchung.getBuchungsart())) {
-		            case "Einnahme" -> k.setKontostand(k.getKontostand() - betrag);
-		            case "Ausgabe"  -> k.setKontostand(k.getKontostand() + betrag);
-		            default -> { /* optional: loggen */ }
-		        }
-
 		        k.getBuchungen().remove(buchung);
 		        Datenstroeme.kontoBuchungenNeuSpeichern(k);
 		        System.out.println("Buchung gelöscht: " + buchung);
@@ -127,8 +98,6 @@ public class BuchungsAktionen {
 		public static void buchungBearbeiten(Buchung original, double betrag, String kat, Konto konto, String beteiligter,
 				LocalDate datum) {
 			System.out.println("Starte mit Bearbeiten der Buchung: " + original);
-			// Alte Buchung rückgängig machen
-			double alterBetrag = original.getBetrag();
 			Konto altesKonto = original.getKonto();
 
 			// Neue Buchungsdaten setzen
@@ -138,11 +107,9 @@ public class BuchungsAktionen {
 			if (original instanceof Einnahme e) {
 				e.setSender(beteiligter);
 				e.setKonto(konto);
-				
 			} else if (original instanceof Ausgabe a) {
 				a.setEmpfaenger(beteiligter);
-				a.setKonto(konto);
-				
+				a.setKonto(konto);	
 			}
 			
 			if (altesKonto != konto) {

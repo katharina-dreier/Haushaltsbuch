@@ -12,7 +12,6 @@ public class Buchung {
 	private String buchungsart; // Einnahme, Ausgabe, Umbuchung
 	private String empfaenger;
 	private String sender;
-	private double kontostandNachBuchung; // optional
 	private Konto konto; 
 	private boolean isUmbuchung = false;
 	private String transferID = "";
@@ -37,7 +36,6 @@ public class Buchung {
 		this.setEmpfaenger(empfänger);
 		this.setSender(sender);
 		this.betrag = betrag2;
-		this.kontostandNachBuchung = kontostand;
 		kategorieHinzufuegen(kategorie);
 		this.transferID = transferID;
 		this.isUmbuchung = isUmbuchung;

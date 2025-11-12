@@ -91,23 +91,19 @@ public class MainController {
 		Datenstroeme.ladeKontenAusDatei();
 		Datenstroeme.ladeKategorienAusDatei();
 		Datenstroeme.ladeBuchungenFuerAlleKonten();
-		
-		tblBuchungen.setPlaceholder(new Label("Keine Buchungen"));
 
+		// Buchungsliste filtern und sortieren
+		buchungsListe.setAll(Konto.getAlleBuchungen());
 		gefilterteBuchungsListe = new FilteredList<>(buchungsListe, b -> true);
-		sortierteBuchungsListe = new SortedList<>(gefilterteBuchungsListe);
-
-		sortierteBuchungsListe.comparatorProperty().bind(tblBuchungen.comparatorProperty());
+		sortierteBuchungsListe = new SortedList<>(gefilterteBuchungsListe); 
+		sortierteBuchungsListe.comparatorProperty().bind(tblBuchungen.comparatorProperty()); 
 		tblBuchungen.setItems(sortierteBuchungsListe);
-		tblBuchungen.setPlaceholder(new Label("Keine Buchungen vorhanden"));
+		berechneSumme(gefilterteBuchungsListe);
 		tabPane.getSelectionModel().selectedItemProperty().addListener((obs, alt, neu) -> applyTabFilter());
-
+		
+		// Bereiche anzeigen
 		showKonten();
-
-		tblKonten.setVisible(true);
-		tblKonten.setManaged(true);
-		tblBuchungen.setVisible(false);
-		tblBuchungen.setManaged(false);
+		showBuchungen();
 
 		// Spalten mit Attributen verknüpfen
 		colId.setCellValueFactory(new PropertyValueFactory<>("kontonummer"));
@@ -295,13 +291,9 @@ public class MainController {
 	private void showKonten() {
 		kontenArea.setVisible(true);
 		kontenArea.setManaged(true);
-		buchungenArea.setVisible(false);
-		buchungenArea.setManaged(false);
 	}
 
 	private void showBuchungen() {
-		kontenArea.setVisible(true);
-		kontenArea.setManaged(true);
 		buchungenArea.setVisible(true);
 		buchungenArea.setManaged(true);
 		tblBuchungen.setVisible(true);
@@ -468,7 +460,6 @@ public class MainController {
 			try {
 				c.prefillKontodaten(konto);
 			} catch (ParseException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 			c.setOriginal(konto);
