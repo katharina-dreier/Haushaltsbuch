@@ -1,0 +1,40 @@
+/* Grundlayout für Dialoge */
+.dialog-root {
+    -fx-background-color: #ffffff;
+    -fx-padding: 15;
+    -fx-spacing: 10;
+}
+
+/* Überschriften im Dialog */
+.dialog-title {
+    -fx-font-size: 16px;
+    -fx-font-weight: bold;
+}
+
+/* Labels im Dialog */
+.dialog-label {
+    -fx-font-size: 13px;
+}
+
+/* Buttons einheitlich */
+.primary-button {
+    -fx-background-color: #0c6a86;
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+}
+
+.secondary-button {
+    -fx-background-color: #b4b4b4;
+    -fx-text-fill: #741515;
+}
+
+/* Gemeinsame Button-Optik */
+.primary-button, .secondary-button {
+    -fx-padding: 6 14 6 14;
+    -fx-background-radius: 4;
+}
+
+/* Abstand zwischen Buttons */
+.button-bar {
+    -fx-spacing: 8;
+}

@@ -12,10 +12,11 @@ public class App extends Application {
         getClass().getResource("/org/meinprojekt/haushalt/ui/main.fxml")
     );
     Scene scene = new Scene(fxml.load());
+    
     stage.setTitle("Haushaltsbuch");
     stage.setScene(scene);
     stage.setMaximized(true);
-
+    scene.getStylesheets().add(getClass().getResource("/styles/app.css").toExternalForm());
     stage.show();
   }
 

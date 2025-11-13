@@ -4,22 +4,23 @@
 <?import javafx.scene.layout.*?>
 
 <GridPane fx:controller="org.meinprojekt.haushalt.ui.DialogKonto"
-          xmlns:fx="http://javafx.com/fxml" hgap="10" vgap="10" alignment="CENTER">
+          xmlns:fx="http://javafx.com/fxml" hgap="10" vgap="10" alignment="CENTER" styleClass="dialog-root">
 
-    <Label text="Kontoname:" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
+
+    <Label text="Kontoname:" GridPane.rowIndex="0" GridPane.columnIndex="0" styleClass="dialog-label"/>
     <TextField fx:id="txtName" GridPane.rowIndex="0" GridPane.columnIndex="1"/>
     
-    <Label text="Kontoinhaber:" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
+    <Label text="Kontoinhaber:" GridPane.rowIndex="1" GridPane.columnIndex="0" styleClass="dialog-label"/>
     <TextField fx:id="txtInhaber" GridPane.rowIndex="1" GridPane.columnIndex="1"/>
 
-    <Label text="Startsaldo:" GridPane.rowIndex="2" GridPane.columnIndex="0"/>
+    <Label text="Startsaldo:" GridPane.rowIndex="2" GridPane.columnIndex="0" styleClass="dialog-label"/>
     <TextField fx:id="txtSaldo" GridPane.rowIndex="2" GridPane.columnIndex="1"/>
 
-    <Label text="Kreditinstitut:" GridPane.rowIndex="3" GridPane.columnIndex="0"/>
+    <Label text="Kreditinstitut:" GridPane.rowIndex="3" GridPane.columnIndex="0" styleClass="dialog-label"/>
     <TextField fx:id="txtInstitut" GridPane.rowIndex="3" GridPane.columnIndex="1"/>
 
-    <HBox spacing="10" GridPane.rowIndex="4" GridPane.columnSpan="2" alignment="CENTER_RIGHT">
-        <Button fx:id="btnAbbrechen" text="Abbrechen" cancelButton="true" onAction="#handleAbbrechen"/>
-        <Button fx:id="btnOk" text="Speichern" defaultButton="true" onAction="#handleButtonActionOK"/>
+    <HBox spacing="10" GridPane.rowIndex="4" GridPane.columnSpan="2" alignment="CENTER_RIGHT" styleClass="button-bar">
+        <Button fx:id="btnAbbrechen" text="Abbrechen" cancelButton="true" onAction="#handleAbbrechen" styleClass="secondary-button"/>
+        <Button fx:id="btnOk" text="Speichern" defaultButton="true" onAction="#handleButtonActionOK" styleClass="primary-button"/>
     </HBox>
 </GridPane>

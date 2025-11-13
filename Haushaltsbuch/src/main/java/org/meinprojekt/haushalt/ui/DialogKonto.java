@@ -1,12 +1,9 @@
 package org.meinprojekt.haushalt.ui;
 
-import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.text.ParseException;
 import java.util.Locale;
 
-import org.meinprojekt.haushalt.core.Buchung;
-import org.meinprojekt.haushalt.core.BuchungsAktionen;
 import org.meinprojekt.haushalt.core.Konto;
 import org.meinprojekt.haushalt.core.KontoAktionen;
 

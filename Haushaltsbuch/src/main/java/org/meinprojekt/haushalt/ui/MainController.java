@@ -270,7 +270,9 @@ public class MainController {
 			// bleibt)
 			dialogStage.initOwner(btn.getScene().getWindow());
 			dialogStage.setResizable(false);
-			dialogStage.setScene(new Scene(root));
+			Scene dialogScene = new Scene(root);
+			dialogStage.setScene(dialogScene);
+			dialogScene.getStylesheets().addAll(btn.getScene().getStylesheets());
 			System.out.println("Dialog offen, warte auf Schließen...");
 			// anzeigen und warten, bis geschlossen wurde
 			dialogStage.showAndWait();
