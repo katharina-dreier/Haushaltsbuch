@@ -131,6 +131,10 @@ public class Buchung {
 	}
 	
 
+	public String getKontoAnzeige() {
+	    if (konto == null) return "";
+	    return konto.getKontoName() + " (" + konto.getKreditinstitut() + ")";
+	}
 
 	
 

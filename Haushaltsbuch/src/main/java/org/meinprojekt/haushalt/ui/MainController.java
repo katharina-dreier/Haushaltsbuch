@@ -1,9 +1,7 @@
 package org.meinprojekt.haushalt.ui;
 
-import java.lang.ModuleLayer.Controller;
 import java.text.ParseException;
 import java.util.List;
-import java.util.Optional;
 import java.util.function.Consumer;
 
 import org.meinprojekt.haushalt.core.Buchung;
@@ -76,6 +74,8 @@ public class MainController {
 	@FXML
 	private TableColumn<Buchung, Double> colBetrag;
 	@FXML
+	private TableColumn<Buchung, String> colKonto;
+	@FXML
 	private TableColumn<Buchung, Void> colDeleteBuchung;
 
 	private final ObservableList<Konto> kontenListe = FXCollections.observableArrayList();
@@ -104,6 +104,7 @@ public class MainController {
 		// Bereiche anzeigen
 		showKonten();
 		showBuchungen();
+		summeBuchungenAktualisieren();
 
 		// Spalten mit Attributen verknüpfen
 		colId.setCellValueFactory(new PropertyValueFactory<>("kontonummer"));
@@ -142,6 +143,7 @@ public class MainController {
 				}
 			}
 		});
+		colKonto.setCellValueFactory(new PropertyValueFactory<>("kontoAnzeige"));
 
 		setupBuchungLoeschen();
 
@@ -182,6 +184,10 @@ public class MainController {
 			});
 			return row;
 		});
+		
+		tblKonten.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY_FLEX_LAST_COLUMN);
+		tblBuchungen.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY_FLEX_LAST_COLUMN);
+
 
 	}
 
@@ -242,6 +248,7 @@ public class MainController {
 			buchungsListe.setAll(liste);
 			applyTabFilter();
 			showBuchungen();
+			colKonto.setVisible(false);
 
 		} else {
 			tblBuchungen.setVisible(false);
@@ -318,6 +325,10 @@ public class MainController {
 			// Gesamt
 			gefilterteBuchungsListe.setPredicate(b -> true);
 		}
+		summeBuchungenAktualisieren();
+	}
+	
+	private void summeBuchungenAktualisieren() {
 		buchSumLbl.setText(String.format("Summe: %.2f €", berechneSumme(gefilterteBuchungsListe)));
 	}
 

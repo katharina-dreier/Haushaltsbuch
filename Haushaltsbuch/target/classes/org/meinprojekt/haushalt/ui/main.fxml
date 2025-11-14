@@ -3,62 +3,85 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<BorderPane xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1"
+<BorderPane xmlns="http://javafx.com/javafx/25"
+            xmlns:fx="http://javafx.com/fxml/1"
             fx:controller="org.meinprojekt.haushalt.ui.MainController">
 
-  <top>
-    <ToolBar>
-      <Button fx:id="btnNeuesKonto" onAction="#handleNeuesKonto" text="Neues Konto"/>
-      <Button fx:id="btnNeueEin"   onAction="#handleNeueEinnahme"  text="Neue Einnahme"/>
-      <Button fx:id="btnNeueAus"   onAction="#handleNeueAusgabe"   text="Neue Ausgabe"/>
-      <Button fx:id="btnNeueUmb"   onAction="#handleNeueUmbuchung" text="Neue Umbuchung"/>
-      <Label text="Haushaltsbuch"/>
-    </ToolBar>
-  </top>
+    <!-- Oben: Toolbar -->
+    <top>
+        <ToolBar styleClass="toolbar">
+            <Button fx:id="btnNeuesKonto" onAction="#handleNeuesKonto" text="Neues Konto"/>
+            <Button fx:id="btnNeueEin"   onAction="#handleNeueEinnahme"  text="Neue Einnahme"/>
+            <Button fx:id="btnNeueAus"   onAction="#handleNeueAusgabe"   text="Neue Ausgabe"/>
+            <Button fx:id="btnNeueUmb"   onAction="#handleNeueUmbuchung" text="Neue Umbuchung"/>
+        </ToolBar>
+    </top>
 
-  <center>
-    <!-- Links Konten, rechts Tabs + Buchungen -->
-    <SplitPane fx:id="split" dividerPositions="0.33">  <!-- ca. 1/3 links -->
-      <!-- Linke Seite: Konten -->
-      <VBox fx:id="kontenArea" spacing="8">
-        <Label text="Konten" style="-fx-font-weight: bold;"/>
-        <TableView fx:id="tblKonten">
-          <columns>
-            <TableColumn fx:id="colId"          text="Kontonummer"  prefWidth="150"/>
-            <TableColumn fx:id="colName"        text="Name"         prefWidth="150"/>
-            <TableColumn fx:id="colKontostand"  text="Kontostand"   prefWidth="100"/>
-            <TableColumn fx:id="colInstitut"    text="Kreditinstitut" prefWidth="120"/>
-          </columns>
-        </TableView>
-      </VBox>
+    <!-- Mitte: Links Konten+Buchungen, Rechts Diagramme -->
+    <center>
+        <SplitPane fx:id="split" dividerPositions="0.5"> 
 
-      <!-- Rechte Seite: Tabs + Buchungen -->
-      <VBox fx:id="buchungenArea" spacing="10">
-  <TabPane fx:id="tabPane" VBox.vgrow="NEVER">
-    <tabs>
-      <Tab fx:id="tabGesamt" text="Gesamt"/>
-      <Tab fx:id="tabEinnahmen" text="Einnahmen"/>
-      <Tab fx:id="tabAusgaben" text="Ausgaben"/>
-      <Tab fx:id="tabUmbuchungen" text="Umbuchungen"/>
-    </tabs>
-  </TabPane>
+            <!-- Linke Seite: Konten + Buchungen untereinander -->
+            <VBox spacing="10">
 
-  <TableView fx:id="tblBuchungen" VBox.vgrow="ALWAYS">
-    <columns>
-      <TableColumn fx:id="colBuchDatum" text="Buchungsdatum" prefWidth="150"/>
-      <TableColumn fx:id="colKat"       text="Kategorie"     prefWidth="150"/>
-      <TableColumn fx:id="colEmpf"      text="Empfänger"     prefWidth="120"/>
-      <TableColumn fx:id="colSend"      text="Sender"        prefWidth="120"/>
-      <TableColumn fx:id="colBetrag"    text="Betrag"        prefWidth="100"/>
-    </columns>
-  </TableView>
-  <Label fx:id="buchSumLbl" text="Summe: 0,00 €" style="-fx-padding: 8;"/>
-</VBox>
+                <!-- Karte: Konten -->
+                <VBox fx:id="kontenArea" spacing="8" styleClass="card">
+                    <Label text="Konten" styleClass="card-title"/>
+                    <TableView fx:id="tblKonten" >
+                        <columns>
+                            <TableColumn fx:id="colId"          text="Kontonummer"   prefWidth="120"/>
+                            <TableColumn fx:id="colName"        text="Name"          prefWidth="150"/>
+                            <TableColumn fx:id="colKontostand"  text="Kontostand"    prefWidth="100"/>
+                            <TableColumn fx:id="colInstitut"    text="Kreditinstitut" prefWidth="140"/>
+                        </columns>
+                    </TableView>
+                    <Label fx:id="sumLbl" text="Summe: 0,00 €" style="-fx-padding: 4 0 0 0;"/>
+                </VBox>
 
-    </SplitPane>
-  </center>
+				
+                <!-- Karte: Buchungen -->
+                <VBox fx:id="buchungenArea" spacing="8" styleClass="card">
+                 <Label text="Buchungen" styleClass="card-title"/>
+                 <VBox spacing="0">
+                    <TabPane fx:id="tabPane"  styleClass="filter-tabs">
+                        <tabs>
+                            <Tab fx:id="tabGesamt"      text="Gesamt"/>
+                            <Tab fx:id="tabEinnahmen"   text="Einnahmen"/>
+                            <Tab fx:id="tabAusgaben"    text="Ausgaben"/>
+                            <Tab fx:id="tabUmbuchungen" text="Umbuchungen"/>
+                        </tabs>
+                    </TabPane>
 
-  <bottom>
-    <Label fx:id="sumLbl" text="Summe: 0,00 €" style="-fx-padding: 8;"/>
-  </bottom>
+                    <TableView fx:id="tblBuchungen" VBox.vgrow="ALWAYS">
+                        <columns>
+                            <TableColumn fx:id="colBuchDatum" text="Buchungsdatum" prefWidth="150"/>
+                            <TableColumn fx:id="colKat"       text="Kategorie"     prefWidth="150"/>
+                            <TableColumn fx:id="colEmpf"      text="Empfänger"     prefWidth="120"/>
+                            <TableColumn fx:id="colSend"      text="Sender"        prefWidth="120"/>
+                            <TableColumn fx:id="colBetrag"    text="Betrag"        prefWidth="100"/>
+                            <TableColumn fx:id="colKonto"     text="Konto"         prefWidth="150"/>
+                        </columns>
+                    </TableView>
+					</VBox>
+                    <Label fx:id="buchSumLbl" text="Summe: 0,00 €" style="-fx-padding: 4 0 0 0;"/>
+                </VBox>
+ 				</VBox>
+            
+
+            <!-- Rechte Seite: Diagramme (Platzhalter) -->
+            <VBox fx:id="chartsArea" spacing="10" styleClass="card">
+                <Label text="Diagramme" styleClass="card-title"/>
+                <Label text="Hier werden später Grafiken zur Entwicklung von Einnahmen, Ausgaben und Salden angezeigt." 
+                       wrapText="true"/>
+                <!-- Hier kannst du später deine Charts einsetzen -->
+            </VBox>
+
+        </SplitPane>
+    </center>
+
+    <!-- Unten: Gesamtsumme -->
+    <bottom>
+        
+    </bottom>
+
 </BorderPane>
