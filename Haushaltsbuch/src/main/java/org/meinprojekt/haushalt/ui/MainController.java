@@ -1,7 +1,14 @@
 package org.meinprojekt.haushalt.ui;
 
+import java.text.NumberFormat;
 import java.text.ParseException;
+import java.time.LocalDate;
 import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeMap;
+import java.util.TreeSet;
 import java.util.function.Consumer;
 
 import org.meinprojekt.haushalt.core.Buchung;
@@ -19,6 +26,11 @@ import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.chart.AreaChart;
+import javafx.scene.chart.CategoryAxis;
+import javafx.scene.chart.LineChart;
+import javafx.scene.chart.NumberAxis;
+import javafx.scene.chart.XYChart;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonType;
@@ -29,54 +41,67 @@ import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableRow;
 import javafx.scene.control.TableView;
+import javafx.scene.control.Tooltip;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.VBox;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.Priority;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
+import javafx.util.Duration;
+import javafx.util.StringConverter;
 
 public class MainController {
 
 	@FXML
-	private VBox kontenArea, buchungenArea;
+	private VBox kontenArea, buchungenArea, statistikArea;
+	@FXML
+	private HBox diagrammLegende;
+	@FXML
+	private AreaChart<String, Number> einnahmenAusgabenDiagramm;
+	@FXML
+	private CategoryAxis xAchseEinnahmenAusgabenDiagramm;
+	@FXML
+	private NumberAxis yAchseEinnahmenAusgabenDiagramm;
 	@FXML
 	TabPane tabPane;
 	@FXML
 	private Tab tabGesamt, tabEinnahmen, tabAusgaben, tabUmbuchungen;
 
 	@FXML
-	private Label sumLbl, buchSumLbl;
+	private Label summeAlleKontenLbl, summeBuchungenLbl, legendeEinnahmenlbl, legendeAusgabenlbl, legendeDifferenzlbl;
 	@FXML
-	private Button btnNeuesKonto, btnNeueAus, btnNeueEin, btnNeueUmb;
+	private Button btnNeuesKonto, btnNeueAusgabe, btnNeueEinnahme, btnNeueUmbuchung;
 
 	@FXML
 	private TableView<Konto> tblKonten;
 	@FXML
-	private TableColumn<Konto, Integer> colId;
+	private TableColumn<Konto, Integer> colKontonummer;
 	@FXML
-	private TableColumn<Konto, String> colName;
+	private TableColumn<Konto, String> colKontoName;
 	@FXML
 	private TableColumn<Konto, Double> colKontostand;
 	@FXML
 	private TableColumn<Konto, String> colInstitut;
 	@FXML
-	private TableColumn<Konto, Void> colDeleteKonto;
+	private TableColumn<Konto, Void> colKontoLoeschen;
 
 	@FXML
 	private TableView<Buchung> tblBuchungen;
 	@FXML
-	private TableColumn<Buchung, String> colBuchDatum;
+	private TableColumn<Buchung, String> colBuchungsDatum;
 	@FXML
-	private TableColumn<Buchung, String> colKat;
+	private TableColumn<Buchung, String> colKategorie;
 	@FXML
-	private TableColumn<Buchung, String> colEmpf;
+	private TableColumn<Buchung, String> colEmpfaenger;
 	@FXML
-	private TableColumn<Buchung, String> colSend;
+	private TableColumn<Buchung, String> colSender;
 	@FXML
 	private TableColumn<Buchung, Double> colBetrag;
 	@FXML
 	private TableColumn<Buchung, String> colKonto;
 	@FXML
-	private TableColumn<Buchung, Void> colDeleteBuchung;
+	private TableColumn<Buchung, Void> colBuchungLoeschen;
 
 	private final ObservableList<Konto> kontenListe = FXCollections.observableArrayList();
 	private final ObservableList<Buchung> buchungsListe = FXCollections.observableArrayList();
@@ -85,38 +110,44 @@ public class MainController {
 
 	@FXML
 	private void initialize() {
-		// Daten laden
+		
 		Datenstroeme.kontenUebersichtAnlegen();
 		Datenstroeme.kategorieUebersichtAnlegen();
 		Datenstroeme.ladeKontenAusDatei();
 		Datenstroeme.ladeKategorienAusDatei();
 		Datenstroeme.ladeBuchungenFuerAlleKonten();
 
-		// Buchungsliste filtern und sortieren
-		buchungsListe.setAll(Konto.getAlleBuchungen());
-		gefilterteBuchungsListe = new FilteredList<>(buchungsListe, b -> true);
-		sortierteBuchungsListe = new SortedList<>(gefilterteBuchungsListe); 
-		sortierteBuchungsListe.comparatorProperty().bind(tblBuchungen.comparatorProperty()); 
-		tblBuchungen.setItems(sortierteBuchungsListe);
-		berechneSumme(gefilterteBuchungsListe);
+		buchungslisteInitialisieren();
+		showTabs();
 		tabPane.getSelectionModel().selectedItemProperty().addListener((obs, alt, neu) -> applyTabFilter());
-		
-		// Bereiche anzeigen
-		showKonten();
-		showBuchungen();
 		summeBuchungenAktualisieren();
 
 		// Spalten mit Attributen verknüpfen
-		colId.setCellValueFactory(new PropertyValueFactory<>("kontonummer"));
-		colName.setCellValueFactory(new PropertyValueFactory<>("kontoName"));
+		colKontonummer.setCellValueFactory(new PropertyValueFactory<>("kontonummer"));
+		colKontoName.setCellValueFactory(new PropertyValueFactory<>("kontoName"));
 		colInstitut.setCellValueFactory(new PropertyValueFactory<>("kreditinstitut"));
 		colKontostand.setCellValueFactory(new PropertyValueFactory<>("kontostand"));
+		colKontostand.setCellFactory(column -> new TableCell<>() {
+			@Override
+			protected void updateItem(Double betrag, boolean empty) {
+				super.updateItem(betrag, empty);
+				if (empty || betrag == null) {
+					setText(null);
+				} else {
+					setText(String.format("%.2f €", betrag));
+					if (betrag < 0)
+						setStyle("-fx-text-fill: red;");
+					else
+						setStyle("-fx-text-fill: green;");
+				}
+			}
+		});
 		setupKontoLoeschen();
 
-		colBuchDatum.setCellValueFactory(new PropertyValueFactory<>("buchungsDatum"));
-		colKat.setCellValueFactory(new PropertyValueFactory<>("kategorie"));
-		colEmpf.setCellValueFactory(new PropertyValueFactory<>("empfaenger"));
-		colSend.setCellValueFactory(new PropertyValueFactory<>("sender"));
+		colBuchungsDatum.setCellValueFactory(new PropertyValueFactory<>("buchungsDatum"));
+		colKategorie.setCellValueFactory(new PropertyValueFactory<>("kategorie"));
+		colEmpfaenger.setCellValueFactory(new PropertyValueFactory<>("empfaenger"));
+		colSender.setCellValueFactory(new PropertyValueFactory<>("sender"));
 		colBetrag.setCellValueFactory(cellData -> {
 			Buchung b = cellData.getValue();
 			double value = b.getBetrag();
@@ -187,10 +218,131 @@ public class MainController {
 		
 		tblKonten.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY_FLEX_LAST_COLUMN);
 		tblBuchungen.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY_FLEX_LAST_COLUMN);
-
+		showBuchungen();
+		initialisierungEinnahmenAusgabenDiagramm();
 
 	}
 
+	private void buchungslisteInitialisieren() {
+		buchungsListe.setAll(Konto.getAlleBuchungen());
+		gefilterteBuchungsListe = new FilteredList<>(buchungsListe, b -> true);
+		sortierteBuchungsListe = new SortedList<>(gefilterteBuchungsListe); 
+		sortierteBuchungsListe.comparatorProperty().bind(tblBuchungen.comparatorProperty()); 
+		tblBuchungen.setItems(sortierteBuchungsListe);
+		berechneSumme(gefilterteBuchungsListe);
+			
+	}
+
+	private void initialisierungEinnahmenAusgabenDiagramm() {
+		 if (statistikArea == null) return;
+
+		    String labelXAchse = "Monat";
+		    xAchseEinnahmenAusgabenDiagramm.setLabel(labelXAchse);
+
+		    String labelYAchse = "Betrag";
+		    yAchseEinnahmenAusgabenDiagramm.setLabel(labelYAchse);
+
+		    einnahmenAusgabenDiagramm.setTitle(null);            
+		    einnahmenAusgabenDiagramm.setLegendVisible(false);
+		    einnahmenAusgabenDiagramm.setAnimated(false);
+
+		    XYChart.Series<String, Number> einnahmenSerie = new XYChart.Series<>();
+		    XYChart.Series<String, Number> ausgabenSerie  = new XYChart.Series<>();
+		    einnahmenSerie.setName("Einnahmen");
+		    ausgabenSerie.setName("Ausgaben");
+
+		    Map<String, Double> einnahmenProMonat = new TreeMap<>();
+		    Map<String, Double> ausgabenProMonat = new TreeMap<>();
+
+		    double summeEinnahmen = 0;
+		    double summeAusgaben  = 0;
+
+		    for (Buchung buchung : buchungsListe) {  
+		        LocalDate datum = buchung.getBuchungsDatum(); 
+		        String monatKey = datum.getYear() + "-" + String.format("%02d", datum.getMonthValue());
+
+		        if ("EINNAHME".equalsIgnoreCase(buchung.getBuchungsart())) {
+		            einnahmenProMonat.merge(monatKey, buchung.getBetrag(), Double::sum);
+		            summeEinnahmen += buchung.getBetrag();
+		        } else if ("AUSGABE".equalsIgnoreCase(buchung.getBuchungsart())) {
+		            ausgabenProMonat.merge(monatKey, buchung.getBetrag(), Double::sum);
+		            summeAusgaben += buchung.getBetrag();
+		        }
+		    }
+
+		    double summeDifferenz = summeEinnahmen - summeAusgaben;
+
+		    // chronologisch durch Monate laufen
+		    Set<String> alleMonate = new TreeSet<>();
+		    alleMonate.addAll(einnahmenProMonat.keySet());
+		    alleMonate.addAll(ausgabenProMonat.keySet());
+
+		    for (String monat : alleMonate) {
+		        einnahmenSerie.getData().add(
+		                new XYChart.Data<>(monat, einnahmenProMonat.getOrDefault(monat, 0.0))
+		        );
+		        ausgabenSerie.getData().add(
+		                new XYChart.Data<>(monat, ausgabenProMonat.getOrDefault(monat, 0.0))
+		        );
+		    }
+
+		    einnahmenAusgabenDiagramm.getData().clear();
+			einnahmenAusgabenDiagramm.getData().add(einnahmenSerie);
+			einnahmenAusgabenDiagramm.getData().add(ausgabenSerie);
+
+		    
+		    NumberFormat euro = NumberFormat.getCurrencyInstance(Locale.GERMANY);
+		    yAchseEinnahmenAusgabenDiagramm.setTickLabelFormatter(new StringConverter<Number>() {
+		        @Override
+		        public String toString(Number object) {
+		            return euro.format(object.doubleValue());
+		        }
+
+		        @Override
+		        public Number fromString(String string) {
+		            return 0;
+		        }
+		    });
+		    double maxWert = Math.max(
+		            einnahmenProMonat.values().stream().mapToDouble(Double::doubleValue).max().orElse(0),
+		            ausgabenProMonat.values().stream().mapToDouble(Double::doubleValue).max().orElse(0)
+		    );
+
+		    double schritt = 200; 
+		    if (maxWert > 1000) schritt = 500;
+		    if (maxWert > 3000) schritt = 1000;
+
+		    yAchseEinnahmenAusgabenDiagramm.setAutoRanging(false);
+		    yAchseEinnahmenAusgabenDiagramm.setLowerBound(0);
+		    yAchseEinnahmenAusgabenDiagramm.setUpperBound(Math.ceil(maxWert / schritt) * schritt);
+		    yAchseEinnahmenAusgabenDiagramm.setTickUnit(schritt);
+		    yAchseEinnahmenAusgabenDiagramm.setMinorTickVisible(false);
+
+		    String legendeEinnahmen = euro.format(summeEinnahmen);
+		    legendeEinnahmenlbl.setText(legendeEinnahmen);
+
+		    String legendeAusgaben = euro.format(summeAusgaben);
+		    legendeAusgabenlbl.setText(legendeAusgaben);
+
+		    String legendeDifferenz = euro.format(summeDifferenz);
+		    legendeDifferenzlbl.setText(legendeDifferenz);
+
+		   
+		    
+		    for (XYChart.Series<String, Number> series : einnahmenAusgabenDiagramm.getData()) {
+		        for (XYChart.Data<String, Number> data : series.getData()) {
+		            String text = euro.format(data.getYValue().doubleValue());
+		            Tooltip tooltip = new Tooltip(text);
+		            tooltip.setShowDelay(Duration.millis(100));      // nach 0,1 Sekunde
+		            tooltip.setHideDelay(Duration.millis(200));      // kurze Verzögerung beim Weggehen
+		            tooltip.setShowDuration(Duration.seconds(10));   // wie lange maximal sichtbar
+		            Tooltip.install(data.getNode(), tooltip);
+		        }
+		    }
+		}
+	
+
+	
 	@FXML
 	private void handleNeuesKonto() {
 		String fxmlPfad = "/org/meinprojekt/haushalt/ui/konto-dialog.fxml";
@@ -198,39 +350,43 @@ public class MainController {
 		dialogOeffnen(btnNeuesKonto, fxmlPfad, titel, (DialogKonto c) -> {
 		});
 		updateGesamtSummeLabel();
+		initialisierungEinnahmenAusgabenDiagramm();
 	}
 
 	@FXML
 	private void handleNeueEinnahme() {
 		String fxmlPfad = "/org/meinprojekt/haushalt/ui/buchung-dialog.fxml";
 		String titel = "Neue Einnahme anlegen";
-		dialogOeffnen(btnNeueEin, fxmlPfad, titel, (DialogBuchung c) -> {
+		dialogOeffnen(btnNeueEinnahme, fxmlPfad, titel, (DialogBuchung c) -> {
 			c.setBuchungsart("Einnahme");
 		});
 		aktualisiereTabelle();
 		updateGesamtSummeLabel();
+		initialisierungEinnahmenAusgabenDiagramm();
 	}
 
 	@FXML
 	private void handleNeueAusgabe() {
 		String fxmlPfad = "/org/meinprojekt/haushalt/ui/buchung-dialog.fxml";
 		String titel = "Neue Ausgabe anlegen";
-		dialogOeffnen(btnNeueAus, fxmlPfad, titel, (DialogBuchung c) -> {
+		dialogOeffnen(btnNeueAusgabe, fxmlPfad, titel, (DialogBuchung c) -> {
 			c.setBuchungsart("Ausgabe");
 		});
 		aktualisiereTabelle();
 		updateGesamtSummeLabel();
+		initialisierungEinnahmenAusgabenDiagramm();
 	}
 
 	@FXML
 	private void handleNeueUmbuchung() {
 		String fxmlPfad = "/org/meinprojekt/haushalt/ui/buchung-dialog.fxml";
 		String titel = "Neue Umbuchung anlegen";
-		dialogOeffnen(btnNeueUmb, fxmlPfad, titel, (DialogBuchung c) -> {
+		dialogOeffnen(btnNeueUmbuchung, fxmlPfad, titel, (DialogBuchung c) -> {
 			c.setBuchungsart("Umbuchung");
 		});
 		aktualisiereTabelle();
 		updateGesamtSummeLabel();
+		initialisierungEinnahmenAusgabenDiagramm();
 	}
 
 	public void aktualisiereTabelle() {
@@ -308,10 +464,17 @@ public class MainController {
 		tblBuchungen.setVisible(true);
 		tblBuchungen.setManaged(true);
 	}
+	
+	private void showTabs() {
+		tabPane.setVisible(true);
+		tabPane.setManaged(true);
+	}
 
 	private void applyTabFilter() {
-		if (gefilterteBuchungsListe == null)
-			return; // falls noch nicht initialisiert
+		if (gefilterteBuchungsListe == null) {
+			System.out.println("⚠️ Gefilterte Buchungsliste ist null!");
+			return;
+		}
 
 		var aktTab = tabPane.getSelectionModel().getSelectedItem();
 		if (aktTab == tabEinnahmen) {
@@ -329,16 +492,16 @@ public class MainController {
 	}
 	
 	private void summeBuchungenAktualisieren() {
-		buchSumLbl.setText(String.format("Summe: %.2f €", berechneSumme(gefilterteBuchungsListe)));
+		summeBuchungenLbl.setText(String.format("Summe: %.2f €", berechneSumme(gefilterteBuchungsListe)));
 	}
 
 	private void setupBuchungLoeschen() {
-		colDeleteBuchung = new TableColumn<>("");
-		colDeleteBuchung.setPrefWidth(36); // schmal
-		colDeleteBuchung.setSortable(false);
-		colDeleteBuchung.setResizable(false);
+		colBuchungLoeschen = new TableColumn<>("");
+		colBuchungLoeschen.setPrefWidth(36); // schmal
+		colBuchungLoeschen.setSortable(false);
+		colBuchungLoeschen.setResizable(false);
 
-		colDeleteBuchung.setCellFactory(tc -> new TableCell<>() {
+		colBuchungLoeschen.setCellFactory(tc -> new TableCell<>() {
 			private final Button btn = new Button("✖"); // oder "X"
 			{
 				btn.setFocusTraversable(false);
@@ -361,19 +524,19 @@ public class MainController {
 			}
 		});
 
-		if (!tblBuchungen.getColumns().contains(colDeleteBuchung)) {
-			tblBuchungen.getColumns().add(colDeleteBuchung);
+		if (!tblBuchungen.getColumns().contains(colBuchungLoeschen)) {
+			tblBuchungen.getColumns().add(colBuchungLoeschen);
 		}
 	}
 
 	private void setupKontoLoeschen() {
 
-		colDeleteKonto = new TableColumn<>("");
-		colDeleteKonto.setPrefWidth(36); // schmal
-		colDeleteKonto.setSortable(false);
-		colDeleteKonto.setResizable(false);
+		colKontoLoeschen = new TableColumn<>("");
+		colKontoLoeschen.setPrefWidth(36); // schmal
+		colKontoLoeschen.setSortable(false);
+		colKontoLoeschen.setResizable(false);
 
-		colDeleteKonto.setCellFactory(tc -> new TableCell<>() {
+		colKontoLoeschen.setCellFactory(tc -> new TableCell<>() {
 			private final Button btn = new Button("✖"); // oder "X"
 			{
 				btn.setFocusTraversable(false);
@@ -395,8 +558,8 @@ public class MainController {
 			}
 		});
 
-		if (!tblKonten.getColumns().contains(colDeleteKonto)) {
-			tblKonten.getColumns().add(colDeleteKonto);
+		if (!tblKonten.getColumns().contains(colKontoLoeschen)) {
+			tblKonten.getColumns().add(colKontoLoeschen);
 		}
 
 	}
@@ -445,7 +608,7 @@ public class MainController {
 
 		switch (b.getBuchungsart()) {
 		case "Einnahme":
-			dialogOeffnen(btnNeueEin, fxmlPfad, titel, (DialogBuchung c) -> {
+			dialogOeffnen(btnNeueEinnahme, fxmlPfad, titel, (DialogBuchung c) -> {
 				c.setEditMode(true);
 				c.prefillFields(b);
 				c.setOriginal(b);
@@ -453,7 +616,7 @@ public class MainController {
 			break;
 
 		case "Ausgabe":
-			dialogOeffnen(btnNeueAus, fxmlPfad, titel, (DialogBuchung c) -> {
+			dialogOeffnen(btnNeueAusgabe, fxmlPfad, titel, (DialogBuchung c) -> {
 				c.setEditMode(true);
 				c.prefillFields(b);
 				c.setOriginal(b);
@@ -509,7 +672,7 @@ public class MainController {
 
 	private void updateGesamtSummeLabel() {
 		double summe = berechneGesamtsummeKonten(tblKonten.getItems());
-		sumLbl.setText(String.format("Gesamt: %.2f €", summe));
+		summeAlleKontenLbl.setText(String.format("Gesamt: %.2f €", summe));
 	}
 
 }

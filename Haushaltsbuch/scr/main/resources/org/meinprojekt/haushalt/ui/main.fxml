@@ -2,6 +2,9 @@
 
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
+<?import javafx.scene.chart.*?>
+<?import javafx.scene.shape.*?>
+
 
 <BorderPane xmlns="http://javafx.com/javafx/25"
             xmlns:fx="http://javafx.com/fxml/1"
@@ -11,9 +14,9 @@
     <top>
         <ToolBar styleClass="toolbar">
             <Button fx:id="btnNeuesKonto" onAction="#handleNeuesKonto" text="Neues Konto"/>
-            <Button fx:id="btnNeueEin"   onAction="#handleNeueEinnahme"  text="Neue Einnahme"/>
-            <Button fx:id="btnNeueAus"   onAction="#handleNeueAusgabe"   text="Neue Ausgabe"/>
-            <Button fx:id="btnNeueUmb"   onAction="#handleNeueUmbuchung" text="Neue Umbuchung"/>
+            <Button fx:id="btnNeueEinnahme"   onAction="#handleNeueEinnahme"  text="Neue Einnahme"/>
+            <Button fx:id="btnNeueAusgabe"   onAction="#handleNeueAusgabe"   text="Neue Ausgabe"/>
+            <Button fx:id="btnNeueUmbuchung"   onAction="#handleNeueUmbuchung" text="Neue Umbuchung"/>
         </ToolBar>
     </top>
 
@@ -29,13 +32,13 @@
                     <Label text="Konten" styleClass="card-title"/>
                     <TableView fx:id="tblKonten" >
                         <columns>
-                            <TableColumn fx:id="colId"          text="Kontonummer"   prefWidth="120"/>
-                            <TableColumn fx:id="colName"        text="Name"          prefWidth="150"/>
+                            <TableColumn fx:id="colKontonummer"          text="Kontonummer"   prefWidth="120"/>
+                            <TableColumn fx:id="colKontoName"        text="Name"          prefWidth="150"/>
                             <TableColumn fx:id="colKontostand"  text="Kontostand"    prefWidth="100"/>
                             <TableColumn fx:id="colInstitut"    text="Kreditinstitut" prefWidth="140"/>
                         </columns>
                     </TableView>
-                    <Label fx:id="sumLbl" text="Summe: 0,00 €" style="-fx-padding: 4 0 0 0;"/>
+                    <Label fx:id="summeAlleKontenLbl" text="Summe: 0,00 €" style="-fx-padding: 4 0 0 0;"/>
                 </VBox>
 
 				
@@ -43,7 +46,7 @@
                 <VBox fx:id="buchungenArea" spacing="8" styleClass="card">
                  <Label text="Buchungen" styleClass="card-title"/>
                  <VBox spacing="0">
-                    <TabPane fx:id="tabPane"  styleClass="filter-tabs">
+                    <TabPane fx:id="tabPane"  styleClass="filter-tabs" minHeight="28.0" prefHeight="28.0">
                         <tabs>
                             <Tab fx:id="tabGesamt"      text="Gesamt"/>
                             <Tab fx:id="tabEinnahmen"   text="Einnahmen"/>
@@ -54,32 +57,89 @@
 
                     <TableView fx:id="tblBuchungen" VBox.vgrow="ALWAYS">
                         <columns>
-                            <TableColumn fx:id="colBuchDatum" text="Buchungsdatum" prefWidth="150"/>
-                            <TableColumn fx:id="colKat"       text="Kategorie"     prefWidth="150"/>
-                            <TableColumn fx:id="colEmpf"      text="Empfänger"     prefWidth="120"/>
-                            <TableColumn fx:id="colSend"      text="Sender"        prefWidth="120"/>
+                            <TableColumn fx:id="colBuchungsDatum" text="Buchungsdatum" prefWidth="150"/>
+                            <TableColumn fx:id="colKategorie"       text="Kategorie"     prefWidth="150"/>
+                            <TableColumn fx:id="colEmpfaenger"      text="Empfänger"     prefWidth="120"/>
+                            <TableColumn fx:id="colSender"      text="Sender"        prefWidth="120"/>
                             <TableColumn fx:id="colBetrag"    text="Betrag"        prefWidth="100"/>
                             <TableColumn fx:id="colKonto"     text="Konto"         prefWidth="150"/>
                         </columns>
                     </TableView>
 					</VBox>
-                    <Label fx:id="buchSumLbl" text="Summe: 0,00 €" style="-fx-padding: 4 0 0 0;"/>
+                    <Label fx:id="summeBuchungenLbl" text="Summe: 0,00 €" style="-fx-padding: 4 0 0 0;"/>
                 </VBox>
  				</VBox>
             
 
-            <!-- Rechte Seite: Diagramme (Platzhalter) -->
-            <VBox fx:id="chartsArea" spacing="10" styleClass="card">
-                <Label text="Diagramme" styleClass="card-title"/>
-                <Label text="Hier werden später Grafiken zur Entwicklung von Einnahmen, Ausgaben und Salden angezeigt." 
-                       wrapText="true"/>
-                <!-- Hier kannst du später deine Charts einsetzen -->
-            </VBox>
+            <!-- Rechte Seite: Diagramme -->
+           <VBox fx:id="statistikArea" spacing="10" styleClass="card" VBox.vgrow="ALWAYS" alignment="TOP_CENTER">
+   					 <Label text="Diagramme" styleClass="card-title"/>
+    				<HBox fx:id="diagrammLegende" spacing="60" alignment="CENTER" styleClass="chart-header">
+
+    					<children>
+
+        					<!-- Block 1: Einnahmen -->
+        					<VBox spacing="2" alignment="CENTER_LEFT">
+           					 <children>
+                				<HBox spacing="10" alignment="BASELINE_LEFT">
+                    		<children>
+                        		<Circle radius="5" styleClass="legend-dot-einnahmen"/>
+                       			 <Label text="Einnahmen" styleClass="chart-header"/>
+                    </children>
+                </HBox>
+                <Label fx:id="legendeEinnahmenlbl" text="Summe: 0,00 €" styleClass="chart-header-sum"/>
+            </children>
+        </VBox>
+
+        <!-- Block 2: Ausgaben -->
+        <VBox spacing="2" alignment="CENTER_LEFT">
+            <children>
+                <HBox spacing="10" alignment="BASELINE_LEFT">
+                    <children>
+                        <Circle radius="5" styleClass="legend-dot-ausgaben"/>
+                        <Label text="Ausgaben"
+                               styleClass="chart-header"/>
+                    </children>
+                </HBox>
+                <Label fx:id="legendeAusgabenlbl"
+                       text="Summe: 0,00 €"
+                       styleClass="chart-header-sum"/>
+            </children>
+        </VBox>
+
+        <!-- Block 3: Differenz -->
+        <VBox spacing="2" alignment="CENTER_LEFT">
+            <children>
+                <HBox spacing="5" alignment="BASELINE_LEFT">
+                    <children>
+                        <Label text="Differenz"
+                               styleClass="chart-header"/>
+                    </children>
+                </HBox>
+                <Label fx:id="legendeDifferenzlbl"
+                       text="Summe: 0,00 €"
+                       styleClass="chart-header-sum"/>
+            </children>
+        </VBox>
+
+    </children>
+</HBox>
+
+    				<AreaChart fx:id="einnahmenAusgabenDiagramm" VBox.vgrow="ALWAYS">
+       					<xAxis>
+           					 <CategoryAxis fx:id="xAchseEinnahmenAusgabenDiagramm"/>
+       					</xAxis>
+       					<yAxis>
+           					 <NumberAxis fx:id="yAchseEinnahmenAusgabenDiagramm"/>
+       					</yAxis>
+       					</AreaChart>
+			</VBox>
+
 
         </SplitPane>
     </center>
 
-    <!-- Unten: Gesamtsumme -->
+  
     <bottom>
         
     </bottom>

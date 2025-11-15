@@ -45,6 +45,7 @@
 .filter-tabs > .tab-header-area {
     -fx-background-color: #f3f4f6;
     -fx-padding: 0 0 10 0; /* kleiner Abstand nach unten zur Tabelle */
+	
 }
 
 .filter-tabs > .tab-header-area > .tab-header-background {
@@ -55,8 +56,8 @@
 .filter-tabs > .tab-content-area {
     -fx-background-color: transparent;
     -fx-padding: 0;
-    -fx-min-height: 0;
-    -fx-pref-height: 0;
+	-fx-min-height: 0;
+	    -fx-pref-height: 0;
 }
 
 /* Optional: Tabs optisch etwas moderner */
@@ -114,3 +115,110 @@
     -fx-spacing: 8;
 }
 
+/* === Chart allgemein ==================================================== */
+
+.chart {
+    -fx-background-color: transparent;
+}
+
+.chart-plot-background {
+    -fx-background-color: #ffffff;
+}
+
+.chart-horizontal-grid-lines,
+.chart-vertical-grid-lines {
+    -fx-stroke: #e5e7eb;
+}
+
+/* Achsen */
+.axis {
+    -fx-tick-label-fill: #374151;
+    -fx-tick-label-font-size: 12px;
+}
+
+.axis-label {
+    -fx-text-fill: #4b5563;
+    -fx-font-size: 18px;
+    -fx-font-weight: bold;
+}
+
+/* === AreaChart: Linien + Fläche ========================================= */
+
+/* Serie 0 = Einnahmen (grün) */
+.chart-series-area-line.default-color0 {
+    -fx-stroke: #16A34A;
+    -fx-stroke-width: 2px;
+}
+
+.chart-series-area-fill.default-color0 {
+    -fx-fill: rgba(22,163,74,0.15); /* grün, leicht transparent */
+}
+
+/* Serie 1 = Ausgaben (rot) */
+.chart-series-area-line.default-color1 {
+    -fx-stroke: #EF4444;
+    -fx-stroke-width: 2px;
+}
+
+.chart-series-area-fill.default-color1 {
+    -fx-fill: rgba(239,68,68,0.15); /* rot, leicht transparent */
+}
+
+.chart-area-symbol {
+    -fx-background-radius: 6px;
+    -fx-padding: 5px;
+}
+
+.chart-area-symbol:hover {
+   -fx-padding: 7px;
+}
+
+.chart-area-symbol.default-color0 {
+    -fx-background-color: #16A34A, white;
+}
+.chart-area-symbol.default-color0:hover {
+    -fx-background-color: #16A34A, #16A34A;
+}
+.chart-area-symbol.default-color1 {
+    -fx-background-color: #EF4444, white;
+}
+.chart-area-symbol.default-color1:hover {
+    -fx-background-color: #EF4444, #EF4444;
+}
+
+/* === Tooltip für Werte beim Hover ======================================= */
+
+.tooltip {
+    -fx-background-color: white;
+    -fx-text-fill: #374151;
+    -fx-background-radius: 6;
+    -fx-padding: 6 10;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.2), 8, 0, 0, 3);
+    -fx-font-size: 11px;
+}
+
+/* === Header über dem Chart ============================================== */
+
+.chart-header {
+    -fx-padding: 0 0 8 0;
+}
+
+.chart-header .chart-header {
+    -fx-font-size: 13px;
+   
+}
+
+.chart-header-sum {
+    -fx-font-size: 25px;
+    -fx-text-fill: #4b5563;
+	-fx-font-weight: bold;
+}
+
+/* Punkte */
+.legend-dot-einnahmen {
+    -fx-fill: #16A34A;
+}
+
+.legend-dot-ausgaben {
+    -fx-fill: #EF4444;
+}
