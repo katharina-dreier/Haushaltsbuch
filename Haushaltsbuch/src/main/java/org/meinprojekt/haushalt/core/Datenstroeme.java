@@ -23,8 +23,7 @@ public class Datenstroeme {
 		return  konto.getKontonummer() + "_" + konto.getKreditinstitut() + "_" + konto.getKontoName() + ".csv";
 	}
 	public static String bildeDateiName (Buchung buchung) {
-		String dateiname = buchung.getKonto().getKontonummer() + "_" + buchung.getKonto().getKreditinstitut() + "_"
-				+ buchung.getKonto().getKontoName() + ".csv";
+		String dateiname = bildeDateiName(buchung.getKonto());
 		return dateiname;
 	}
 	
@@ -131,12 +130,6 @@ public class Datenstroeme {
 		System.out.println("Konto-Datei wurde angelegt: " + dateiPfad);
 	}
 
-	// Diese Methode fügt ein Konto zur Kontenübersicht hinzu
-	/*public static void kontoHinzufuegen(Konto konto) {
-		// Pfad zur zentralen Kontenliste
-		String kontoZeile = konto.toCSV();
-		zeileInDateiAnhaengen(kontenlistePfad, kontoZeile);
-	}*/
 	// Diese Methoden fügen eine Buchung (Einnahme, Ausgabe, Umbuchung) zur
 	// entsprechenden Datei hinzu
 
@@ -312,6 +305,5 @@ public class Datenstroeme {
 		} else {
 			System.out.println("Fehler beim Umbenennen der Datei: " + altesKontopfad);
 		}
-
 }*/
 }

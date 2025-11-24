@@ -34,6 +34,8 @@ import javafx.scene.chart.XYChart.Series;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonType;
+import javafx.scene.control.ChoiceBox;
+import javafx.scene.control.DatePicker;
 import javafx.scene.control.Label;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
@@ -68,10 +70,14 @@ public class MainController {
 	private Tab tabGesamt, tabEinnahmen, tabAusgaben, tabUmbuchungen;
 
 	@FXML
-	private Label summeAlleKontenLbl, summeBuchungenLbl, legendeEinnahmenlbl, legendeAusgabenlbl, legendeDifferenzlbl;
+	private Label summeAlleKontenLbl, summeBuchungenLbl, legendeEinnahmenlbl, legendeAusgabenlbl, legendeDifferenzlbl, lblVon, lblBis;
 	@FXML
-	private Button btnNeuesKonto, btnNeueAusgabe, btnNeueEinnahme, btnNeueUmbuchung;
+	private Button btnNeuesKonto, btnNeueAusgabe, btnNeueEinnahme, btnNeueUmbuchung, btnAuswahlAnwenden;
 
+	@FXML
+	private ChoiceBox<String> auswahlBox;
+	@FXML
+	private DatePicker startDatePicker, endDatePicker;
 	@FXML
 	private TableView<Konto> tblKonten;
 	@FXML
@@ -168,6 +174,18 @@ public class MainController {
 
 		updateEinnahmenAusgabenDiagramm();
 		initialisiereTooltips();
+		
+		initialisiereAuswahlBox();
+	}
+
+	private void initialisiereAuswahlBox() {
+		auswahlBox.getItems().add("Aktueller Monat");
+		auswahlBox.getItems().add("Vergangener Monat");
+		auswahlBox.getItems().add("Aktuelles Jahr");
+		auswahlBox.getItems().add("Verganenes Jahr");
+		auswahlBox.getItems().add("Benutzerdefinierter Zeitraum");
+		auswahlBox.getItems().add("Gesamtzeitraum");
+		auswahlBox.getSelectionModel().select("Gesamtzeitraum");
 	}
 
 	private void setupBuchungenTabelle() {

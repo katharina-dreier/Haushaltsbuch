@@ -2,8 +2,6 @@ package org.meinprojekt.haushalt.core;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.Scanner;
-
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 

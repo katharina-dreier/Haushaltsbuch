@@ -170,6 +170,26 @@
     -fx-fill: #EF4444;
 }
 
+.filter-bar {
+    -fx-padding: 4 16;          /* etwas weniger Höhe */
+    -fx-spacing: 10;
+    -fx-background-color: #fafafa;
+    -fx-border-color: #e0e0e0;
+    -fx-border-width: 1 0 0 0;  /* nur obere Linie */
+}
+
+.filter-bar .filter-label {
+    -fx-font-size: 11px;
+    -fx-text-fill: #6b7280;     /* etwas helleres Grau */
+}
+
+.filter-bar .choice-box,
+.filter-bar .date-picker {
+    -fx-pref-height: 26;
+    -fx-font-size: 11px;
+}
+
+
 
 /* Grundlayout für Dialoge */
 .dialog-root {
