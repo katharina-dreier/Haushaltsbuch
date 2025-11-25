@@ -1,4 +1,4 @@
-package org.meinprojekt.haushalt.core;
+package org.meinprojekt.haushalt.core.model;
 
 import java.time.LocalDate;
 import java.util.UUID;

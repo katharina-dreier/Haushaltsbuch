@@ -1,9 +1,14 @@
-package org.meinprojekt.haushalt.core;
+package org.meinprojekt.haushalt.speicher;
 
 import java.io.*;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.Locale;
+
+import org.meinprojekt.haushalt.core.model.Ausgabe;
+import org.meinprojekt.haushalt.core.model.Buchung;
+import org.meinprojekt.haushalt.core.model.Einnahme;
+import org.meinprojekt.haushalt.core.model.Konto;
 
 public class Datenstroeme {
 
@@ -100,7 +105,7 @@ public class Datenstroeme {
 	public static void kontenNeuSpeichern() {
 		String pfad = kontenUebersichtAnlegen(); // Pfad zur Kontenübersicht
 		dateiMitHeaderNeuErstellen(pfad, headerKonten);
-			for (Konto konto : Konto.konten.values()) {
+			for (Konto konto : Konto.getKonten().values()) {
 				String kontoZeile = konto.toCSV();
 				zeileInDateiAnhaengen(pfad, kontoZeile);
 			}
@@ -169,7 +174,7 @@ public class Datenstroeme {
 				double kontostandErstellung = Double.parseDouble(teile[4]);
 
 				Konto konto = new Konto(kontoName, kontoinhaber, kontostandErstellung, kreditInstitut); 
-				Konto.konten.put(kontonummer, konto); // in die zentrale Map einfügen
+				Konto.getKonten().put(kontonummer, konto); // in die zentrale Map einfügen
 			}
 
 		} catch (IOException e) {
@@ -209,7 +214,7 @@ public class Datenstroeme {
 
 	// Diese Methode lädt die Buchungen aus der Datei in die entsprechenden Konten
 	public static void ladeBuchungenFuerAlleKonten() {
-		for (Konto konto : Konto.konten.values()) {
+		for (Konto konto : Konto.getKonten().values()) {
 			File buchungsDatei = new File(ordnerpfad + bildeDateiName(konto));
 			if (!buchungsDatei.exists()) {
 				System.out.println("⚠️ Buchungsdatei für Konto " + ordnerpfad + bildeDateiName(konto) + " nicht gefunden.");

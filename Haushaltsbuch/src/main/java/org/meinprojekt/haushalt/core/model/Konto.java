@@ -1,4 +1,4 @@
-package org.meinprojekt.haushalt.core;
+package org.meinprojekt.haushalt.core.model;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -14,7 +14,7 @@ public class Konto {
 	private String kreditinstitut;
 	
     public List<Buchung> buchungen;
-    static Map<Integer, Konto> konten = new HashMap<>();
+    private static Map<Integer, Konto> konten = new HashMap<>();
    
     
         // Konstruktor
@@ -89,12 +89,12 @@ public class Konto {
 
 	
 	public static List<Konto> getAlleKonten() {
-	    return new ArrayList<>(konten.values());
+	    return new ArrayList<>(getKonten().values());
 	}
 	
 	public static List<Buchung> getAlleBuchungen() {
 		List<Buchung> alleBuchungen = new ArrayList<>();
-		for (Konto konto : konten.values()) {
+		for (Konto konto : getKonten().values()) {
 			alleBuchungen.addAll(konto.getBuchungen());
 		}
 		return alleBuchungen;
@@ -126,6 +126,14 @@ public class Konto {
 	}
 	public String toCSV() {		
 		return kontonummer + ";" + kreditinstitut + ";" + kontoName + ";" + inhaber + ";" + kontostandBeiErstellung;
+	}
+
+	public static Map<Integer, Konto> getKonten() {
+		return konten;
+	}
+
+	public static void setKonten(Map<Integer, Konto> konten) {
+		Konto.konten = konten;
 	}
 	
 }

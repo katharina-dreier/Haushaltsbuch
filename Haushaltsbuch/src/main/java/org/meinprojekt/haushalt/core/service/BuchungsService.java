@@ -1,9 +1,16 @@
-package org.meinprojekt.haushalt.core;
+package org.meinprojekt.haushalt.core.service;
 
 import java.time.LocalDate;
 import java.util.List;
 
-public class BuchungsAktionen {
+import org.meinprojekt.haushalt.core.model.Ausgabe;
+import org.meinprojekt.haushalt.core.model.Buchung;
+import org.meinprojekt.haushalt.core.model.Einnahme;
+import org.meinprojekt.haushalt.core.model.Konto;
+import org.meinprojekt.haushalt.core.model.Umbuchung;
+import org.meinprojekt.haushalt.speicher.Datenstroeme;
+
+public class BuchungsService {
 	
 	
 	//Notwendige Daten einlesen und Einnahme tätigen

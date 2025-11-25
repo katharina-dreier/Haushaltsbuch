@@ -4,8 +4,8 @@ import java.text.NumberFormat;
 import java.text.ParseException;
 import java.util.Locale;
 
-import org.meinprojekt.haushalt.core.Konto;
-import org.meinprojekt.haushalt.core.KontoAktionen;
+import org.meinprojekt.haushalt.core.model.Konto;
+import org.meinprojekt.haushalt.core.service.KontoService;
 
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
@@ -91,8 +91,8 @@ public class DialogKonto {
 		String inhaber = txtInhaber.getText();
 		String institut = txtInstitut.getText();
 		if (!editMode) { 
-		KontoAktionen.kontoErstellen(kontoname, inhaber, saldo, institut);}
-		else {KontoAktionen.kontoBearbeiten(original, saldo, inhaber);}
+		KontoService.kontoErstellen(kontoname, inhaber, saldo, institut);}
+		else {KontoService.kontoBearbeiten(original, saldo, inhaber);}
 		btnOk.getScene().getWindow().hide();
 	}
 

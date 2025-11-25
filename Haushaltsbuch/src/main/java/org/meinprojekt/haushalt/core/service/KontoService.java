@@ -1,18 +1,23 @@
-package org.meinprojekt.haushalt.core;
+package org.meinprojekt.haushalt.core.service;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
+
+import org.meinprojekt.haushalt.core.model.Buchung;
+import org.meinprojekt.haushalt.core.model.Konto;
+import org.meinprojekt.haushalt.speicher.Datenstroeme;
+
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 
-public class KontoAktionen {
+public class KontoService {
 	
 	//Aus Dialogfenster erhaltene Daten verwenden um Konto zu erstellen
 		public static void kontoErstellen(String kontoName, String inhaber, double kontostand, String kreditinstitut) {
 			System.out.println("Kontoerstellung gestartet mit folgenden Daten: " + kontoName + ", " + inhaber + ", " + kontostand + ", " + kreditinstitut);
 			Konto konto = new Konto(kontoName, inhaber, kontostand, kreditinstitut);
-			Konto.konten.put(konto.getKontonummer(), konto);
-			BuchungsAktionen.einnahmeTätigen(kontostand, "Kontoerstellung", konto, inhaber, LocalDate.now() , "", false);
+			Konto.getKonten().put(konto.getKontonummer(), konto);
+			BuchungsService.einnahmeTätigen(kontostand, "Kontoerstellung", konto, inhaber, LocalDate.now() , "", false);
 			// Konto in die Datei einfügen
 			//Datenstroeme.kontoHinzufuegen(konto);
 			System.out.println("Konto wurde erstellt: " + konto);
@@ -20,17 +25,17 @@ public class KontoAktionen {
 		
 		public static ObservableList<Konto> getAlleKontenAlsObservableList() {
 			ObservableList<Konto> kontenListe = FXCollections.observableArrayList();
-			kontenListe.addAll(Konto.konten.values());
+			kontenListe.addAll(Konto.getKonten().values());
 			return kontenListe;
 		}
 
 		public static void loescheKonto(Konto k) {
 			System.out.println("Starte mit Löschen von Konto: " + k);
 			for (Buchung b : new ArrayList<>(k.buchungen)) {
-				BuchungsAktionen.loescheBuchung(b);
+				BuchungsService.loescheBuchung(b);
 				}
 			Datenstroeme.kontoLoeschen(k);
-			Konto.konten.remove(k.getKontonummer());
+			Konto.getKonten().remove(k.getKontonummer());
 			Datenstroeme.kontenNeuSpeichern();
 			System.out.println("Konto wurde gelöscht: " + k);
 		}

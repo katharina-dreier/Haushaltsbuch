@@ -3,10 +3,10 @@ package org.meinprojekt.haushalt.ui;
 import java.text.ParseException;
 import java.time.LocalDate;
 
-import org.meinprojekt.haushalt.core.Buchung;
-import org.meinprojekt.haushalt.core.BuchungsAktionen;
-import org.meinprojekt.haushalt.core.Konto;
-import org.meinprojekt.haushalt.core.KontoAktionen;
+import org.meinprojekt.haushalt.core.model.Buchung;
+import org.meinprojekt.haushalt.core.model.Konto;
+import org.meinprojekt.haushalt.core.service.BuchungsService;
+import org.meinprojekt.haushalt.core.service.KontoService;
 
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
@@ -37,7 +37,7 @@ public class DialogBuchung {
 	Button btnAbbrechen;
 	@FXML
 	Button btnOk;
-	ObservableList<Konto> alleKonten = KontoAktionen.getAlleKontenAlsObservableList();
+	ObservableList<Konto> alleKonten = KontoService.getAlleKontenAlsObservableList();
 
 	private boolean editMode = false;
 
@@ -103,24 +103,24 @@ public class DialogBuchung {
 					Konto ziel = cmbZielKonto.getValue();
 					String sender = txtSender.getText().trim();
 					if (!editMode) { 
-						BuchungsAktionen.einnahmeTätigen(betrag, kat, ziel, sender, datum, "", false);}
+						BuchungsService.einnahmeTätigen(betrag, kat, ziel, sender, datum, "", false);}
 					else {
 						if (original.getIsUmbuchung()) {
-							BuchungsAktionen.umbuchungBearbeiten(original, ziel, betrag, datum);
+							BuchungsService.umbuchungBearbeiten(original, ziel, betrag, datum);
 						}
-						else {BuchungsAktionen.buchungBearbeiten(original, betrag, kat, ziel, sender, datum);}
+						else {BuchungsService.buchungBearbeiten(original, betrag, kat, ziel, sender, datum);}
 					}
 				}
 				case "Ausgabe" -> {
 					Konto quell = cmbQuellKonto.getValue();
 					String empfaenger = txtEmpfaenger.getText().trim();
 					if (!editMode) {
-						BuchungsAktionen.ausgabeTätigen(betrag, kat, quell, empfaenger, datum, "", false);
+						BuchungsService.ausgabeTätigen(betrag, kat, quell, empfaenger, datum, "", false);
 					} else {
 						if (original.getIsUmbuchung()) {
-							BuchungsAktionen.umbuchungBearbeiten(original, quell, betrag, datum);
+							BuchungsService.umbuchungBearbeiten(original, quell, betrag, datum);
 						} else
-						BuchungsAktionen.buchungBearbeiten(original, betrag, kat, quell, empfaenger, datum);
+						BuchungsService.buchungBearbeiten(original, betrag, kat, quell, empfaenger, datum);
 					}
 				}
 				case "Umbuchung" -> {
@@ -131,7 +131,7 @@ public class DialogBuchung {
 						new Alert(Alert.AlertType.WARNING, "Quelle und Ziel dürfen nicht gleich sein.").showAndWait();
 						return;
 					}
-					BuchungsAktionen.umbuchungTätigen(betrag, quell, ziel, datum);
+					BuchungsService.umbuchungTätigen(betrag, quell, ziel, datum);
 
 				}
 				}

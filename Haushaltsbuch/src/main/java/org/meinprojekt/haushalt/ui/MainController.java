@@ -11,11 +11,11 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.function.Consumer;
 
-import org.meinprojekt.haushalt.core.Buchung;
-import org.meinprojekt.haushalt.core.BuchungsAktionen;
-import org.meinprojekt.haushalt.core.Datenstroeme;
-import org.meinprojekt.haushalt.core.Konto;
-import org.meinprojekt.haushalt.core.KontoAktionen;
+import org.meinprojekt.haushalt.core.model.Buchung;
+import org.meinprojekt.haushalt.core.model.Konto;
+import org.meinprojekt.haushalt.core.service.BuchungsService;
+import org.meinprojekt.haushalt.core.service.KontoService;
+import org.meinprojekt.haushalt.speicher.Datenstroeme;
 
 import javafx.beans.property.ReadOnlyObjectWrapper;
 import javafx.collections.FXCollections;
@@ -601,7 +601,7 @@ public class MainController {
 
 		confirm.showAndWait().ifPresent(result -> {
 			if (result == ButtonType.OK) {
-				BuchungsAktionen.loescheBuchung(b);
+				BuchungsService.loescheBuchung(b);
 			}
 			buchungsListe.setAll(b.getKonto().getBuchungen());
 			tblKonten.refresh();
@@ -619,7 +619,7 @@ public class MainController {
 
 		confirm.showAndWait().ifPresent(result -> {
 			if (result == ButtonType.OK) {
-				KontoAktionen.loescheKonto(k);
+				KontoService.loescheKonto(k);
 			}
 			kontenListe.setAll(Konto.getAlleKonten());
 			tblKonten.refresh();
