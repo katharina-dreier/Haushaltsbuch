@@ -14,6 +14,7 @@ import java.util.function.Consumer;
 import org.meinprojekt.haushalt.core.model.Buchung;
 import org.meinprojekt.haushalt.core.model.Konto;
 import org.meinprojekt.haushalt.core.service.BuchungsService;
+import org.meinprojekt.haushalt.core.service.FilterService;
 import org.meinprojekt.haushalt.core.service.KontoService;
 import org.meinprojekt.haushalt.speicher.Datenstroeme;
 
@@ -115,6 +116,7 @@ public class MainController {
 	private final Map<String, Double> einnahmenProMonat = new TreeMap<>();
 	private final Map<String, Double> ausgabenProMonat = new TreeMap<>();
 	private final NumberFormat euro = NumberFormat.getCurrencyInstance(Locale.GERMANY);
+	private final FilterService filterService = new FilterService();
 
 	@FXML
 	private void initialize() {
@@ -124,6 +126,8 @@ public class MainController {
 		Datenstroeme.ladeKontenAusDatei();
 		Datenstroeme.ladeKategorienAusDatei();
 		Datenstroeme.ladeBuchungenFuerAlleKonten();
+		
+		
 
 		buchungslisteInitialisieren();
 		tabPane.getSelectionModel().selectedItemProperty().addListener((obs, alt, neu) -> applyTabFilter());
@@ -505,15 +509,15 @@ public class MainController {
 
 		var aktTab = tabPane.getSelectionModel().getSelectedItem();
 		if (aktTab == tabEinnahmen) {
-			gefilterteBuchungsListe.setPredicate(b -> "EINNAHME".equalsIgnoreCase(b.getBuchungsart()));
+			gefilterteBuchungsListe.setPredicate(filterService.predicateFuerBuchungsArt("EINNAHME"));
 
 		} else if (aktTab == tabAusgaben) {
-			gefilterteBuchungsListe.setPredicate(b -> "AUSGABE".equalsIgnoreCase(b.getBuchungsart()));
+			gefilterteBuchungsListe.setPredicate(filterService.predicateFuerBuchungsArt("AUSGABE"));
 		} else if (aktTab == tabUmbuchungen) {
-			gefilterteBuchungsListe.setPredicate(b -> "UMBUCHUNG".equalsIgnoreCase(b.getKategorie()));
+			gefilterteBuchungsListe.setPredicate(filterService.predicateFuerKategorie("UMBUCHUNG"));
 		} else {
 			// Gesamt
-			gefilterteBuchungsListe.setPredicate(b -> true);
+			gefilterteBuchungsListe.setPredicate(_ -> true);
 		}
 		summeBuchungenAktualisieren();
 
