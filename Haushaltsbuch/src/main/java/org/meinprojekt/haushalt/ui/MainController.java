@@ -10,7 +10,10 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.function.Consumer;
+import java.util.function.Predicate;
 
+import org.meinprojekt.haushalt.core.filter.Zeitraum;
+import org.meinprojekt.haushalt.core.filter.ZeitraumArt;
 import org.meinprojekt.haushalt.core.model.Buchung;
 import org.meinprojekt.haushalt.core.model.Konto;
 import org.meinprojekt.haushalt.core.service.BuchungsService;
@@ -76,9 +79,9 @@ public class MainController {
 	private Button btnNeuesKonto, btnNeueAusgabe, btnNeueEinnahme, btnNeueUmbuchung, btnAuswahlAnwenden;
 
 	@FXML
-	private ChoiceBox<String> auswahlBox;
+	private ChoiceBox<ZeitraumArt> auswahlBox;
 	@FXML
-	private DatePicker startDatePicker, endDatePicker;
+	private DatePicker startDatumPicker, endDatumPicker;
 	@FXML
 	private TableView<Konto> tblKonten;
 	@FXML
@@ -117,6 +120,8 @@ public class MainController {
 	private final Map<String, Double> ausgabenProMonat = new TreeMap<>();
 	private final NumberFormat euro = NumberFormat.getCurrencyInstance(Locale.GERMANY);
 	private final FilterService filterService = new FilterService();
+	private Predicate<Buchung> aktuellerTabFilter      = b -> true;
+	private Predicate<Buchung> aktuellerZeitraumFilter = b -> true;
 
 	@FXML
 	private void initialize() {
@@ -183,14 +188,99 @@ public class MainController {
 	}
 
 	private void initialisiereAuswahlBox() {
-		auswahlBox.getItems().add("Aktueller Monat");
-		auswahlBox.getItems().add("Vergangener Monat");
-		auswahlBox.getItems().add("Aktuelles Jahr");
-		auswahlBox.getItems().add("Verganenes Jahr");
-		auswahlBox.getItems().add("Benutzerdefinierter Zeitraum");
-		auswahlBox.getItems().add("Gesamtzeitraum");
-		auswahlBox.getSelectionModel().select("Gesamtzeitraum");
+		auswahlBox.getItems().setAll(ZeitraumArt.values());
+	    auswahlBox.setValue(ZeitraumArt.AKTUELLER_MONAT); // Standardauswahl
+	    setzeFilterSichtbarkeiten(auswahlBox.getValue());
+	    applyZeitraumFilter(auswahlBox.getValue());
+	    prefillDatumPicker(auswahlBox.getValue());
+	    
+	    auswahlBox.getSelectionModel().selectedItemProperty().addListener((obs, alt, neu) -> {
+	    	if (neu == ZeitraumArt.BENUTZERDEFINIERT) {
+	    		prefillDatumPicker(alt);
+	    	}
+	       setzeFilterSichtbarkeiten(neu);
+	       applyZeitraumFilter(neu);
+	    });
+
 	}
+
+	private void prefillDatumPicker(ZeitraumArt value) {
+		Zeitraum zeitraum = ZeitraumArt.zeitraumAusArt(value);
+		if (zeitraum != null) {
+			startDatumPicker.setValue(zeitraum.getVon());
+			endDatumPicker.setValue(zeitraum.getBis());
+		} else {
+			startDatumPicker.setValue(null);
+			endDatumPicker.setValue(null);
+		}
+		
+	}
+
+	private void setzeFilterSichtbarkeiten(ZeitraumArt neu) {
+		boolean benutzerdefiniert = neu == ZeitraumArt.BENUTZERDEFINIERT;
+        lblVon.setVisible(benutzerdefiniert);
+        lblVon.setManaged(benutzerdefiniert);
+        startDatumPicker.setVisible(benutzerdefiniert);
+        startDatumPicker.setManaged(benutzerdefiniert);
+        lblBis.setVisible(benutzerdefiniert);
+        lblBis.setManaged(benutzerdefiniert);
+        endDatumPicker.setVisible(benutzerdefiniert);
+        endDatumPicker.setManaged(benutzerdefiniert);
+        btnAuswahlAnwenden.setVisible(benutzerdefiniert);
+        btnAuswahlAnwenden.setManaged(benutzerdefiniert);
+        
+        if (!benutzerdefiniert) {
+            //evtl später andere Sichtbarkeiten anpassen
+        }
+		
+	}
+
+	private void applyZeitraumFilter(ZeitraumArt zeitraumArt) {
+		Zeitraum zeitraum = ZeitraumArt.zeitraumAusArt(zeitraumArt);
+		if (zeitraumArt == ZeitraumArt.BENUTZERDEFINIERT) {
+			LocalDate von = startDatumPicker.getValue();
+			LocalDate bis = endDatumPicker.getValue();
+			aktuellerZeitraumFilter = filterService.predicateFürZeitraum(Zeitraum.benutzerdefinierterZeitraum(von, bis));
+			}
+		else if (zeitraum != null) {
+			
+			 aktuellerZeitraumFilter = filterService.predicateFürZeitraum(zeitraum);
+		} 
+		else {
+            aktuellerZeitraumFilter = _ -> true; // Alle Zeiten
+		}
+		aktualisiereFilter();
+		}
+	
+	private void aktualisiereFilter() {
+		Predicate<Buchung> kombinierterFilter = aktuellerTabFilter.and(aktuellerZeitraumFilter);
+		gefilterteBuchungsListe.setPredicate(kombinierterFilter);
+		ansichtAktualisieren();
+	}
+
+	private void ansichtAktualisieren() {
+		summeBuchungenAktualisieren();
+		updateEinnahmenAusgabenDiagramm();	
+	}
+
+	@FXML
+	private void handleAuswahlAnwenden() {
+		LocalDate von = startDatumPicker.getValue();
+		LocalDate bis = endDatumPicker.getValue();
+		if (von != null && bis != null && !bis.isBefore(von)) {
+			Zeitraum zeitraum = Zeitraum.benutzerdefinierterZeitraum(von, bis);
+			aktuellerZeitraumFilter = filterService.predicateFürZeitraum(zeitraum);
+			summeBuchungenAktualisieren();
+		} else {
+			Alert alert = new Alert(Alert.AlertType.ERROR);
+			alert.setTitle("Ungültiger Zeitraum");
+			alert.setHeaderText("Bitte gültige Start- und Enddaten eingeben.");
+			alert.setContentText("Das Enddatum darf nicht vor dem Startdatum liegen.");
+			alert.showAndWait();
+		}
+	}
+		
+	
 
 	private void setupBuchungenTabelle() {
 		colBuchungsDatum.setCellValueFactory(new PropertyValueFactory<>("buchungsDatum"));
@@ -316,7 +406,7 @@ public class MainController {
 
 	private double einnahmenProMonatBerechnenUndFuellen() {
 		double summeEinnahmen = 0.0;
-		for (Buchung buchung : buchungsListe) {
+		for (Buchung buchung : gefilterteBuchungsListe) {
 			LocalDate datum = buchung.getBuchungsDatum();
 			String monatKey = datum.getYear() + "-" + String.format("%02d", datum.getMonthValue());
 			if ("EINNAHME".equalsIgnoreCase(buchung.getBuchungsart())) {
@@ -329,7 +419,7 @@ public class MainController {
 
 	private double ausgabenProMonatBerechnenUndFuellen() {
 		double summeAusgaben = 0.0;
-		for (Buchung buchung : buchungsListe) {
+		for (Buchung buchung : gefilterteBuchungsListe) {
 			LocalDate datum = buchung.getBuchungsDatum();
 			String monatKey = datum.getYear() + "-" + String.format("%02d", datum.getMonthValue());
 			if ("AUSGABE".equalsIgnoreCase(buchung.getBuchungsart())) {
@@ -451,6 +541,8 @@ public class MainController {
 			List<Buchung> liste = konto.getBuchungen();
 			buchungsListe.setAll(liste);
 			applyTabFilter();
+			applyZeitraumFilter(auswahlBox.getValue());
+			
 			colKonto.setVisible(false);
 			updateEinnahmenAusgabenDiagramm();
 
@@ -509,17 +601,17 @@ public class MainController {
 
 		var aktTab = tabPane.getSelectionModel().getSelectedItem();
 		if (aktTab == tabEinnahmen) {
-			gefilterteBuchungsListe.setPredicate(filterService.predicateFuerBuchungsArt("EINNAHME"));
+			aktuellerTabFilter =  filterService.predicateFuerBuchungsArt("EINNAHME");
 
 		} else if (aktTab == tabAusgaben) {
-			gefilterteBuchungsListe.setPredicate(filterService.predicateFuerBuchungsArt("AUSGABE"));
+			aktuellerTabFilter = filterService.predicateFuerBuchungsArt("AUSGABE");
 		} else if (aktTab == tabUmbuchungen) {
-			gefilterteBuchungsListe.setPredicate(filterService.predicateFuerKategorie("UMBUCHUNG"));
+			aktuellerTabFilter = filterService.predicateFuerKategorie("UMBUCHUNG");
 		} else {
-			// Gesamt
-			gefilterteBuchungsListe.setPredicate(_ -> true);
+			aktuellerTabFilter = b -> true;
 		}
-		summeBuchungenAktualisieren();
+		aktualisiereFilter();
+		ansichtAktualisieren();
 
 	}
 

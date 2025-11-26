@@ -169,6 +169,7 @@
           
             <Button fx:id="btnAuswahlAnwenden"
                     text="Auswahl anwenden"
+                    onAction="#handleAuswahlAnwenden"
                     mnemonicParsing="false"
                     styleClass="primary-button"/>
         </children>
