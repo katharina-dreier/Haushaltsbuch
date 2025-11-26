@@ -15,8 +15,10 @@ import java.util.function.Predicate;
 import org.meinprojekt.haushalt.core.filter.Zeitraum;
 import org.meinprojekt.haushalt.core.filter.ZeitraumArt;
 import org.meinprojekt.haushalt.core.model.Buchung;
+import org.meinprojekt.haushalt.core.model.DiagrammDaten;
 import org.meinprojekt.haushalt.core.model.Konto;
 import org.meinprojekt.haushalt.core.service.BuchungsService;
+import org.meinprojekt.haushalt.core.service.DiagrammService;
 import org.meinprojekt.haushalt.core.service.FilterService;
 import org.meinprojekt.haushalt.core.service.KontoService;
 import org.meinprojekt.haushalt.speicher.Datenstroeme;
@@ -116,12 +118,12 @@ public class MainController {
 	private final ObservableList<Buchung> buchungsListe = FXCollections.observableArrayList();
 	private FilteredList<Buchung> gefilterteBuchungsListe;
 	private SortedList<Buchung> sortierteBuchungsListe;
-	private final Map<String, Double> einnahmenProMonat = new TreeMap<>();
-	private final Map<String, Double> ausgabenProMonat = new TreeMap<>();
+	//private final Map<String, Double> einnahmenProMonat = new TreeMap<>();
+	//private final Map<String, Double> ausgabenProMonat = new TreeMap<>();
 	private final NumberFormat euro = NumberFormat.getCurrencyInstance(Locale.GERMANY);
 	private final FilterService filterService = new FilterService();
-	private Predicate<Buchung> aktuellerTabFilter      = b -> true;
-	private Predicate<Buchung> aktuellerZeitraumFilter = b -> true;
+	private Predicate<Buchung> aktuellerTabFilter      = _ -> true;
+	private Predicate<Buchung> aktuellerZeitraumFilter = _ -> true;
 
 	@FXML
 	private void initialize() {
@@ -132,17 +134,17 @@ public class MainController {
 		Datenstroeme.ladeKategorienAusDatei();
 		Datenstroeme.ladeBuchungenFuerAlleKonten();
 		
-		
-
 		buchungslisteInitialisieren();
 		tabPane.getSelectionModel().selectedItemProperty().addListener((obs, alt, neu) -> applyTabFilter());
-		summeBuchungenAktualisieren();
+		ansichtAktualisieren();
 
 		setupKontenTabelle();
 		setupKontoLoeschen();
+		setupKontoBearbeiten();
 
 		setupBuchungenTabelle();
 		setupBuchungLoeschen();
+		setupBuchungBearbeiten();
 
 		// Liste der Tabelle zuweisen
 		kontenListe.setAll(Konto.getAlleKonten());
@@ -155,6 +157,11 @@ public class MainController {
 			buchungenAnzeigen(neuesKonto);
 		});
 
+		initialisiereTooltips();
+		initialisiereAuswahlBox();
+	}
+
+	private void setupBuchungBearbeiten() {
 		// Doppelklick auf Buchung zum Bearbeiten
 		tblBuchungen.setRowFactory(tv -> {
 			TableRow<Buchung> row = new TableRow<>();
@@ -167,24 +174,23 @@ public class MainController {
 			});
 			return row;
 		});
-
-		// Doppelklick auf Konto zum Bearbeiten
-		tblKonten.setRowFactory(tv -> {
-			TableRow<Konto> row = new TableRow<>();
-			row.setOnMouseClicked(event -> {
-				// Nur echte Zeilen + Doppelklick
-				if (event.getClickCount() == 2 && !row.isEmpty()) {
-					Konto selected = row.getItem();
-					oeffneBearbeitenDialog(selected);
-				}
-			});
-			return row;
-		});
-
-		updateEinnahmenAusgabenDiagramm();
-		initialisiereTooltips();
 		
-		initialisiereAuswahlBox();
+	}
+
+	private void setupKontoBearbeiten() {
+		// Doppelklick auf Konto zum Bearbeiten
+				tblKonten.setRowFactory(_ -> {
+					TableRow<Konto> row = new TableRow<>();
+					row.setOnMouseClicked(event -> {
+						// Nur echte Zeilen + Doppelklick
+						if (event.getClickCount() == 2 && !row.isEmpty()) {
+							Konto selected = row.getItem();
+							oeffneBearbeitenDialog(selected);
+						}
+					});
+					return row;
+				});
+		
 	}
 
 	private void initialisiereAuswahlBox() {
@@ -260,7 +266,7 @@ public class MainController {
 
 	private void ansichtAktualisieren() {
 		summeBuchungenAktualisieren();
-		updateEinnahmenAusgabenDiagramm();	
+		ladeEinnahmenAusgabenDiagramm();	
 	}
 
 	@FXML
@@ -350,30 +356,32 @@ public class MainController {
 
 	}
 
-	private void updateEinnahmenAusgabenDiagramm() {
+	private void ladeEinnahmenAusgabenDiagramm() {
 		if (statistikArea == null)
 			return;
+		
+		DiagrammDaten diagrammDaten = DiagrammService.berechneDiagrammDaten(gefilterteBuchungsListe);
 		einnahmenAusgabenDiagramm.setTitle(null);
 		einnahmenAusgabenDiagramm.setLegendVisible(false);
 		einnahmenAusgabenDiagramm.setAnimated(false);
-
-		achsenLabelSetzenEinnahmenAusgabenDiagramm();
-		einnahmenProMonat.clear();
-		ausgabenProMonat.clear();
+		
+		achsenLabelSetzenEinnahmenAusgabenDiagramm(diagrammDaten);
+		
+		double summeEinnahmen = diagrammDaten.getSummeEinnahmen();
+		double summeAusgaben = diagrammDaten.getSummeAusgaben();
+		double summeDifferenz = diagrammDaten.getSummeDifferenz();
+		
+		
 		XYChart.Series<String, Number> einnahmenSerie = new XYChart.Series<>();
 		XYChart.Series<String, Number> ausgabenSerie = new XYChart.Series<>();
 
-		double summeEinnahmen = einnahmenProMonatBerechnenUndFuellen();
-		double summeAusgaben = ausgabenProMonatBerechnenUndFuellen();
-		double summeDifferenz = summeEinnahmen - summeAusgaben;
-
-		monateDurchlaufen(einnahmenSerie, ausgabenSerie);
+		xWerteDurchlaufen(diagrammDaten, einnahmenSerie, ausgabenSerie);
 
 		einnahmenAusgabenDiagramm.getData().clear();
 		einnahmenAusgabenDiagramm.getData().add(einnahmenSerie);
 		einnahmenAusgabenDiagramm.getData().add(ausgabenSerie);
 
-		yAchseAnpassenEinnamenAusgabenDiagramm();
+		yAchseAnpassenEinnamenAusgabenDiagramm(diagrammDaten);
 
 		legendeBerechnenUndSetzen(summeEinnahmen, summeAusgaben, summeDifferenz);
 		initialisiereTooltips();
@@ -391,50 +399,25 @@ public class MainController {
 		legendeDifferenzlbl.setText(legendeDifferenz);
 	}
 
-	private void monateDurchlaufen(Series<String, Number> einnahmenSerie, Series<String, Number> ausgabenSerie) {
-		Set<String> alleMonate = new TreeSet<>();
-		alleMonate.addAll(einnahmenProMonat.keySet());
-		alleMonate.addAll(ausgabenProMonat.keySet());
+	private void xWerteDurchlaufen(DiagrammDaten diagrammDaten, Series<String, Number> einnahmenSerie, Series<String, Number> ausgabenSerie) {
+		Map<String, Double> gefilterteEinnahmen = diagrammDaten.getGefilterteEinnahmen();
+		Map<String, Double> gefilterteAusgaben = diagrammDaten.getGefilterteAusgaben();
+		List<String> alleWerte = diagrammDaten.getxWerteSortiert();
 
-		for (String monat : alleMonate) {
+		for (String wert : alleWerte) {
 
-			einnahmenSerie.getData().add(new XYChart.Data<>(monat, einnahmenProMonat.getOrDefault(monat, 0.0)));
-			ausgabenSerie.getData().add(new XYChart.Data<>(monat, ausgabenProMonat.getOrDefault(monat, 0.0)));
+			einnahmenSerie.getData().add(new XYChart.Data<>(wert, gefilterteEinnahmen.getOrDefault(wert, 0.0)));
+			ausgabenSerie.getData().add(new XYChart.Data<>(wert, gefilterteAusgaben.getOrDefault(wert, 0.0)));
 		}
 
 	}
 
-	private double einnahmenProMonatBerechnenUndFuellen() {
-		double summeEinnahmen = 0.0;
-		for (Buchung buchung : gefilterteBuchungsListe) {
-			LocalDate datum = buchung.getBuchungsDatum();
-			String monatKey = datum.getYear() + "-" + String.format("%02d", datum.getMonthValue());
-			if ("EINNAHME".equalsIgnoreCase(buchung.getBuchungsart())) {
-				einnahmenProMonat.merge(monatKey, buchung.getBetrag(), Double::sum);
-				summeEinnahmen += buchung.getBetrag();
-			}
-		}
-		return summeEinnahmen;
-	}
 
-	private double ausgabenProMonatBerechnenUndFuellen() {
-		double summeAusgaben = 0.0;
-		for (Buchung buchung : gefilterteBuchungsListe) {
-			LocalDate datum = buchung.getBuchungsDatum();
-			String monatKey = datum.getYear() + "-" + String.format("%02d", datum.getMonthValue());
-			if ("AUSGABE".equalsIgnoreCase(buchung.getBuchungsart())) {
-				ausgabenProMonat.merge(monatKey, buchung.getBetrag(), Double::sum);
-				summeAusgaben += buchung.getBetrag();
-			}
-		}
-		return summeAusgaben;
-	}
-
-	private void achsenLabelSetzenEinnahmenAusgabenDiagramm() {
-		String labelXAchse = "Monat";
+	private void achsenLabelSetzenEinnahmenAusgabenDiagramm(DiagrammDaten diagrammDaten) {
+		String labelXAchse = diagrammDaten.getxAchsenLabel();
 		xAchseEinnahmenAusgabenDiagramm.setLabel(labelXAchse);
 
-		String labelYAchse = "Betrag";
+		String labelYAchse = diagrammDaten.getyAchsenLabel();
 		yAchseEinnahmenAusgabenDiagramm.setLabel(labelYAchse);
 
 		yAchseEinnahmenAusgabenDiagramm.setTickLabelFormatter(new StringConverter<Number>() {
@@ -442,7 +425,6 @@ public class MainController {
 			public String toString(Number object) {
 				return euro.format(object.doubleValue());
 			}
-
 			@Override
 			public Number fromString(String string) {
 				return 0;
@@ -451,15 +433,9 @@ public class MainController {
 
 	}
 
-	private void yAchseAnpassenEinnamenAusgabenDiagramm() {
-		double maxWert = Math.max(einnahmenProMonat.values().stream().mapToDouble(Double::doubleValue).max().orElse(0),
-				ausgabenProMonat.values().stream().mapToDouble(Double::doubleValue).max().orElse(0));
-
-		double schritt = 200;
-		if (maxWert > 1000)
-			schritt = 500;
-		if (maxWert > 3000)
-			schritt = 1000;
+	private void yAchseAnpassenEinnamenAusgabenDiagramm(DiagrammDaten diagrammDaten) {
+		double maxWert = diagrammDaten.getMaxWert();
+		double schritt = diagrammDaten.getTickEinheit();
 
 		yAchseEinnahmenAusgabenDiagramm.setAutoRanging(false);
 		yAchseEinnahmenAusgabenDiagramm.setLowerBound(0);
@@ -488,7 +464,7 @@ public class MainController {
 		dialogOeffnen(btnNeuesKonto, fxmlPfad, titel, (DialogKonto c) -> {
 		});
 		updateGesamtSummeLabel();
-		updateEinnahmenAusgabenDiagramm();
+		ladeEinnahmenAusgabenDiagramm();
 	}
 
 	@FXML
@@ -500,7 +476,7 @@ public class MainController {
 		});
 		aktualisiereTabelle();
 		updateGesamtSummeLabel();
-		updateEinnahmenAusgabenDiagramm();
+		ladeEinnahmenAusgabenDiagramm();
 	}
 
 	@FXML
@@ -512,7 +488,7 @@ public class MainController {
 		});
 		aktualisiereTabelle();
 		updateGesamtSummeLabel();
-		updateEinnahmenAusgabenDiagramm();
+		ladeEinnahmenAusgabenDiagramm();
 	}
 
 	@FXML
@@ -524,7 +500,7 @@ public class MainController {
 		});
 		aktualisiereTabelle();
 		updateGesamtSummeLabel();
-		updateEinnahmenAusgabenDiagramm();
+		ladeEinnahmenAusgabenDiagramm();
 	}
 
 	public void aktualisiereTabelle() {
@@ -544,14 +520,14 @@ public class MainController {
 			applyZeitraumFilter(auswahlBox.getValue());
 			
 			colKonto.setVisible(false);
-			updateEinnahmenAusgabenDiagramm();
+			ladeEinnahmenAusgabenDiagramm();
 
 		} else {
 			// Kein Konto ausgewählt, zeige alle Buchungen
 			buchungsListe.setAll(Konto.getAlleBuchungen());
 			applyTabFilter();
 			colKonto.setVisible(true);
-			updateEinnahmenAusgabenDiagramm();
+			ladeEinnahmenAusgabenDiagramm();
 		}
 
 	}
