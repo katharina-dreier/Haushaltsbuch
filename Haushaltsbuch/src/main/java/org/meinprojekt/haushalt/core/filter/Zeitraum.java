@@ -54,6 +54,11 @@ public class Zeitraum {
 		public static Zeitraum benutzerdefinierterZeitraum(LocalDate von, LocalDate bis) {
 			return new Zeitraum(von, bis);
 	}
+		
+		@Override
+	public String toString() {
+		return "Von: " + von.toString() + " Bis: " + bis.toString();
+	}
 
 
 }

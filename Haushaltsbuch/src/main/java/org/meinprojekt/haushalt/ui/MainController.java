@@ -3,6 +3,7 @@ package org.meinprojekt.haushalt.ui;
 import java.text.NumberFormat;
 import java.text.ParseException;
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -16,6 +17,7 @@ import org.meinprojekt.haushalt.core.filter.Zeitraum;
 import org.meinprojekt.haushalt.core.filter.ZeitraumArt;
 import org.meinprojekt.haushalt.core.model.Buchung;
 import org.meinprojekt.haushalt.core.model.DiagrammDaten;
+import org.meinprojekt.haushalt.core.model.DiagrammDaten.Aufloesung;
 import org.meinprojekt.haushalt.core.model.Konto;
 import org.meinprojekt.haushalt.core.service.BuchungsService;
 import org.meinprojekt.haushalt.core.service.DiagrammService;
@@ -124,7 +126,8 @@ public class MainController {
 	private final FilterService filterService = new FilterService();
 	private Predicate<Buchung> aktuellerTabFilter      = _ -> true;
 	private Predicate<Buchung> aktuellerZeitraumFilter = _ -> true;
-
+	private Zeitraum aktuellerZeitraum = null;
+	
 	@FXML
 	private void initialize() {
 
@@ -135,8 +138,9 @@ public class MainController {
 		Datenstroeme.ladeBuchungenFuerAlleKonten();
 		
 		buchungslisteInitialisieren();
+		initialisiereAuswahlBox();
 		tabPane.getSelectionModel().selectedItemProperty().addListener((obs, alt, neu) -> applyTabFilter());
-		ansichtAktualisieren();
+		
 
 		setupKontenTabelle();
 		setupKontoLoeschen();
@@ -157,8 +161,32 @@ public class MainController {
 			buchungenAnzeigen(neuesKonto);
 		});
 
+		summeBuchungenAktualisieren();
+		ladeEinnahmenAusgabenDiagramm();
 		initialisiereTooltips();
-		initialisiereAuswahlBox();
+		
+	}
+
+	private LocalDate getMaxDatum(FilteredList<Buchung> gefilterteBuchungsListe) {
+		LocalDate maxDatum = null;
+		for (Buchung buchung : gefilterteBuchungsListe) {
+			LocalDate datum = buchung.getBuchungsDatum();
+			if (maxDatum == null || datum.isAfter(maxDatum)) {
+				maxDatum = datum;
+			}
+		}
+		return maxDatum;
+	}
+
+	private LocalDate getMinDatum(FilteredList<Buchung> gefilterteBuchungsListe) {
+		LocalDate minDatum = null;
+		for (Buchung buchung : gefilterteBuchungsListe) {
+			LocalDate datum = buchung.getBuchungsDatum();
+			if (minDatum == null || datum.isBefore(minDatum)) {
+				minDatum = datum;
+			}
+		}
+		return minDatum;
 	}
 
 	private void setupBuchungBearbeiten() {
@@ -195,26 +223,60 @@ public class MainController {
 
 	private void initialisiereAuswahlBox() {
 		auswahlBox.getItems().setAll(ZeitraumArt.values());
+		System.out.println("Auswahlbox Werte gesetzt.");
 	    auswahlBox.setValue(ZeitraumArt.AKTUELLER_MONAT); // Standardauswahl
+	    aktuellerZeitraum = ZeitraumArt.zeitraumAusArt(auswahlBox.getValue());
+	    System.out.println("Aktueller Zeitraum gesetzt: " + aktuellerZeitraum);
 	    setzeFilterSichtbarkeiten(auswahlBox.getValue());
 	    applyZeitraumFilter(auswahlBox.getValue());
+	    System.out.println("Zeitraumfilter angewendet für: " + auswahlBox.getValue());
 	    prefillDatumPicker(auswahlBox.getValue());
+	    System.out.println("DatumPicker vorbefüllt.");
 	    
 	    auswahlBox.getSelectionModel().selectedItemProperty().addListener((obs, alt, neu) -> {
-	    	if (neu == ZeitraumArt.BENUTZERDEFINIERT) {
-	    		prefillDatumPicker(alt);
-	    	}
-	       setzeFilterSichtbarkeiten(neu);
-	       applyZeitraumFilter(neu);
-	    });
+            handleZeitraumAuswahlAenderung(alt, neu);
+            
+            });
+	    }
+	    	
 
-	}
+	private void handleZeitraumAuswahlAenderung(ZeitraumArt alt, ZeitraumArt neu) {
+		
+		if (neu == null) { return;
+    	}
+    	ZeitraumArt vorherigeAuswahl = alt;
+    	ZeitraumArt neueAuswahl  = neu;
+    	
+    	setzeFilterSichtbarkeiten(neueAuswahl);
+    	switch (neueAuswahl) {
+    	case BENUTZERDEFINIERT -> {
+    		prefillDatumPicker(vorherigeAuswahl);
+    		
+    	}
+    	case ALLE_ZEITEN -> {
+    		applyZeitraumFilter(ZeitraumArt.ALLE_ZEITEN);
+    		LocalDate minDatum = getMinDatum(gefilterteBuchungsListe);
+    		LocalDate maxDatum = getMaxDatum(gefilterteBuchungsListe);
+    		aktuellerZeitraum = Zeitraum.benutzerdefinierterZeitraum(minDatum, maxDatum);
+    		
+    	
+    	}
+    	case AKTUELLER_MONAT, VORHERIGER_MONAT, AKTUELLES_JAHR, VORHERIGES_JAHR -> {
+    		aktuellerZeitraum = ZeitraumArt.zeitraumAusArt(neueAuswahl);
+    		applyZeitraumFilter(neueAuswahl);
+    		
+    	}
+    	        default -> {
+
+				}
+				}
+    	        }
+	
 
 	private void prefillDatumPicker(ZeitraumArt value) {
-		Zeitraum zeitraum = ZeitraumArt.zeitraumAusArt(value);
-		if (zeitraum != null) {
-			startDatumPicker.setValue(zeitraum.getVon());
-			endDatumPicker.setValue(zeitraum.getBis());
+		if (aktuellerZeitraum != null) {
+			startDatumPicker.setValue(aktuellerZeitraum.getVon());
+			endDatumPicker.setValue(aktuellerZeitraum.getBis());
 		} else {
 			startDatumPicker.setValue(null);
 			endDatumPicker.setValue(null);
@@ -242,21 +304,36 @@ public class MainController {
 	}
 
 	private void applyZeitraumFilter(ZeitraumArt zeitraumArt) {
-		Zeitraum zeitraum = ZeitraumArt.zeitraumAusArt(zeitraumArt);
-		if (zeitraumArt == ZeitraumArt.BENUTZERDEFINIERT) {
+		
+		//if (zeitraumArt == ZeitraumArt.BENUTZERDEFINIERT) {
+		switch (zeitraumArt) {
+		case BENUTZERDEFINIERT -> {
 			LocalDate von = startDatumPicker.getValue();
 			LocalDate bis = endDatumPicker.getValue();
-			aktuellerZeitraumFilter = filterService.predicateFürZeitraum(Zeitraum.benutzerdefinierterZeitraum(von, bis));
-			}
-		else if (zeitraum != null) {
+			aktuellerZeitraum = Zeitraum.benutzerdefinierterZeitraum(von, bis);
+			aktuellerZeitraumFilter = filterService.predicateFürZeitraum(aktuellerZeitraum);
 			
-			 aktuellerZeitraumFilter = filterService.predicateFürZeitraum(zeitraum);
-		} 
-		else {
+			}
+		case ALLE_ZEITEN -> {
             aktuellerZeitraumFilter = _ -> true; // Alle Zeiten
+            aktualisiereFilter();
+            aktuellerZeitraum = Zeitraum.benutzerdefinierterZeitraum(getMinDatum(gefilterteBuchungsListe), getMaxDatum(gefilterteBuchungsListe));
+           
+        }
+		case AKTUELLER_MONAT, VORHERIGER_MONAT, AKTUELLES_JAHR, VORHERIGES_JAHR -> {
+				Zeitraum zeitraum = ZeitraumArt.zeitraumAusArt(zeitraumArt);
+				if (zeitraum != null) {
+					aktuellerZeitraumFilter = filterService.predicateFürZeitraum(zeitraum);
+				
+				} 
+				else {
+					aktuellerZeitraumFilter = _ -> true; // Alle Zeiten
+					
+				}}
+		default -> aktualisiereFilter();
 		}
 		aktualisiereFilter();
-		}
+	}
 	
 	private void aktualisiereFilter() {
 		Predicate<Buchung> kombinierterFilter = aktuellerTabFilter.and(aktuellerZeitraumFilter);
@@ -274,9 +351,8 @@ public class MainController {
 		LocalDate von = startDatumPicker.getValue();
 		LocalDate bis = endDatumPicker.getValue();
 		if (von != null && bis != null && !bis.isBefore(von)) {
-			Zeitraum zeitraum = Zeitraum.benutzerdefinierterZeitraum(von, bis);
-			aktuellerZeitraumFilter = filterService.predicateFürZeitraum(zeitraum);
-			summeBuchungenAktualisieren();
+			applyZeitraumFilter(ZeitraumArt.BENUTZERDEFINIERT);
+			ansichtAktualisieren();
 		} else {
 			Alert alert = new Alert(Alert.AlertType.ERROR);
 			alert.setTitle("Ungültiger Zeitraum");
@@ -359,13 +435,13 @@ public class MainController {
 	private void ladeEinnahmenAusgabenDiagramm() {
 		if (statistikArea == null)
 			return;
-		
-		DiagrammDaten diagrammDaten = DiagrammService.berechneDiagrammDaten(gefilterteBuchungsListe);
+		Zeitraum zeitraum = aktuellerZeitraum;
+		DiagrammDaten diagrammDaten = DiagrammService.berechneDiagrammDaten(gefilterteBuchungsListe,zeitraum);
 		einnahmenAusgabenDiagramm.setTitle(null);
 		einnahmenAusgabenDiagramm.setLegendVisible(false);
 		einnahmenAusgabenDiagramm.setAnimated(false);
 		
-		achsenLabelSetzenEinnahmenAusgabenDiagramm(diagrammDaten);
+		//achsenLabelSetzenEinnahmenAusgabenDiagramm(diagrammDaten);
 		
 		double summeEinnahmen = diagrammDaten.getSummeEinnahmen();
 		double summeAusgaben = diagrammDaten.getSummeAusgaben();
@@ -375,7 +451,7 @@ public class MainController {
 		XYChart.Series<String, Number> einnahmenSerie = new XYChart.Series<>();
 		XYChart.Series<String, Number> ausgabenSerie = new XYChart.Series<>();
 
-		xWerteDurchlaufen(diagrammDaten, einnahmenSerie, ausgabenSerie);
+		serienFuellen(diagrammDaten, einnahmenSerie, ausgabenSerie);
 
 		einnahmenAusgabenDiagramm.getData().clear();
 		einnahmenAusgabenDiagramm.getData().add(einnahmenSerie);
@@ -399,37 +475,26 @@ public class MainController {
 		legendeDifferenzlbl.setText(legendeDifferenz);
 	}
 
-	private void xWerteDurchlaufen(DiagrammDaten diagrammDaten, Series<String, Number> einnahmenSerie, Series<String, Number> ausgabenSerie) {
-		Map<String, Double> gefilterteEinnahmen = diagrammDaten.getGefilterteEinnahmen();
-		Map<String, Double> gefilterteAusgaben = diagrammDaten.getGefilterteAusgaben();
-		List<String> alleWerte = diagrammDaten.getxWerteSortiert();
+	private void serienFuellen(DiagrammDaten diagrammDaten, Series<String, Number> einnahmenSerie, Series<String, Number> ausgabenSerie) {
+		Map<LocalDate, Double> gefilterteEinnahmen = diagrammDaten.getGefilterteEinnahmen();
+		Map<LocalDate, Double> gefilterteAusgaben = diagrammDaten.getGefilterteAusgaben();
+		List<LocalDate> alleWerte = diagrammDaten.getxWerteSortiert();
+		Aufloesung aufloesung = diagrammDaten.getAufloesung();
 
-		for (String wert : alleWerte) {
+		for (LocalDate wert : alleWerte) {
 
-			einnahmenSerie.getData().add(new XYChart.Data<>(wert, gefilterteEinnahmen.getOrDefault(wert, 0.0)));
-			ausgabenSerie.getData().add(new XYChart.Data<>(wert, gefilterteAusgaben.getOrDefault(wert, 0.0)));
+			DateTimeFormatter formatter = switch (aufloesung) {
+		    case TAGE   -> DateTimeFormatter.ofPattern("dd.MM.", Locale.GERMAN);
+		    case MONATE -> DateTimeFormatter.ofPattern("MMM yyyy", Locale.GERMAN);
+		    case JAHRE  -> DateTimeFormatter.ofPattern("yyyy", Locale.GERMAN);
+		};
+			String label = wert.format(formatter);
+			 double ein = gefilterteEinnahmen.getOrDefault(wert, 0.0);
+			 double aus = gefilterteAusgaben.getOrDefault(wert, 0.0);
+
+			einnahmenSerie.getData().add(new XYChart.Data<>(label, ein));
+			ausgabenSerie.getData().add(new XYChart.Data<>(label, aus));
 		}
-
-	}
-
-
-	private void achsenLabelSetzenEinnahmenAusgabenDiagramm(DiagrammDaten diagrammDaten) {
-		String labelXAchse = diagrammDaten.getxAchsenLabel();
-		xAchseEinnahmenAusgabenDiagramm.setLabel(labelXAchse);
-
-		String labelYAchse = diagrammDaten.getyAchsenLabel();
-		yAchseEinnahmenAusgabenDiagramm.setLabel(labelYAchse);
-
-		yAchseEinnahmenAusgabenDiagramm.setTickLabelFormatter(new StringConverter<Number>() {
-			@Override
-			public String toString(Number object) {
-				return euro.format(object.doubleValue());
-			}
-			@Override
-			public Number fromString(String string) {
-				return 0;
-			}
-		});
 
 	}
 
@@ -504,11 +569,8 @@ public class MainController {
 	}
 
 	public void aktualisiereTabelle() {
-		System.out.println("Aktualisiere Konten-Tabelle...");
 		kontenListe.setAll(Konto.getAlleKonten());
-		System.out.println(kontenListe);
 		tblKonten.refresh();
-		System.out.println("Tabelle aktualisiert.");
 	}
 
 	public void buchungenAnzeigen(Konto konto) {
@@ -534,7 +596,6 @@ public class MainController {
 
 	private <T> T dialogOeffnen(Button btn, String fxmlPfad, String titel, Consumer<T> setup) {
 		try {
-			System.out.println("Öffne Dialog: " + titel);
 			// FXML laden
 			FXMLLoader loader = new FXMLLoader(getClass().getResource(fxmlPfad));
 			Parent root = loader.load();
@@ -553,9 +614,7 @@ public class MainController {
 			Scene dialogScene = new Scene(root);
 			dialogStage.setScene(dialogScene);
 			dialogScene.getStylesheets().addAll(btn.getScene().getStylesheets());
-			System.out.println("Dialog offen, warte auf Schließen...");
 			dialogStage.showAndWait();
-			System.out.println("Dialog geschlossen.");
 			aktualisiereTabelle();
 
 			return dialogController;

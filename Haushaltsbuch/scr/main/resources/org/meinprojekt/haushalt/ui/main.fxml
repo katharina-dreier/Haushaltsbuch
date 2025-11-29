@@ -152,8 +152,9 @@
           spacing="8"
           styleClass="filter-bar"
           alignment="CENTER">
-
+	
         <children>
+        <Label styleClass="card-title" text="Diagramme" />
             <Label text="Zeitraum:" styleClass="filter-label"/>
 
             <ChoiceBox fx:id="auswahlBox"

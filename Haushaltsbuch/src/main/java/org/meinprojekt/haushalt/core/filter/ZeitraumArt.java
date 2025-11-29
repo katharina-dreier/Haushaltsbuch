@@ -25,8 +25,7 @@ public enum ZeitraumArt {
 	        case VORHERIGER_MONAT: return Zeitraum.vorherigerMonat();
 	        case AKTUELLES_JAHR: return Zeitraum.aktuellesJahr();
 	        case VORHERIGES_JAHR: return Zeitraum.vorherigesJahr();
-	        
-	        case ALLE_ZEITEN: return null;
+	      
 	    }
 	    	
 	    return null;
