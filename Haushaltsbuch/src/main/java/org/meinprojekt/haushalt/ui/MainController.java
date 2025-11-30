@@ -599,7 +599,8 @@ private Set<String> getAusgewaehlteKategorien() {
 		});
 		aktualisiereTabelle();
 		updateGesamtSummeLabel();
-		ladeEinnahmenAusgabenDiagramm();
+		ansichtAktualisieren();
+		initialisiereKategorieAuswahlBox();
 	}
 
 	@FXML
@@ -611,7 +612,8 @@ private Set<String> getAusgewaehlteKategorien() {
 		});
 		aktualisiereTabelle();
 		updateGesamtSummeLabel();
-		ladeEinnahmenAusgabenDiagramm();
+		ansichtAktualisieren();
+		initialisiereKategorieAuswahlBox();
 	}
 
 	@FXML
@@ -623,7 +625,8 @@ private Set<String> getAusgewaehlteKategorien() {
 		});
 		aktualisiereTabelle();
 		updateGesamtSummeLabel();
-		ladeEinnahmenAusgabenDiagramm();
+		ansichtAktualisieren();
+		initialisiereKategorieAuswahlBox();
 	}
 
 	public void aktualisiereTabelle() {
