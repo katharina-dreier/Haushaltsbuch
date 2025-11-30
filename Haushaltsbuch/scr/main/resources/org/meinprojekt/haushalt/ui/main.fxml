@@ -5,6 +5,7 @@
 <?import javafx.scene.chart.NumberAxis?>
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.ChoiceBox?>
+<?import javafx.scene.control.ComboBox?>
 <?import javafx.scene.control.DatePicker?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.SplitPane?>
@@ -17,6 +18,7 @@
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.shape.Circle?>
+<?import javafx.scene.control.MenuButton?>
 
 <BorderPane xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.meinprojekt.haushalt.ui.MainController">
 
@@ -143,38 +145,42 @@
         </SplitPane>
     </center>
 
-  
-    <bottom>
-        
-    </bottom>
+      <!-- Unten: Filterleiste -->
   <bottom>
-    <HBox BorderPane.alignment="CENTER"
-          spacing="8"
-          styleClass="filter-bar"
-          alignment="CENTER">
-	
-        <children>
-        <Label styleClass="card-title" text="Diagramme" />
-            <Label text="Zeitraum:" styleClass="filter-label"/>
+    <BorderPane styleClass="filter-bar" BorderPane.alignment="CENTER">
 
-            <ChoiceBox fx:id="auswahlBox"
-                       prefWidth="160.0"
-                       />
+        <!-- Links: "Filter"-Label -->
+        <left>
+            <Label text="Filter" styleClass="filter-title" />
+        </left>
 
-            <Label text="von:" fx:id="lblVon" styleClass="filter-label"/>
-            <DatePicker fx:id="startDatumPicker"/>
+        <!-- Mitte: Filter-Controls -->
+        <center>
+            <HBox alignment="CENTER" spacing="12">
+                <children>
+                    <Label styleClass="filter-label" text="Kategorie:" />
+                    <MenuButton fx:id="kategorieFilterButton"
+                                text="Alle Kategorien"
+                                styleClass="filter-choice-button" />
 
-            <Label text="bis:" fx:id="lblBis" styleClass="filter-label"/>
-            <DatePicker fx:id="endDatumPicker"/>
-            
-          
-            <Button fx:id="btnAuswahlAnwenden"
-                    text="Auswahl anwenden"
-                    onAction="#handleAuswahlAnwenden"
-                    mnemonicParsing="false"
-                    styleClass="primary-button"/>
-        </children>
-    </HBox>
+                    <Label styleClass="filter-label" text="Zeitraum:" />
+                    <ChoiceBox fx:id="auswahlBox" prefWidth="160.0" />
+
+                    <Label fx:id="lblVon" styleClass="filter-label" text="von:" />
+                    <DatePicker fx:id="startDatumPicker" />
+
+                    <Label fx:id="lblBis" styleClass="filter-label" text="bis:" />
+                    <DatePicker fx:id="endDatumPicker" />
+
+                    <Button fx:id="btnAuswahlAnwenden"
+                            text="Auswahl anwenden"
+                            onAction="#handleAuswahlAnwenden"
+                            styleClass="primary-button" />
+                </children>
+            </HBox>
+        </center>
+
+    </BorderPane>
 </bottom>
 
 </BorderPane>

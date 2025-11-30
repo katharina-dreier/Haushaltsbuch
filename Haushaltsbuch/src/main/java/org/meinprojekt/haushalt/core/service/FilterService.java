@@ -1,5 +1,6 @@
 package org.meinprojekt.haushalt.core.service;
 
+import java.util.Set;
 import java.util.function.Predicate;
 
 import org.meinprojekt.haushalt.core.filter.Zeitraum;
@@ -55,6 +56,13 @@ public class FilterService {
 			boolean meetsMax = (betragMax == null) || (buchung.getBetrag() <= betragMax);
 			return meetsMin && meetsMax;
 		};
+	}
+
+	public Predicate<Buchung> predicateFuerKategorien(Set<String> ausgewaehlteKategorien) {
+		if (ausgewaehlteKategorien != null && !ausgewaehlteKategorien.isEmpty()) {
+			return buchung -> ausgewaehlteKategorien.contains(buchung.getKategorie());
+		}
+		return _ -> true;
 	}
 
 }

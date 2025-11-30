@@ -170,23 +170,87 @@
     -fx-fill: #EF4444;
 }
 
+/* ===== Filterleiste (unten) ===================================== */
+
 .filter-bar {
-    -fx-padding: 4 16;          /* etwas weniger Höhe */
-    -fx-spacing: 10;
-    -fx-background-color: #fafafa;
-    -fx-border-color: #e0e0e0;
-    -fx-border-width: 1 0 0 0;  /* nur obere Linie */
+	-fx-padding: 4 16 4 16;
+	    -fx-background-color: #f5f5f5;
+	    -fx-border-color: #d0d0d0;
+	    -fx-border-width: 1 0 0 0;
 }
 
-.filter-bar .filter-label {
+/* Allgemeine Labels in der Leiste */
+.filter-bar .label {
     -fx-font-size: 11px;
-    -fx-text-fill: #6b7280;     /* etwas helleres Grau */
+    -fx-text-fill: #555555;
 }
 
-.filter-bar .choice-box,
-.filter-bar .date-picker {
+/* „Filter“-Titel  */
+.filter-title {
+	-fx-font-size: 11px;
+	   -fx-font-weight: bold;
+	   -fx-text-fill: #555555;
+	   -fx-padding: 0 12 0 0;
+}
+
+/* Kleine Labels vor den Controls („Kategorie:“, „Zeitraum:“, „von:“ …) */
+.filter-label {
+    -fx-font-size: 11px;
+    -fx-font-weight: normal;
+    -fx-text-fill: #555555;
+}
+
+/* Grundstil für beide Auswahlfelder (Kategorie & Zeitraum) */
+.filter-choice {
+    -fx-font-family: "Segoe UI";
+    -fx-font-size: 11px;
+    -fx-text-fill: #333333;
+
+    -fx-background-color: #ffffff;
+    -fx-background-radius: 4;
+    -fx-border-color: #c0c0c0;
+    -fx-border-radius: 4;
+    -fx-border-width: 1;
+    -fx-padding: 2 8 2 8;
+}
+
+/* Pfeil-Button innen etwas schmaler machen */
+.filter-choice > .arrow-button {
+    -fx-padding: 0 6 0 6;
+}
+
+/* Wenn du beim Hovern einen kleinen Effekt möchtest */
+.filter-choice:hover {
+    -fx-border-color: #999999;
+}
+
+/* Optional: Fokus minimal hervorheben, ohne blauen Glow */
+.filter-choice:focused {
+    -fx-border-color: #7fa9d0;
+    -fx-effect: none;
+}
+
+/* Button nur innerhalb der Filterleiste  */
+.filter-bar .primary-button {
     -fx-pref-height: 26;
+    -fx-min-height: 26;
+    -fx-padding: 0 14 0 14;
+    -fx-background-radius: 4;
+    -fx-border-radius: 4;
+
+    -fx-background-color: linear-gradient(to bottom, #4c7fb0, #3b6a97);
+    -fx-text-fill: white;
     -fx-font-size: 11px;
+    -fx-font-weight: bold;
+    -fx-border-color: transparent;
+}
+
+.filter-bar .primary-button:hover {
+    -fx-background-color: linear-gradient(to bottom, #568ac0, #3f6fa0);
+}
+
+.filter-bar .primary-button:pressed {
+    -fx-background-color: linear-gradient(to bottom, #355d82, #284663);
 }
 
 

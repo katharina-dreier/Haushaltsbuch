@@ -4,6 +4,8 @@ import java.text.NumberFormat;
 import java.text.ParseException;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -42,9 +44,11 @@ import javafx.scene.chart.XYChart.Series;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonType;
+import javafx.scene.control.CheckMenuItem;
 import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.DatePicker;
 import javafx.scene.control.Label;
+import javafx.scene.control.MenuButton;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
 import javafx.scene.control.TableCell;
@@ -58,7 +62,8 @@ import javafx.scene.layout.HBox;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.util.Duration;
-import javafx.util.StringConverter;
+import org.controlsfx.control.CheckComboBox;
+
 
 public class MainController {
 
@@ -86,6 +91,8 @@ public class MainController {
 	private ChoiceBox<ZeitraumArt> auswahlBox;
 	@FXML
 	private DatePicker startDatumPicker, endDatumPicker;
+	@FXML
+	private MenuButton kategorieFilterButton;
 	@FXML
 	private TableView<Konto> tblKonten;
 	@FXML
@@ -126,6 +133,8 @@ public class MainController {
 	private final FilterService filterService = new FilterService();
 	private Predicate<Buchung> aktuellerTabFilter      = _ -> true;
 	private Predicate<Buchung> aktuellerZeitraumFilter = _ -> true;
+	private Predicate<Buchung> aktuellerKategorieFilter = _ -> true;
+	private final Map<CheckMenuItem, String> kategoriemap = new HashMap<>();
 	private Zeitraum aktuellerZeitraum = null;
 	
 	@FXML
@@ -138,7 +147,8 @@ public class MainController {
 		Datenstroeme.ladeBuchungenFuerAlleKonten();
 		
 		buchungslisteInitialisieren();
-		initialisiereAuswahlBox();
+		initialisiereKategorieAuswahlBox();
+		initialisiereZeitraumAuswahlBox();
 		tabPane.getSelectionModel().selectedItemProperty().addListener((obs, alt, neu) -> applyTabFilter());
 		
 
@@ -164,6 +174,54 @@ public class MainController {
 		summeBuchungenAktualisieren();
 		ladeEinnahmenAusgabenDiagramm();
 		initialisiereTooltips();
+		
+	}
+
+	private void initialisiereKategorieAuswahlBox() {
+		 kategorieFilterButton.getItems().clear();
+		    kategoriemap.clear();
+
+		    for (String kat : Buchung.listeMitKategorien) {
+		        CheckMenuItem item = new CheckMenuItem(kat);
+		        item.setSelected(true); // standardmäßig alle an
+		        item.selectedProperty().addListener((obs, alt, neu) -> aktualisiereKategorieFilter());
+		        kategorieFilterButton.getItems().add(item);
+		        kategoriemap.put(item, kat);
+		    }
+
+		    kategorieFilterButton.setText("Alle Kategorien");
+		}
+	
+
+private Set<String> getAusgewaehlteKategorien() {
+    Set<String> selected = new HashSet<>();
+    for (CheckMenuItem item : kategoriemap.keySet()) {
+        if (item.isSelected()) {
+            selected.add(kategoriemap.get(item));
+        }
+    }
+    return selected;
+}
+
+
+	private void aktualisiereKategorieFilter() {
+
+		Set<String> ausgewaehlteKategorien = getAusgewaehlteKategorien();
+		aktuellerKategorieFilter = filterService.predicateFuerKategorien(ausgewaehlteKategorien);
+		updateKategorieButtonText(ausgewaehlteKategorien);
+		aktualisiereFilter();
+	}
+
+	private void updateKategorieButtonText(Set<String> ausgewaehlteKategorien) {
+		if (ausgewaehlteKategorien.isEmpty()) {
+	        kategorieFilterButton.setText("Keine Kategorie");
+	    } else if (ausgewaehlteKategorien.size() == Buchung.listeMitKategorien.size()) {
+	        kategorieFilterButton.setText("Alle Kategorien");
+	    } else if (ausgewaehlteKategorien.size() == 1) {
+	        kategorieFilterButton.setText(ausgewaehlteKategorien.iterator().next());
+	    } else {
+	        kategorieFilterButton.setText(ausgewaehlteKategorien.size() + " ausgewählt");
+	    }
 		
 	}
 
@@ -221,7 +279,7 @@ public class MainController {
 		
 	}
 
-	private void initialisiereAuswahlBox() {
+	private void initialisiereZeitraumAuswahlBox() {
 		auswahlBox.getItems().setAll(ZeitraumArt.values());
 		System.out.println("Auswahlbox Werte gesetzt.");
 	    auswahlBox.setValue(ZeitraumArt.AKTUELLER_MONAT); // Standardauswahl
@@ -336,7 +394,7 @@ public class MainController {
 	}
 	
 	private void aktualisiereFilter() {
-		Predicate<Buchung> kombinierterFilter = aktuellerTabFilter.and(aktuellerZeitraumFilter);
+		Predicate<Buchung> kombinierterFilter = aktuellerTabFilter.and(aktuellerZeitraumFilter).and(aktuellerKategorieFilter);
 		gefilterteBuchungsListe.setPredicate(kombinierterFilter);
 		ansichtAktualisieren();
 	}
