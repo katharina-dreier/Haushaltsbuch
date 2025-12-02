@@ -486,6 +486,8 @@ private Set<String> getAusgewaehlteKategorien() {
 		sortierteBuchungsListe = new SortedList<>(gefilterteBuchungsListe);
 		sortierteBuchungsListe.comparatorProperty().bind(tblBuchungen.comparatorProperty());
 		tblBuchungen.setItems(sortierteBuchungsListe);
+		tblBuchungen.getSortOrder().add(colBuchungsDatum);
+		tblBuchungen.sort();
 		berechneSumme(gefilterteBuchungsListe);
 
 	}
