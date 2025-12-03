@@ -71,6 +71,7 @@
                         <columns>
                             <TableColumn fx:id="colBuchungsDatum" prefWidth="150" text="Buchungsdatum" sortType="DESCENDING"/>
                             <TableColumn fx:id="colKategorie" prefWidth="150" text="Kategorie" />
+                            <TableColumn fx:id="colBeschreibung" prefWidth="200" text="Beschreibung" />
                             <TableColumn fx:id="colEmpfaenger" prefWidth="120" text="Empfänger" />
                             <TableColumn fx:id="colSender" prefWidth="120" text="Sender" />
                             <TableColumn fx:id="colBetrag" prefWidth="100" text="Betrag" />

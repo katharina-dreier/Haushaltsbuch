@@ -113,6 +113,8 @@ public class MainController {
 	@FXML
 	private TableColumn<Buchung, String> colKategorie;
 	@FXML
+	private TableColumn<Buchung, String> colBeschreibung;
+	@FXML
 	private TableColumn<Buchung, String> colEmpfaenger;
 	@FXML
 	private TableColumn<Buchung, String> colSender;
@@ -425,6 +427,7 @@ private Set<String> getAusgewaehlteKategorien() {
 	private void setupBuchungenTabelle() {
 		colBuchungsDatum.setCellValueFactory(new PropertyValueFactory<>("buchungsDatum"));
 		colKategorie.setCellValueFactory(new PropertyValueFactory<>("kategorie"));
+		colBeschreibung.setCellValueFactory(new PropertyValueFactory<>("beschreibung"));
 		colEmpfaenger.setCellValueFactory(new PropertyValueFactory<>("empfaenger"));
 		colSender.setCellValueFactory(new PropertyValueFactory<>("sender"));
 		colBetrag.setCellValueFactory(cellData -> {

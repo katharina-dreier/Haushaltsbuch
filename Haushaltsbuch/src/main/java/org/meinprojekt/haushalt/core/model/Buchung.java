@@ -8,6 +8,7 @@ public class Buchung {
 	
 	private double betrag;
 	private String kategorie;
+	private String beschreibung;
 	private LocalDate buchungsDatum;
 	private String buchungsart; // Einnahme, Ausgabe, Umbuchung
 	private String empfaenger;
@@ -28,11 +29,12 @@ public class Buchung {
 		kategorieHinzufuegen(kategorie);
 	}
 	
-	public Buchung (Konto konto, LocalDate datum, String buchungsart, String kategorie , String empfänger , String sender , double betrag2, double kontostand, String transferID, boolean isUmbuchung) {
+	public Buchung (Konto konto, LocalDate datum, String buchungsart, String kategorie, String beschreibung, String empfänger , String sender , double betrag2, double kontostand, String transferID, boolean isUmbuchung) {
 		this.konto = konto;
 		this.buchungsDatum = datum;
 		this.buchungsart = buchungsart;
 		this.kategorie = kategorie;
+		this.beschreibung = beschreibung;
 		this.setEmpfaenger(empfänger);
 		this.setSender(sender);
 		this.betrag = betrag2;
@@ -66,6 +68,7 @@ public class Buchung {
 		return konto;
 	}
 
+
 	public void setKonto(Konto konto) {
 		this.konto = konto;
 	}
@@ -76,6 +79,14 @@ public class Buchung {
 
 	public void setKategorie(String kategorie) {
 		this.kategorie = kategorie;
+	}
+	
+	public String getBeschreibung() {
+		return beschreibung;
+	}
+
+	public void setBeschreibung(String beschreibung) {
+		this.beschreibung = beschreibung;
 	}
 
 	public LocalDate getBuchungsDatum() {

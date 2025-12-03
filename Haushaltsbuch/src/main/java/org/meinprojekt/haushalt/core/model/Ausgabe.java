@@ -7,7 +7,7 @@ public class Ausgabe extends Buchung{
 	
 	private String empfaenger;
 	
-	public Ausgabe(double betrag, String Kategorie, Konto konto, String empfaenger, LocalDate buchungsDatum, String transferID, boolean isUmbuchung) {
+	public Ausgabe(double betrag, String Kategorie, String beschreibung, Konto konto, String empfaenger, LocalDate buchungsDatum, String transferID, boolean isUmbuchung) {
 		super(betrag, Kategorie, buchungsDatum);
 		this.empfaenger = empfaenger;
 		super.setSender(konto.getInhaber());
@@ -15,12 +15,13 @@ public class Ausgabe extends Buchung{
 		super.setKonto(konto);
 		super.setTransferID(transferID);
 		super.setIsUmbuchung(isUmbuchung);
+		super.setBeschreibung(beschreibung);
 		konto.buchungen.add(this); // Buchung zur Liste hinzufügen
 	}
 
-	public Ausgabe(Konto konto2, LocalDate datum, String art, String kategorie, String empfaenger2, String sender,
+	public Ausgabe(Konto konto2, LocalDate datum, String art, String kategorie, String beschreibung, String empfaenger2, String sender,
 			double betrag, double kontostand, String transferID, boolean isUmbuchung) {
-		super(konto2, datum, art, kategorie, empfaenger2, sender, betrag, kontostand, transferID, isUmbuchung);
+		super(konto2, datum, art, kategorie, beschreibung, empfaenger2, sender, betrag, kontostand, transferID, isUmbuchung);
 	}
 
 	public String getEmpfaenger() {

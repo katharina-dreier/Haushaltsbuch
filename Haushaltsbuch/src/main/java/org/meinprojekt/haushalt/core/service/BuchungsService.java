@@ -14,29 +14,29 @@ public class BuchungsService {
 	
 	
 	//Notwendige Daten einlesen und Einnahme tätigen
-		public static void einnahmeTätigen(Double betragEin, String kategorieEin, Konto gewaehltesKonto, String sender,  LocalDate datum, String transferID, boolean isUmbuchung) {
+		public static void einnahmeTätigen(Double betragEin, String kategorieEin, String beschreibung, Konto gewaehltesKonto, String sender,  LocalDate datum, String transferID, boolean isUmbuchung) {
 			System.out.println("Einnahme wird getätigt mit folgenden Daten: Betrag: " + betragEin + ", Kategorie: " + kategorieEin + ", Konto: " + gewaehltesKonto.getKontoName() + ", Sender: " + sender + ", Datum: " + datum);
-			Einnahme einnahme = new Einnahme(betragEin, kategorieEin, gewaehltesKonto, sender,  datum, transferID, isUmbuchung); //Einnahme erstellen
+			Einnahme einnahme = new Einnahme(betragEin, kategorieEin, beschreibung, gewaehltesKonto, sender,  datum, transferID, isUmbuchung); //Einnahme erstellen
 			Datenstroeme.buchungHinzufuegen(einnahme);
 			System.out.println("Einnahme wurde getätigt: " + einnahme);
 		}
 		
 		//Notwendige Daten einlesen und Ausgabe tätigen
-		public static void ausgabeTätigen(Double betrag, String kat, Konto quell, String empfaenger, LocalDate datum, String transferID, boolean isUmbuchung) {
+		public static void ausgabeTätigen(Double betrag, String kat, String beschreibung, Konto quell, String empfaenger, LocalDate datum, String transferID, boolean isUmbuchung) {
 			System.out.println("Ausgabe wird getätigt mit folgenden Daten: Betrag: " + betrag + ", Kategorie: " + kat + ", Konto: " + quell.getKontoName() + ", Empfänger: " + empfaenger + ", Datum: " + datum);
-			Ausgabe ausgabe = new Ausgabe(betrag, kat, quell, empfaenger, datum, transferID, isUmbuchung); // Ausgabe erstellen
+			Ausgabe ausgabe = new Ausgabe(betrag, kat, beschreibung, quell, empfaenger, datum, transferID, isUmbuchung); // Ausgabe erstellen
 			ausgabe.setBuchungsart("Ausgabe");
 			Datenstroeme.buchungHinzufuegen(ausgabe);
 			System.out.println("Ausgabe wurde getätigt: " + ausgabe);
 		}
 		
 		//Umbuchung tätigen
-		public static void umbuchungTätigen(Double betrag, Konto quell, Konto ziel, LocalDate datum) {
+		public static void umbuchungTätigen(Double betrag, String beschreibung, Konto quell, Konto ziel, LocalDate datum) {
 			System.out.println("Umbuchung wird getätigt mit folgenden Daten: Betrag: " + betrag + ", Von Konto: " + quell.getKontoName() + ", Zu Konto: " + ziel.getKontoName() + ", Datum: " + datum);
 			Umbuchung umbuchung = new Umbuchung(betrag, quell, ziel,  datum);
 			String ID = umbuchung.getTransferID();
-			ausgabeTätigen(betrag, "Umbuchung", quell, umbuchung.getEmpfaenger(), datum, ID, true);
-			einnahmeTätigen(betrag, "Umbuchung", ziel, umbuchung.getSender(), datum, ID, true) ;
+			ausgabeTätigen(betrag, "Umbuchung", beschreibung, quell, umbuchung.getEmpfaenger(), datum, ID, true);
+			einnahmeTätigen(betrag, "Umbuchung", beschreibung, ziel, umbuchung.getSender(), datum, ID, true) ;
 			System.out.println("Umbuchung wurde getätigt: " + umbuchung);
 		}
 		
@@ -102,7 +102,7 @@ public class BuchungsService {
 		    Datenstroeme.kontenNeuSpeichern();
 		}
 
-		public static void buchungBearbeiten(Buchung original, double betrag, String kat, Konto konto, String beteiligter,
+		public static void buchungBearbeiten(Buchung original, double betrag, String kat, String beschreibung, Konto konto, String beteiligter,
 				LocalDate datum) {
 			System.out.println("Starte mit Bearbeiten der Buchung: " + original);
 			Konto altesKonto = original.getKonto();
@@ -110,7 +110,9 @@ public class BuchungsService {
 			// Neue Buchungsdaten setzen
 			original.setBetrag(betrag);
 			original.setKategorie(kat);
+			original.setBeschreibung(beschreibung);
 			original.setBuchungsDatum(datum);
+			
 			if (original instanceof Einnahme e) {
 				e.setSender(beteiligter);
 				e.setKonto(konto);
@@ -133,7 +135,7 @@ public class BuchungsService {
 		}
 		
 		
-		public static void umbuchungBearbeiten(Buchung original, Konto konto, double betrag, LocalDate datum) {
+		public static void umbuchungBearbeiten(Buchung original,String beschreibung, Konto konto, double betrag, LocalDate datum) {
 			System.out.println("Starte mit Bearbeiten der Umbuchung, Originalbuchung: " + original);
 			// Beide Buchungen der Umbuchung finden
 			List<Buchung> buchungen = findeBuchungenZuTransferID(original.getTransferID());
@@ -163,7 +165,7 @@ public class BuchungsService {
 			
 			// Beteiligte aktualisieren
 			beteiligter1 = buchungOriginal instanceof Einnahme ? buchungOriginal.getSender() : buchungOriginal.getEmpfaenger();
-			buchungBearbeiten(buchungOriginal, betrag, buchungOriginal.getKategorie(), konto, beteiligter1, datum);
+			buchungBearbeiten(buchungOriginal, betrag, buchungOriginal.getKategorie(), beschreibung, konto, beteiligter1, datum);
 			// Wenn das Konto geändert wurde, Beteiligten der Gegenpart-Buchung anpassen
 			Konto kontoAlt = buchungOriginal.getKonto();
 			if (kontoAlt != konto) {
@@ -171,7 +173,7 @@ public class BuchungsService {
 			}
 			else  beteiligter2 = buchungGegenpart instanceof Einnahme ? buchungGegenpart.getSender() : buchungGegenpart.getEmpfaenger();
 			
-			buchungBearbeiten(buchungGegenpart, betrag, buchungGegenpart.getKategorie(), buchungGegenpart.getKonto(), beteiligter2, datum);
+			buchungBearbeiten(buchungGegenpart, betrag, buchungGegenpart.getKategorie(), beschreibung, buchungGegenpart.getKonto(), beteiligter2, datum);
 			System.out.println("Umbuchung bearbeitet: " + buchungOriginal + " und " + buchungGegenpart);
 		}
 		
@@ -179,6 +181,8 @@ public class BuchungsService {
 		public static List<Buchung> findeBuchungenZuTransferID(String transferId) {
 			return Konto.getAlleBuchungen().stream().filter(b -> transferId.equals(b.getTransferID())).toList();
 		}
+		
+		
 
 
 }

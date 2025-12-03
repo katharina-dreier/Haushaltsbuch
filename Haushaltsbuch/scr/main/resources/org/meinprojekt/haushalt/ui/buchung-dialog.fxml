@@ -1,34 +1,55 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.scene.control.*?>
-<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.CheckBox?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.DatePicker?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TextArea?>
+<?import javafx.scene.control.TextField?>
 
-<GridPane fx:controller="org.meinprojekt.haushalt.ui.DialogBuchung"
-          xmlns:fx="http://javafx.com/fxml" hgap="10" vgap="10" alignment="CENTER" styleClass="dialog-root">
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.HBox?>
 
-    <Label fx:id= "lblQuellKonto" text="Quell-Konto:" GridPane.rowIndex="0" GridPane.columnIndex="0" styleClass="dialog-label"/>
-    <ComboBox fx:id="cmbQuellKonto" GridPane.rowIndex="0" GridPane.columnIndex="1"/>
+
+<GridPane alignment="CENTER" hgap="10" styleClass="dialog-root" vgap="10" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.meinprojekt.haushalt.ui.DialogBuchung">
+
+    <Label fx:id="lblQuellKonto" styleClass="dialog-label" text="Quell-Konto:" GridPane.columnIndex="0" GridPane.rowIndex="0" />
+    <ComboBox fx:id="cmbQuellKonto" GridPane.columnIndex="1" GridPane.rowIndex="0" />
     
-     <Label fx:id= "lblZielKonto" text="Ziel-Konto:" GridPane.rowIndex="1" GridPane.columnIndex="0" styleClass="dialog-label"/>
-    <ComboBox fx:id="cmbZielKonto" GridPane.rowIndex="1" GridPane.columnIndex="1"/>
+     <Label fx:id="lblZielKonto" styleClass="dialog-label" text="Ziel-Konto:" GridPane.columnIndex="0" GridPane.rowIndex="1" />
+    <ComboBox fx:id="cmbZielKonto" GridPane.columnIndex="1" GridPane.rowIndex="1" />
     
-    <Label  fx:id= "lblDatum" text="Datum:" GridPane.rowIndex="2" GridPane.columnIndex="0" styleClass="dialog-label"/>
-    <DatePicker fx:id="dpDatum" promptText="Datum auswählen" GridPane.rowIndex="2" GridPane.columnIndex="1"/>
-
-    <Label  fx:id= "lblKategorie" text="Kategorie:" GridPane.rowIndex="3" GridPane.columnIndex="0" styleClass="dialog-label"/>
-    <ComboBox fx:id="cmbKategorie" editable="true" promptText="Kategorie wählen oder eingeben..." GridPane.rowIndex="3" GridPane.columnIndex="1"/>
-
-    <Label fx:id= "lblEmpfaenger" text="Empfänger:" GridPane.rowIndex="4" GridPane.columnIndex="0" styleClass="dialog-label"/>
-    <TextField fx:id="txtEmpfaenger" GridPane.rowIndex="4" GridPane.columnIndex="1"/>
+    <Label fx:id="lblIsWiederkehrend" text="Wiederkehrende Ausgabe?" GridPane.rowIndex="2" />
+     <CheckBox fx:id="chkIsWiederkehrend" mnemonicParsing="false" onAction="#handleCheckboxWiederkehrend" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+   
+    <Label fx:id="lblHaeufigkeit" text="Häufigkeit:" GridPane.rowIndex="3" />
+   <ComboBox fx:id="cmbHaeufigkeit" prefWidth="150.0" GridPane.columnIndex="1" GridPane.rowIndex="3" />
     
-    <Label fx:id= "lblSender" text="Sender:" GridPane.rowIndex="5" GridPane.columnIndex="0" styleClass="dialog-label"/>
-    <TextField fx:id="txtSender" GridPane.rowIndex="5" GridPane.columnIndex="1"/>
-    
-     <Label  fx:id= "lblBetrag" text="Betrag:" GridPane.rowIndex="6" GridPane.columnIndex="0" styleClass="dialog-label"/>
-    <TextField fx:id="txtBetrag" GridPane.rowIndex="6" GridPane.columnIndex="1"/>
+    <Label fx:id="lblDatum" styleClass="dialog-label" text="Datum:" GridPane.rowIndex="4" />
+    <DatePicker fx:id="dpDatum" promptText="Datum auswählen" GridPane.columnIndex="1" GridPane.rowIndex="4" />
 
-    <HBox spacing="10" GridPane.rowIndex="7" GridPane.columnSpan="2" alignment="CENTER_RIGHT" styleClass="button-bar">
-        <Button fx:id="btnAbbrechen" text="Abbrechen" cancelButton="true" onAction="#handleAbbrechen" styleClass="secondary-button"/>
-        <Button fx:id="btnOk" text="Speichern" defaultButton="true" onAction="#handleButtonActionOK" styleClass="primary-button"/>
+    <Label fx:id="lblKategorie" styleClass="dialog-label" text="Kategorie:" GridPane.rowIndex="5" />
+    <ComboBox fx:id="cmbKategorie" editable="true" promptText="Kategorie wählen oder eingeben..." GridPane.columnIndex="1" GridPane.rowIndex="5" />
+    
+     <Label fx:id="lblBeschreibung" text="Beschreibung" GridPane.rowIndex="6" />
+   <TextArea fx:id="txtBeschreibung" prefHeight="58.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="6" />
+
+    <Label fx:id="lblEmpfaenger" styleClass="dialog-label" text="Empfänger:" GridPane.rowIndex="7" />
+    <TextField fx:id="txtEmpfaenger" GridPane.columnIndex="1" GridPane.rowIndex="7" />
+    
+    <Label fx:id="lblSender" styleClass="dialog-label" text="Sender:" GridPane.rowIndex="8" />
+    <TextField fx:id="txtSender" GridPane.columnIndex="1" GridPane.rowIndex="8" />
+    
+     <Label fx:id="lblBetrag" styleClass="dialog-label" text="Betrag:" GridPane.rowIndex="9" />
+    <TextField fx:id="txtBetrag" GridPane.columnIndex="1" GridPane.rowIndex="9" />
+
+    <HBox alignment="CENTER_RIGHT" spacing="10" styleClass="button-bar" GridPane.columnSpan="2" GridPane.rowIndex="10">
+        <Button fx:id="btnAbbrechen" cancelButton="true" onAction="#handleAbbrechen" styleClass="secondary-button" text="Abbrechen" />
+        <Button fx:id="btnOk" defaultButton="true" onAction="#handleButtonActionOK" styleClass="primary-button" text="Speichern" />
     </HBox>
+  
+  
+  
+ 
 </GridPane>

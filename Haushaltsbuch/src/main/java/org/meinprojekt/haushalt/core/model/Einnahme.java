@@ -9,7 +9,7 @@ public class Einnahme extends Buchung{
 	private String sender;
 	
 	
-	public Einnahme(double betragEin, String Kategorie, Konto konto, String sender, LocalDate buchungsDatum, String transferID, boolean isUmbuchung) {
+	public Einnahme(double betragEin, String Kategorie, String beschreibung, Konto konto, String sender, LocalDate buchungsDatum, String transferID, boolean isUmbuchung) {
 		super(betragEin, Kategorie, buchungsDatum);
 		super.setKonto(konto);
 		this.sender = sender;
@@ -17,11 +17,12 @@ public class Einnahme extends Buchung{
 		super.setBuchungsart("Einnahme");
 		super.setTransferID(transferID);
 		super.setIsUmbuchung(isUmbuchung);
+		super.setBeschreibung(beschreibung);
 		konto.buchungen.add(this); //Buchung zur Liste hinzufügen
 	}
 
-	public Einnahme(Konto konto, LocalDate datum, String art, String kategorie, String empfaenger, String sender,double betrag, double kontostand, String transferID, boolean isUmbuchung) {
-		super(konto, datum, art, kategorie, empfaenger, sender, betrag, kontostand, transferID, isUmbuchung);
+	public Einnahme(Konto konto, LocalDate datum, String art, String kategorie, String beschreibung, String empfaenger, String sender,double betrag, double kontostand, String transferID, boolean isUmbuchung) {
+		super(konto, datum, art, kategorie, beschreibung, empfaenger, sender, betrag, kontostand, transferID, isUmbuchung);
 	}
 
 	

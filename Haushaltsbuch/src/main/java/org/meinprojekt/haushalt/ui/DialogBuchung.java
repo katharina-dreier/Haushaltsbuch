@@ -13,9 +13,11 @@ import javafx.fxml.FXML;
 import javafx.scene.Node;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
+import javafx.scene.control.CheckBox;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.DatePicker;
 import javafx.scene.control.Label;
+import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.control.TextFormatter;
 import javafx.stage.Stage;
@@ -25,13 +27,18 @@ public class DialogBuchung {
 	@FXML
 	private ComboBox<Konto> cmbQuellKonto, cmbZielKonto;
 	@FXML
+	private CheckBox chkIsWiederkehrend;
+	@FXML
 	private DatePicker dpDatum;
 	@FXML
-	private ComboBox<String> cmbKategorie;
+	private ComboBox<String> cmbKategorie, cmbHaeufigkeit;
+	@FXML
+	private TextArea txtBeschreibung;
 	@FXML
 	TextField txtEmpfaenger, txtSender, txtBetrag;
 	@FXML
-	private Label lblQuellKonto, lblZielKonto, lblEmpfaenger, lblSender, lblKategorie, lblBetrag, lblDatum;
+	private Label lblQuellKonto, lblZielKonto, lblIsWiederkehrend, lblHaeufigkeit, lblEmpfaenger, lblSender, lblKategorie, lblBeschreibung, lblBetrag,
+			lblDatum;
 
 	@FXML
 	Button btnAbbrechen;
@@ -39,18 +46,37 @@ public class DialogBuchung {
 	Button btnOk;
 	ObservableList<Konto> alleKonten = KontoService.getAlleKontenAlsObservableList();
 
-	private boolean editMode = false;
-
+	
 	private Stage stage; // wird vom MainController gesetzt
+	
+	private Buchung original;
+	
+	private boolean editMode = false;
 	private boolean saved = false;
+	
+	private String buchungsart;
+
+	
 
 	public void setStage(Stage stage) {
 		this.stage = stage;
 	}
+	
+	public void setOriginal(Buchung b) {
+		this.original = b;
+	}
+	
+	public void setEditMode(boolean editMode) {
+		this.editMode = editMode;
+	}
 
 	public boolean isSaved() {
 		return saved;
-
+	}
+	
+	public void setBuchungsart(String art) {
+		this.buchungsart = art;
+		applyBuchungsart();
 	}
 
 	@FXML
@@ -62,7 +88,10 @@ public class DialogBuchung {
 		cmbZielKonto.setItems(alleKonten);
 		cmbZielKonto.setPromptText("Konto auswählen...");
 		kontoListeKonvertieren(cmbZielKonto);
-
+		
+		lblIsWiederkehrend.setText("Wiederkehrend?");
+		cmbHaeufigkeit.setItems(javafx.collections.FXCollections.observableArrayList("Monatlich", "Quartalsweise", "Jährlich"));
+		cmbHaeufigkeit.setPromptText("Häufigkeit auswählen...");
 		dpDatum.setValue(LocalDate.now());
 
 		cmbKategorie.setEditable(true);
@@ -74,7 +103,6 @@ public class DialogBuchung {
 		if (btnAbbrechen != null)
 			btnAbbrechen.setCancelButton(true);
 
-		// cmbQuellKonto.requestFocus();
 		// Button nur aktivieren, wenn alle Felder ausgefüllt sind
 		btnOk.disableProperty().bind(dpDatum.valueProperty().isNull().or(txtBetrag.textProperty().isEmpty())
 				.or(cmbKategorie.getEditor().textProperty().isEmpty()));
@@ -90,75 +118,66 @@ public class DialogBuchung {
 
 	@FXML
 	private void handleButtonActionOK() throws ParseException {
-			try {
-				var nf = java.text.NumberFormat.getNumberInstance(java.util.Locale.GERMANY);
-				nf.setGroupingUsed(true);
-				double betrag = nf.parse(txtBetrag.getText().trim()).doubleValue();
+		try {
+			var nf = java.text.NumberFormat.getNumberInstance(java.util.Locale.GERMANY);
+			nf.setGroupingUsed(true);
+			double betrag = nf.parse(txtBetrag.getText().trim()).doubleValue();
 
-				var datum = dpDatum.getValue();
-				var kat = cmbKategorie.getEditor().getText().trim();
-
-				switch (buchungsart) {
-				case "Einnahme" -> {
-					Konto ziel = cmbZielKonto.getValue();
-					String sender = txtSender.getText().trim();
-					if (!editMode) { 
-						BuchungsService.einnahmeTätigen(betrag, kat, ziel, sender, datum, "", false);}
-					else {
-						if (original.getIsUmbuchung()) {
-							BuchungsService.umbuchungBearbeiten(original, ziel, betrag, datum);
-						}
-						else {BuchungsService.buchungBearbeiten(original, betrag, kat, ziel, sender, datum);}
-					}
-				}
-				case "Ausgabe" -> {
-					Konto quell = cmbQuellKonto.getValue();
-					String empfaenger = txtEmpfaenger.getText().trim();
-					if (!editMode) {
-						BuchungsService.ausgabeTätigen(betrag, kat, quell, empfaenger, datum, "", false);
+			var datum = dpDatum.getValue();
+			var kat = cmbKategorie.getEditor().getText().trim();
+			var beschreibung = txtBeschreibung.getText().trim();
+			var isWiederkehrend = chkIsWiederkehrend.isSelected();
+			var haeufigkeit = cmbHaeufigkeit.getValue();
+			
+			switch (buchungsart) {
+			case "Einnahme" -> {
+				Konto ziel = cmbZielKonto.getValue();
+				String sender = txtSender.getText().trim();
+				if (!editMode) {
+					BuchungsService.einnahmeTätigen(betrag, kat, beschreibung, ziel, sender, datum, "", false);
+				} else {
+					if (original.getIsUmbuchung()) {
+						BuchungsService.umbuchungBearbeiten(original, beschreibung, ziel, betrag, datum);
 					} else {
-						if (original.getIsUmbuchung()) {
-							BuchungsService.umbuchungBearbeiten(original, quell, betrag, datum);
-						} else
-						BuchungsService.buchungBearbeiten(original, betrag, kat, quell, empfaenger, datum);
+						BuchungsService.buchungBearbeiten(original, betrag, kat, beschreibung, ziel, sender, datum);
 					}
 				}
-				case "Umbuchung" -> {
-					Konto quell = cmbQuellKonto.getValue();
-					Konto ziel = cmbZielKonto.getValue();
-					
-					if (quell == ziel) {
-						new Alert(Alert.AlertType.WARNING, "Quelle und Ziel dürfen nicht gleich sein.").showAndWait();
-						return;
-					}
-					BuchungsService.umbuchungTätigen(betrag, quell, ziel, datum);
-
-				}
-				}
-				// schließen
-				btnOk.getScene().getWindow().hide();
-				saved = true;
-
-			} catch (Exception ex) {
-				new Alert(Alert.AlertType.ERROR, "Eingabe prüfen: " + ex.getMessage()).showAndWait();
 			}
-		} 
-		
+			case "Ausgabe" -> {
+				Konto quell = cmbQuellKonto.getValue();
+				String empfaenger = txtEmpfaenger.getText().trim();
+				if (!editMode) {
+					BuchungsService.ausgabeTätigen(betrag, kat, beschreibung, quell, empfaenger, datum, "", false);
+				} else {
+					if (original.getIsUmbuchung()) {
+						BuchungsService.umbuchungBearbeiten(original, beschreibung, quell, betrag, datum);
+					} else
+						BuchungsService.buchungBearbeiten(original, betrag, kat, beschreibung, quell, empfaenger, datum);
+				}
+			}
+			case "Umbuchung" -> {
+				Konto quell = cmbQuellKonto.getValue();
+				Konto ziel = cmbZielKonto.getValue();
+
+				if (quell == ziel) {
+					new Alert(Alert.AlertType.WARNING, "Quelle und Ziel dürfen nicht gleich sein.").showAndWait();
+					return;
+				}
+				BuchungsService.umbuchungTätigen(betrag, beschreibung, quell, ziel, datum);
+
+			}
+			}
+			// schließen
+			btnOk.getScene().getWindow().hide();
+			saved = true;
+
+		} catch (Exception ex) {
+			new Alert(Alert.AlertType.ERROR, "Eingabe prüfen: " + ex.getMessage()).showAndWait();
+		}
+	}
+
 	
 
-	@FXML
-	private void handleAbbrechen() {
-		var window = btnAbbrechen.getScene().getWindow();
-		window.hide();
-
-	}
-
-	private String buchungsart;
-
-	public void setBuchungsart(String art) {
-		this.buchungsart = art;
-		applyBuchungsart();
-	}
 
 	private void applyBuchungsart() {
 		if (buchungsart == null)
@@ -169,20 +188,34 @@ public class DialogBuchung {
 		setRowVisible(lblZielKonto, cmbZielKonto, false);
 		setRowVisible(lblEmpfaenger, txtEmpfaenger, false);
 		setRowVisible(lblSender, txtSender, false);
+		setRowVisible(lblKategorie, cmbKategorie, false);
+		setRowVisible(lblIsWiederkehrend, chkIsWiederkehrend, false);
+		setRowVisible(lblHaeufigkeit, cmbHaeufigkeit, false);
+		
+		
+		// immer an:
+		setRowVisible(lblBeschreibung, txtBeschreibung, true);
+		setRowVisible(lblBetrag, txtBetrag, true);
+		setRowVisible(lblDatum, dpDatum, true);
+		
+		// pro Art an:
 
 		switch (buchungsart) {
 		case "Einnahme" -> {
 			setRowVisible(lblZielKonto, cmbZielKonto, true);
 			setRowVisible(lblSender, txtSender, true);
+			setRowVisible(lblKategorie, cmbKategorie, true);
+			setRowVisible(lblIsWiederkehrend, chkIsWiederkehrend, true);
 		}
 		case "Ausgabe" -> {
 			setRowVisible(lblQuellKonto, cmbQuellKonto, true);
 			setRowVisible(lblEmpfaenger, txtEmpfaenger, true);
+			setRowVisible(lblKategorie, cmbKategorie, true);
+			setRowVisible(lblIsWiederkehrend, chkIsWiederkehrend, true);
 		}
 		case "Umbuchung" -> {
 			setRowVisible(lblQuellKonto, cmbQuellKonto, true);
 			setRowVisible(lblZielKonto, cmbZielKonto, true);
-			setRowVisible(lblKategorie, cmbKategorie, false);
 		}
 		default -> {
 			// optional: Warnung oder Fallback
@@ -224,9 +257,7 @@ public class DialogBuchung {
 		});
 	}
 
-	public void setEditMode(boolean editMode) {
-		this.editMode = editMode;
-	}
+	
 
 	public void prefillFields(Buchung buchung) {
 		if (buchung == null)
@@ -236,6 +267,7 @@ public class DialogBuchung {
 		dpDatum.setValue(buchung.getBuchungsDatum());
 		txtBetrag.setText(String.format("%.2f", buchung.getBetrag()));
 		cmbKategorie.getEditor().setText(buchung.getKategorie());
+		txtBeschreibung.setText(buchung.getBeschreibung());
 
 		switch (buchung.getBuchungsart()) {
 		case "Einnahme" -> {
@@ -254,14 +286,22 @@ public class DialogBuchung {
 		default -> {
 			System.out.println("Fehler beim befüllen. Unbekannte Buchungsart: " + buchung.getBuchungsart());
 		}
-		
+
 		}
 	}
-
-	private Buchung original;
-
-	public void setOriginal(Buchung b) {
-		this.original = b;
+	
+	@FXML void handleCheckboxWiederkehrend() {
+		if (chkIsWiederkehrend.isSelected()) {
+			setRowVisible(lblHaeufigkeit, cmbHaeufigkeit, true);
+		}
 	}
+	
+	@FXML
+	private void handleAbbrechen() {
+		var window = btnAbbrechen.getScene().getWindow();
+		window.hide();
+
+	}
+	
 
 }
