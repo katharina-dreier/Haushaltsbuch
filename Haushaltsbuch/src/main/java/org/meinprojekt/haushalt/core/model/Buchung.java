@@ -22,6 +22,7 @@ public class Buchung {
 	public Buchung(double betrag, String kategorie, LocalDate buchungsDatum) {
 		this.betrag = betrag;
 		this.kategorie = kategorie;
+		this.beschreibung = "";
 		this.buchungsDatum = buchungsDatum;
 		this.buchungsart = "Buchung";
 		this.empfaenger = "";
