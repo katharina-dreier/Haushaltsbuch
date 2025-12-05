@@ -18,8 +18,6 @@ public class KontoService {
 			Konto konto = new Konto(kontoName, inhaber, kontostand, kreditinstitut);
 			Konto.getKonten().put(konto.getKontonummer(), konto);
 			BuchungsService.einnahmeTätigen(kontostand, "Kontoerstellung", "Initiale Buchung zu diesem Konto", konto, inhaber, LocalDate.now() , "", false);
-			// Konto in die Datei einfügen
-			//Datenstroeme.kontoHinzufuegen(konto);
 			System.out.println("Konto wurde erstellt: " + konto);
 		}
 		

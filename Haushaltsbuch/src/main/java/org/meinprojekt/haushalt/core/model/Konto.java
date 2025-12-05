@@ -1,6 +1,7 @@
 package org.meinprojekt.haushalt.core.model;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -14,6 +15,7 @@ public class Konto {
 	private String kreditinstitut;
 	
     public List<Buchung> buchungen;
+    public List<WiederkehrendeZahlung> wiederkehrendeZahlungen;
     private static Map<Integer, Konto> konten = new HashMap<>();
    
     
@@ -28,6 +30,7 @@ public class Konto {
 		anzahlKonten++;
 		kontonummer = anzahlKonten;		
 		this.buchungen = new ArrayList<>();
+		this.wiederkehrendeZahlungen = new ArrayList<>();
 	}
 	
 	// Getter und Setter
@@ -49,6 +52,10 @@ public class Konto {
 
 	public void setBuchungen(List<Buchung> buchungen) {
 		this.buchungen = buchungen;
+	}
+	
+	public void setWiederkehrendeZahlungen(List<WiederkehrendeZahlung> wiederkehrendeZahlungen) {
+		this.wiederkehrendeZahlungen = wiederkehrendeZahlungen;
 	}
 
 	public static int getAnzahlKonten() {
@@ -86,6 +93,10 @@ public class Konto {
 	 public List<Buchung> getBuchungen() {
 	        return buchungen;
 	    }
+	 
+		public List<WiederkehrendeZahlung> getWiederkehrendeZahlungen() {
+			return wiederkehrendeZahlungen;
+		}
 
 	
 	public static List<Konto> getAlleKonten() {
@@ -98,6 +109,14 @@ public class Konto {
 			alleBuchungen.addAll(konto.getBuchungen());
 		}
 		return alleBuchungen;
+	}
+	
+	public static List<WiederkehrendeZahlung> getAlleWiederkehrendeZahlungen() {
+		List<WiederkehrendeZahlung> alleWiederkehrendeZahlungen = new ArrayList<>();
+		for (Konto konto : getKonten().values()) {
+			alleWiederkehrendeZahlungen.addAll(konto.getWiederkehrendeZahlungen());
+		}
+		return alleWiederkehrendeZahlungen;
 	}
 	
 	public void addBuchung(Buchung b) {
@@ -135,5 +154,7 @@ public class Konto {
 	public static void setKonten(Map<Integer, Konto> konten) {
 		Konto.konten = konten;
 	}
+
+	
 	
 }

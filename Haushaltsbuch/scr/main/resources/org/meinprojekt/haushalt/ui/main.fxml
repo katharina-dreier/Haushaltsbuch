@@ -64,6 +64,7 @@
                             <Tab fx:id="tabEinnahmen" text="Einnahmen" />
                             <Tab fx:id="tabAusgaben" text="Ausgaben" />
                             <Tab fx:id="tabUmbuchungen" text="Umbuchungen" />
+                            <Tab fx:id="tabWiederkehrendeBuchungen" text="Wiederkehrende Buchungen" />
                         </tabs>
                     </TabPane>
 
@@ -76,6 +77,17 @@
                             <TableColumn fx:id="colSender" prefWidth="120" text="Sender" />
                             <TableColumn fx:id="colBetrag" prefWidth="100" text="Betrag" />
                             <TableColumn fx:id="colKonto" prefWidth="150" text="Konto" />
+                        </columns>
+                    </TableView>
+                     <TableView fx:id="tblWiederkehrendeBuchungen" VBox.vgrow="ALWAYS">
+                        <columns>
+                            <TableColumn fx:id="colNaechstesBuchungsDatum" prefWidth="150" text="Nächste Buchung am" sortType="ASCENDING"/>
+                            <TableColumn fx:id="colWKKategorie" prefWidth="150" text="Kategorie" />
+                            <TableColumn fx:id="colWKBeschreibung" prefWidth="200" text="Beschreibung" />
+                            <TableColumn fx:id="colWKEmpfaenger" prefWidth="120" text="Empfänger" />
+                            <TableColumn fx:id="colWKSender" prefWidth="120" text="Sender" />
+                            <TableColumn fx:id="colWKBetrag" prefWidth="100" text="Betrag" />
+                            <TableColumn fx:id="colWKKonto" prefWidth="150" text="Konto" />
                         </columns>
                     </TableView>
 					</VBox>

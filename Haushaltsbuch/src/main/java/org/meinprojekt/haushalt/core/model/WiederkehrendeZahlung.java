@@ -1,8 +1,38 @@
 package org.meinprojekt.haushalt.core.model;
 
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 
-public class WiederkehrendeZahlungen {
+import javafx.util.Callback;
+
+public class WiederkehrendeZahlung {
+	
+	public enum Haeufigkeit {
+		MONATLICH("Monatlich"),
+		QUARTALSWEISE("Quartalsweise"),
+		JAEHRLICH("Jährlich");
+		
+		 private final String label;
+
+		    Haeufigkeit(String label) {
+		        this.label = label;
+		    }
+
+		    @Override
+		    public String toString() {
+		        return label;  
+		    }
+		    
+		    public static Haeufigkeit haeufigkeitFromString(String text) {
+		        for (Haeufigkeit h : Haeufigkeit.values()) {
+		            if (h.label.equalsIgnoreCase(text)) {
+		                return h;
+		            }
+		        }
+		        throw new IllegalArgumentException("Unbekannte Häufigkeit: " + text);
+
+	}
+	}
 	
 	private double betrag;
 	private String kategorie;
@@ -11,27 +41,27 @@ public class WiederkehrendeZahlungen {
 	private String empfaenger;
 	private String sender;
 	private String buchungsart; // Einnahme, Ausgabe
-	private String häufigkeit;
+	private Haeufigkeit haeufigkeit;
 	private LocalDate naechsteZahlungAm;
 	
-	public WiederkehrendeZahlungen(double betrag, String Kategorie, String beschreibung, Konto konto, String empfaenger, String sender, String buchungsart, String häufigkeit, LocalDate naechsteZahlungAm) {
+	public WiederkehrendeZahlung(LocalDate naechsteZahlungAm, Haeufigkeit häufigkeit, String buchungsart, String kategorie, String beschreibung, String empfaenger, String sender, double betrag, Konto konto) {
 		this.betrag = betrag;
-		this.kategorie = Kategorie;
+		this.kategorie = kategorie;
 		this.beschreibung = beschreibung;
 		this.konto = konto;
 		this.empfaenger = empfaenger;
 		this.sender = sender;
 		this.buchungsart = buchungsart;
-		this.häufigkeit = häufigkeit;
+		this.haeufigkeit = häufigkeit;
 		this.naechsteZahlungAm = naechsteZahlungAm;
 	}
 
-	public String getHäufigkeit() {
-		return häufigkeit;
+	public Haeufigkeit getHaeufigkeit() {
+		return haeufigkeit;
 	}
 
-	public void setHäufigkeit(String häufigkeit) {
-		this.häufigkeit = häufigkeit;
+	public void setHaeufigkeit(Haeufigkeit haeufigkeit) {
+		this.haeufigkeit = haeufigkeit;
 	}
 
 	public double getBetrag() {
@@ -98,7 +128,15 @@ public class WiederkehrendeZahlungen {
 		this.naechsteZahlungAm = naechsteZahlungAm;
 	}
 	
-	
+	public String getKontoAnzeige() {
+	    if (konto == null) return "";
+	    return konto.getKontoName() + " (" + konto.getKreditinstitut() + ")";
+	}
+
+	public String getFormatiertesDatum() {
+	        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy");
+	        return naechsteZahlungAm.format(formatter); 
+	    }
 	
 
 }

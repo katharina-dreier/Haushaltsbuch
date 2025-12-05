@@ -1,0 +1,64 @@
+package org.meinprojekt.haushalt.core.service;
+
+import java.time.LocalDate;
+
+import org.meinprojekt.haushalt.core.model.Konto;
+import org.meinprojekt.haushalt.core.model.WiederkehrendeZahlung;
+import org.meinprojekt.haushalt.core.model.WiederkehrendeZahlung.Haeufigkeit;
+import org.meinprojekt.haushalt.speicher.Datenstroeme;
+
+public class WiederkehrendeZahlungenService {
+	
+	public static void wiederkehrendeZahlungAnlegen(LocalDate datum, Haeufigkeit haeufigkeit, String buchungsart, String kategorie, 
+			String beschreibung, String empfaenger, String sender, double betrag, Konto konto) {
+		
+		WiederkehrendeZahlung zahlung = new WiederkehrendeZahlung(datum, haeufigkeit, buchungsart, kategorie, beschreibung, empfaenger, sender, betrag, konto);
+		konto.wiederkehrendeZahlungen.add(zahlung);
+		Datenstroeme.wiederkehrendeBuchungHinzufuegen(zahlung);
+		
+	}
+	
+	public static void wiederkehrendeZahlungBearbeiten(WiederkehrendeZahlung zahlung, LocalDate datum,
+			Haeufigkeit haeufigkeit, String buchungsart, String kategorie, String beschreibung, String empfaenger,
+			String sender, double betrag) {
+
+		zahlung.setNaechsteZahlungAm(datum);
+		zahlung.setHaeufigkeit(haeufigkeit);
+		zahlung.setBuchungsart(buchungsart);
+		zahlung.setKategorie(kategorie);
+		zahlung.setBeschreibung(beschreibung);
+		zahlung.setEmpfaenger(empfaenger);
+		zahlung.setSender(sender);
+		zahlung.setBetrag(betrag);
+
+		Datenstroeme.kontoWiederkehrendeZahlungenNeuSpeichern(zahlung.getKonto());
+
+	}
+	
+	public static void naechstesZahlDatumAktualisieren(WiederkehrendeZahlung zahlung) {
+		LocalDate aktuellesDatum = zahlung.getNaechsteZahlungAm();
+		Haeufigkeit haeufigkeit = zahlung.getHaeufigkeit();
+		LocalDate naechstesDatum = naechstesBuchungsDatumBerechnen(aktuellesDatum, haeufigkeit);
+		zahlung.setNaechsteZahlungAm(naechstesDatum);
+		Datenstroeme.kontoWiederkehrendeZahlungenNeuSpeichern(zahlung.getKonto());
+		
+	}
+
+	public static LocalDate naechstesBuchungsDatumBerechnen(LocalDate datum, Haeufigkeit haeufigkeit) {
+		LocalDate naechsteZahlungAm = datum;
+		
+		switch (haeufigkeit) {
+		case MONATLICH:
+			naechsteZahlungAm = datum.plusMonths(1);
+			break;
+		case QUARTALSWEISE:
+			naechsteZahlungAm = datum.plusMonths(3);
+			break;
+		case JAEHRLICH:
+			naechsteZahlungAm = datum.plusYears(1);
+			break;
+		}
+		return naechsteZahlungAm;
+	}
+
+}

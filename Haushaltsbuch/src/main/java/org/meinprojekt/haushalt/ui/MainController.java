@@ -21,6 +21,7 @@ import org.meinprojekt.haushalt.core.model.Buchung;
 import org.meinprojekt.haushalt.core.model.DiagrammDaten;
 import org.meinprojekt.haushalt.core.model.DiagrammDaten.Aufloesung;
 import org.meinprojekt.haushalt.core.model.Konto;
+import org.meinprojekt.haushalt.core.model.WiederkehrendeZahlung;
 import org.meinprojekt.haushalt.core.service.BuchungsService;
 import org.meinprojekt.haushalt.core.service.DiagrammService;
 import org.meinprojekt.haushalt.core.service.FilterService;
@@ -80,7 +81,7 @@ public class MainController {
 	@FXML
 	TabPane tabPane;
 	@FXML
-	private Tab tabGesamt, tabEinnahmen, tabAusgaben, tabUmbuchungen;
+	private Tab tabGesamt, tabEinnahmen, tabAusgaben, tabUmbuchungen, tabWiederkehrendeBuchungen;
 
 	@FXML
 	private Label summeAlleKontenLbl, summeBuchungenLbl, legendeEinnahmenlbl, legendeAusgabenlbl, legendeDifferenzlbl, lblVon, lblBis;
@@ -124,18 +125,35 @@ public class MainController {
 	private TableColumn<Buchung, String> colKonto;
 	@FXML
 	private TableColumn<Buchung, Void> colBuchungLoeschen;
+	
+	@FXML
+	private TableView<WiederkehrendeZahlung> tblWiederkehrendeBuchungen;
+	@FXML
+	private TableColumn<WiederkehrendeZahlung, LocalDate> colNaechstesBuchungsDatum;
+	@FXML
+	private TableColumn<WiederkehrendeZahlung, String> colWKKategorie;
+	@FXML
+	private TableColumn<WiederkehrendeZahlung, String> colWKBeschreibung;
+	@FXML
+	private TableColumn<WiederkehrendeZahlung, String> colWKEmpfaenger;
+	@FXML
+	private TableColumn<WiederkehrendeZahlung, String> colWKSender;
+	@FXML
+	private TableColumn<WiederkehrendeZahlung, Double> colWKBetrag;
+	@FXML
+	private TableColumn<WiederkehrendeZahlung, String> colWKKonto;
 
 	private final ObservableList<Konto> kontenListe = FXCollections.observableArrayList();
 	private final ObservableList<Buchung> buchungsListe = FXCollections.observableArrayList();
+	private final ObservableList<WiederkehrendeZahlung> wiederkehrendeBuchungsListe = FXCollections.observableArrayList();
 	private FilteredList<Buchung> gefilterteBuchungsListe;
 	private SortedList<Buchung> sortierteBuchungsListe;
-	//private final Map<String, Double> einnahmenProMonat = new TreeMap<>();
-	//private final Map<String, Double> ausgabenProMonat = new TreeMap<>();
 	private final NumberFormat euro = NumberFormat.getCurrencyInstance(Locale.GERMANY);
 	private final FilterService filterService = new FilterService();
 	private Predicate<Buchung> aktuellerTabFilter      = _ -> true;
 	private Predicate<Buchung> aktuellerZeitraumFilter = _ -> true;
 	private Predicate<Buchung> aktuellerKategorieFilter = _ -> true;
+	private Predicate<Buchung> kombinierterFilter = _ -> true;
 	private final Map<CheckMenuItem, String> kategoriemap = new HashMap<>();
 	private Zeitraum aktuellerZeitraum = null;
 	
@@ -147,11 +165,19 @@ public class MainController {
 		Datenstroeme.ladeKontenAusDatei();
 		Datenstroeme.ladeKategorienAusDatei();
 		Datenstroeme.ladeBuchungenFuerAlleKonten();
+		Datenstroeme.ladeWiederkehrendeZahlungenFuerAlleKonten();
 		
-		buchungslisteInitialisieren();
+		ladeBuchungenListe();
+		ladeWiederkehrendeBuchungenListe();
 		initialisiereKategorieAuswahlBox();
 		initialisiereZeitraumAuswahlBox();
-		tabPane.getSelectionModel().selectedItemProperty().addListener((obs, alt, neu) -> applyTabFilter());
+		
+		tabPane.getSelectionModel().select(tabGesamt);
+		sichtbarkeitBuchungenAreaAnpassen();
+		tabPane.getSelectionModel().selectedItemProperty().addListener((obs, alt, neu) -> {
+			applyTabFilter();
+			sichtbarkeitBuchungenAreaAnpassen();
+		});
 		
 
 		setupKontenTabelle();
@@ -161,6 +187,8 @@ public class MainController {
 		setupBuchungenTabelle();
 		setupBuchungLoeschen();
 		setupBuchungBearbeiten();
+		
+		setupWiederkehrendeBuchungenTabelle();
 
 		// Liste der Tabelle zuweisen
 		kontenListe.setAll(Konto.getAlleKonten());
@@ -171,11 +199,28 @@ public class MainController {
 		// Listener für die Auswahl eines Kontos in der Tabelle
 		tblKonten.getSelectionModel().selectedItemProperty().addListener((obs, altesKonto, neuesKonto) -> {
 			buchungenAnzeigen(neuesKonto);
+			ansichtAktualisieren();
 		});
 
 		summeBuchungenAktualisieren();
 		ladeEinnahmenAusgabenDiagramm();
 		initialisiereTooltips();
+		
+	}
+
+	private void sichtbarkeitBuchungenAreaAnpassen() {
+		var aktTab = tabPane.getSelectionModel().getSelectedItem();
+			if (aktTab == tabWiederkehrendeBuchungen) {
+				tblBuchungen.setVisible(false);
+				tblBuchungen.setManaged(false);
+				tblWiederkehrendeBuchungen.setVisible(true);
+				tblWiederkehrendeBuchungen.setManaged(true);
+			} else {
+				tblBuchungen.setVisible(true);
+				tblBuchungen.setManaged(true);
+				tblWiederkehrendeBuchungen.setVisible(false);
+				tblWiederkehrendeBuchungen.setManaged(false);
+			}
 		
 	}
 
@@ -396,14 +441,16 @@ private Set<String> getAusgewaehlteKategorien() {
 	}
 	
 	private void aktualisiereFilter() {
-		Predicate<Buchung> kombinierterFilter = aktuellerTabFilter.and(aktuellerZeitraumFilter).and(aktuellerKategorieFilter);
+		kombinierterFilter = aktuellerTabFilter.and(aktuellerZeitraumFilter).and(aktuellerKategorieFilter);
 		gefilterteBuchungsListe.setPredicate(kombinierterFilter);
 		ansichtAktualisieren();
 	}
 
 	private void ansichtAktualisieren() {
 		summeBuchungenAktualisieren();
-		ladeEinnahmenAusgabenDiagramm();	
+		ladeBuchungenListe();
+		ladeWiederkehrendeBuchungenListe();
+		ladeEinnahmenAusgabenDiagramm();
 	}
 
 	@FXML
@@ -459,6 +506,44 @@ private Set<String> getAusgewaehlteKategorien() {
 		colKonto.setCellValueFactory(new PropertyValueFactory<>("kontoAnzeige"));
 		tblBuchungen.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY_FLEX_LAST_COLUMN);
 	}
+	
+	private void setupWiederkehrendeBuchungenTabelle() {
+		colNaechstesBuchungsDatum.setCellValueFactory(new PropertyValueFactory<>("naechsteZahlungAm"));
+		colWKKategorie.setCellValueFactory(new PropertyValueFactory<>("kategorie"));
+		colWKBeschreibung.setCellValueFactory(new PropertyValueFactory<>("beschreibung"));
+		colWKEmpfaenger.setCellValueFactory(new PropertyValueFactory<>("empfaenger"));
+		colWKSender.setCellValueFactory(new PropertyValueFactory<>("sender"));
+		colWKBetrag.setCellValueFactory(new PropertyValueFactory<>("betrag"));
+		colWKBetrag.setCellValueFactory(cellData -> {
+			WiederkehrendeZahlung zahlung = cellData.getValue();
+			double value = zahlung.getBetrag();
+
+			if (zahlung.getBuchungsart().equalsIgnoreCase("Ausgabe")) {
+				value = -value;
+			}
+
+			return new ReadOnlyObjectWrapper<>(value);
+		});
+
+		colBetrag.setCellFactory(column -> new TableCell<>() {
+			@Override
+			protected void updateItem(Double betrag, boolean empty) {
+				super.updateItem(betrag, empty);
+				if (empty || betrag == null) {
+					setText(null);
+				} else {
+					setText(String.format("%.2f €", betrag));
+					if (betrag < 0)
+						setStyle("-fx-text-fill: red;");
+					else
+						setStyle("-fx-text-fill: green;");
+				}
+			}
+			
+		});
+		colWKKonto.setCellValueFactory(new PropertyValueFactory<>("kontoAnzeige"));
+		tblWiederkehrendeBuchungen.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY_FLEX_LAST_COLUMN);
+	}
 
 	private void setupKontenTabelle() {
 		colKontonummer.setCellValueFactory(new PropertyValueFactory<>("kontonummer"));
@@ -483,16 +568,24 @@ private Set<String> getAusgewaehlteKategorien() {
 		tblKonten.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY_FLEX_LAST_COLUMN);
 	}
 
-	private void buchungslisteInitialisieren() {
-		buchungsListe.setAll(Konto.getAlleBuchungen());
-		gefilterteBuchungsListe = new FilteredList<>(buchungsListe, b -> true);
+	private void ladeBuchungenListe() {
+		Konto konto = tblKonten.getSelectionModel().getSelectedItem();
+		if (konto != null) {
+			buchungsListe.setAll(konto.getBuchungen());
+		} else buchungsListe.setAll(Konto.getAlleBuchungen());
+		gefilterteBuchungsListe = new FilteredList<>(buchungsListe, kombinierterFilter);
 		sortierteBuchungsListe = new SortedList<>(gefilterteBuchungsListe);
 		sortierteBuchungsListe.comparatorProperty().bind(tblBuchungen.comparatorProperty());
 		tblBuchungen.setItems(sortierteBuchungsListe);
 		tblBuchungen.getSortOrder().add(colBuchungsDatum);
 		tblBuchungen.sort();
 		berechneSumme(gefilterteBuchungsListe);
-
+	}
+	
+	
+	private void ladeWiederkehrendeBuchungenListe() {
+		wiederkehrendeBuchungsListe.setAll(Konto.getAlleWiederkehrendeZahlungen());
+		tblWiederkehrendeBuchungen.setItems(wiederkehrendeBuchungsListe);
 	}
 
 	private void ladeEinnahmenAusgabenDiagramm() {
@@ -602,7 +695,7 @@ private Set<String> getAusgewaehlteKategorien() {
 		dialogOeffnen(btnNeueEinnahme, fxmlPfad, titel, (DialogBuchung c) -> {
 			c.setBuchungsart("Einnahme");
 		});
-		aktualisiereTabelle();
+		aktualisiereKontenTabelle();
 		updateGesamtSummeLabel();
 		ansichtAktualisieren();
 		initialisiereKategorieAuswahlBox();
@@ -615,7 +708,7 @@ private Set<String> getAusgewaehlteKategorien() {
 		dialogOeffnen(btnNeueAusgabe, fxmlPfad, titel, (DialogBuchung c) -> {
 			c.setBuchungsart("Ausgabe");
 		});
-		aktualisiereTabelle();
+		aktualisiereKontenTabelle();
 		updateGesamtSummeLabel();
 		ansichtAktualisieren();
 		initialisiereKategorieAuswahlBox();
@@ -628,13 +721,13 @@ private Set<String> getAusgewaehlteKategorien() {
 		dialogOeffnen(btnNeueUmbuchung, fxmlPfad, titel, (DialogBuchung c) -> {
 			c.setBuchungsart("Umbuchung");
 		});
-		aktualisiereTabelle();
+		aktualisiereKontenTabelle();
 		updateGesamtSummeLabel();
 		ansichtAktualisieren();
 		initialisiereKategorieAuswahlBox();
 	}
 
-	public void aktualisiereTabelle() {
+	public void aktualisiereKontenTabelle() {
 		kontenListe.setAll(Konto.getAlleKonten());
 		tblKonten.refresh();
 	}
@@ -646,16 +739,13 @@ private Set<String> getAusgewaehlteKategorien() {
 			buchungsListe.setAll(liste);
 			applyTabFilter();
 			applyZeitraumFilter(auswahlBox.getValue());
-			
 			colKonto.setVisible(false);
-			ladeEinnahmenAusgabenDiagramm();
 
 		} else {
 			// Kein Konto ausgewählt, zeige alle Buchungen
 			buchungsListe.setAll(Konto.getAlleBuchungen());
 			applyTabFilter();
 			colKonto.setVisible(true);
-			ladeEinnahmenAusgabenDiagramm();
 		}
 
 	}
@@ -681,7 +771,7 @@ private Set<String> getAusgewaehlteKategorien() {
 			dialogStage.setScene(dialogScene);
 			dialogScene.getStylesheets().addAll(btn.getScene().getStylesheets());
 			dialogStage.showAndWait();
-			aktualisiereTabelle();
+			aktualisiereKontenTabelle();
 
 			return dialogController;
 
@@ -800,8 +890,8 @@ private Set<String> getAusgewaehlteKategorien() {
 			if (result == ButtonType.OK) {
 				BuchungsService.loescheBuchung(b);
 			}
-			buchungsListe.setAll(b.getKonto().getBuchungen());
-			tblKonten.refresh();
+			
+			ansichtAktualisieren();
 			updateGesamtSummeLabel();
 
 		});
@@ -820,6 +910,7 @@ private Set<String> getAusgewaehlteKategorien() {
 			}
 			kontenListe.setAll(Konto.getAlleKonten());
 			tblKonten.refresh();
+			ansichtAktualisieren();
 			updateGesamtSummeLabel();
 
 		});
