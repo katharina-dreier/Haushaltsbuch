@@ -5,20 +5,20 @@
 <?import javafx.scene.chart.NumberAxis?>
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.ChoiceBox?>
-<?import javafx.scene.control.ComboBox?>
 <?import javafx.scene.control.DatePicker?>
 <?import javafx.scene.control.Label?>
+<?import javafx.scene.control.MenuButton?>
 <?import javafx.scene.control.SplitPane?>
 <?import javafx.scene.control.Tab?>
 <?import javafx.scene.control.TabPane?>
 <?import javafx.scene.control.TableColumn?>
 <?import javafx.scene.control.TableView?>
 <?import javafx.scene.control.ToolBar?>
+<?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.shape.Circle?>
-<?import javafx.scene.control.MenuButton?>
 
 <BorderPane xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.meinprojekt.haushalt.ui.MainController">
 
@@ -64,13 +64,12 @@
                             <Tab fx:id="tabEinnahmen" text="Einnahmen" />
                             <Tab fx:id="tabAusgaben" text="Ausgaben" />
                             <Tab fx:id="tabUmbuchungen" text="Umbuchungen" />
-                            <Tab fx:id="tabWiederkehrendeBuchungen" text="Wiederkehrende Buchungen" />
                         </tabs>
                     </TabPane>
 
                     <TableView fx:id="tblBuchungen" VBox.vgrow="ALWAYS">
                         <columns>
-                            <TableColumn fx:id="colBuchungsDatum" prefWidth="150" text="Buchungsdatum" sortType="DESCENDING"/>
+                            <TableColumn fx:id="colBuchungsDatum" prefWidth="150" sortType="DESCENDING" text="Buchungsdatum" />
                             <TableColumn fx:id="colKategorie" prefWidth="150" text="Kategorie" />
                             <TableColumn fx:id="colBeschreibung" prefWidth="200" text="Beschreibung" />
                             <TableColumn fx:id="colEmpfaenger" prefWidth="120" text="Empfänger" />
@@ -79,26 +78,22 @@
                             <TableColumn fx:id="colKonto" prefWidth="150" text="Konto" />
                         </columns>
                     </TableView>
-                     <TableView fx:id="tblWiederkehrendeBuchungen" VBox.vgrow="ALWAYS">
-                        <columns>
-                            <TableColumn fx:id="colNaechstesBuchungsDatum" prefWidth="150" text="Nächste Buchung am" sortType="ASCENDING"/>
-                            <TableColumn fx:id="colWKKategorie" prefWidth="150" text="Kategorie" />
-                            <TableColumn fx:id="colWKBeschreibung" prefWidth="200" text="Beschreibung" />
-                            <TableColumn fx:id="colWKEmpfaenger" prefWidth="120" text="Empfänger" />
-                            <TableColumn fx:id="colWKSender" prefWidth="120" text="Sender" />
-                            <TableColumn fx:id="colWKBetrag" prefWidth="100" text="Betrag" />
-                            <TableColumn fx:id="colWKKonto" prefWidth="150" text="Konto" />
-                        </columns>
-                    </TableView>
+                     
 					</VBox>
                     <Label fx:id="summeBuchungenLbl" style="-fx-padding: 4 0 0 0;" text="Summe: 0,00 €" />
                 </VBox>
  				</VBox>
             
 
-            <!-- Rechte Seite: Diagramme -->
-           <VBox fx:id="statistikArea" alignment="TOP_CENTER" spacing="10" styleClass="card" VBox.vgrow="ALWAYS">
-   					 <Label styleClass="card-title" text="Diagramme" />
+            <!-- Rechte Seite: Tab Bereich -->
+           <VBox fx:id="statistikArea" spacing="8" styleClass="card" VBox.vgrow="ALWAYS">
+            <TabPane fx:id="tabPaneAnsichten" styleClass="ansichten-tabs" VBox.vgrow="ALWAYS">
+              <tabs>
+                <!-- TAB 1: Diagramme -->
+                <Tab fx:id="tabDiagramme" text="Diagramme">
+                  <content>
+                  <VBox spacing="8" styleClass="tab-content">
+                    <Label styleClass="card-title" text="Diagramme" />
     				<HBox fx:id="diagrammLegende" alignment="CENTER" spacing="60" styleClass="chart-header">
 
     					<children>
@@ -152,9 +147,40 @@
            					 <NumberAxis fx:id="yAchseEinnahmenAusgabenDiagramm" />
        					</yAxis>
        					</AreaChart>
-			</VBox>
+       					 </VBox>
+                </content>
+            </Tab>
 
+            <!-- TAB 2: Wiederkehrende Zahlungen -->
+                <Tab fx:id="tabWiederkehrendeBuchungen" text="Wiederkehrende Zahlungen">
+                  <content>
+                    <VBox spacing="8" styleClass="tab-content">
 
+                        <Label text="Wiederkehrende Zahlungen"
+                               styleClass="card-title"/>
+
+                        
+                           <TableView fx:id="tblWiederkehrendeBuchungen" VBox.vgrow="ALWAYS">
+                        <columns>
+                            <TableColumn fx:id="colNaechstesBuchungsDatum" prefWidth="150" sortType="ASCENDING" text="Nächste Buchung am" />
+                            <TableColumn fx:id="colWKKategorie" prefWidth="150" text="Kategorie" />
+                            <TableColumn fx:id="colWKBeschreibung" prefWidth="200" text="Beschreibung" />
+                            <TableColumn fx:id="colWKEmpfaenger" prefWidth="120" text="Empfänger" />
+                            <TableColumn fx:id="colWKSender" prefWidth="120" text="Sender" />
+                            <TableColumn fx:id="colWKBetrag" prefWidth="100" text="Betrag" />
+                            <TableColumn fx:id="colWKKonto" prefWidth="150" text="Konto" />
+                            <TableColumn fx:id="colWKGezahlt" prefWidth="120" text="Zahlung ausgeführt" />
+                        </columns>
+                    
+                        </TableView>
+
+                    </VBox>
+                </content>
+            </Tab>
+
+        </tabs>
+    </TabPane>
+</VBox>
         </SplitPane>
     </center>
 
@@ -164,7 +190,7 @@
 
         <!-- Links: "Filter"-Label -->
         <left>
-            <Label text="Filter" styleClass="filter-title" />
+            <Label styleClass="filter-title" text="Filter" />
         </left>
 
         <!-- Mitte: Filter-Controls -->
@@ -172,9 +198,7 @@
             <HBox alignment="CENTER" spacing="12">
                 <children>
                     <Label styleClass="filter-label" text="Kategorie:" />
-                    <MenuButton fx:id="kategorieFilterButton"
-                                text="Alle Kategorien"
-                                styleClass="filter-choice-button" />
+                    <MenuButton fx:id="kategorieFilterButton" styleClass="filter-choice-button" text="Alle Kategorien" />
 
                     <Label styleClass="filter-label" text="Zeitraum:" />
                     <ChoiceBox fx:id="auswahlBox" prefWidth="160.0" />
@@ -185,10 +209,7 @@
                     <Label fx:id="lblBis" styleClass="filter-label" text="bis:" />
                     <DatePicker fx:id="endDatumPicker" />
 
-                    <Button fx:id="btnAuswahlAnwenden"
-                            text="Auswahl anwenden"
-                            onAction="#handleAuswahlAnwenden"
-                            styleClass="primary-button" />
+                    <Button fx:id="btnAuswahlAnwenden" onAction="#handleAuswahlAnwenden" styleClass="primary-button" text="Auswahl anwenden" />
                 </children>
             </HBox>
         </center>

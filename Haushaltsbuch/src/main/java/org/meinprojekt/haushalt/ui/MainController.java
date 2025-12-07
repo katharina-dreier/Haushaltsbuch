@@ -79,9 +79,9 @@ public class MainController {
 	@FXML
 	private NumberAxis yAchseEinnahmenAusgabenDiagramm;
 	@FXML
-	TabPane tabPane;
+	TabPane tabPane, tabPaneAnsichten;
 	@FXML
-	private Tab tabGesamt, tabEinnahmen, tabAusgaben, tabUmbuchungen, tabWiederkehrendeBuchungen;
+	private Tab tabGesamt, tabEinnahmen, tabAusgaben, tabUmbuchungen, tabWiederkehrendeBuchungen, tabDiagramme, tabWiederkehrendeZahlungen;
 
 	@FXML
 	private Label summeAlleKontenLbl, summeBuchungenLbl, legendeEinnahmenlbl, legendeAusgabenlbl, legendeDifferenzlbl, lblVon, lblBis;
@@ -173,10 +173,21 @@ public class MainController {
 		initialisiereZeitraumAuswahlBox();
 		
 		tabPane.getSelectionModel().select(tabGesamt);
-		sichtbarkeitBuchungenAreaAnpassen();
+		//sichtbarkeitBuchungenAreaAnpassen();
 		tabPane.getSelectionModel().selectedItemProperty().addListener((obs, alt, neu) -> {
 			applyTabFilter();
-			sichtbarkeitBuchungenAreaAnpassen();
+			//sichtbarkeitBuchungenAreaAnpassen();
+		});
+		
+		tabPaneAnsichten.getSelectionModel().select(tabDiagramme);
+
+		tabPaneAnsichten.getSelectionModel().selectedItemProperty().addListener((obs, alt, neu) -> {
+			if (neu == tabDiagramme) {
+				ladeEinnahmenAusgabenDiagramm();
+			}
+			if (neu == tabWiederkehrendeZahlungen) {
+				ladeWiederkehrendeBuchungenListe();
+			}
 		});
 		
 
@@ -208,21 +219,6 @@ public class MainController {
 		
 	}
 
-	private void sichtbarkeitBuchungenAreaAnpassen() {
-		var aktTab = tabPane.getSelectionModel().getSelectedItem();
-			if (aktTab == tabWiederkehrendeBuchungen) {
-				tblBuchungen.setVisible(false);
-				tblBuchungen.setManaged(false);
-				tblWiederkehrendeBuchungen.setVisible(true);
-				tblWiederkehrendeBuchungen.setManaged(true);
-			} else {
-				tblBuchungen.setVisible(true);
-				tblBuchungen.setManaged(true);
-				tblWiederkehrendeBuchungen.setVisible(false);
-				tblWiederkehrendeBuchungen.setManaged(false);
-			}
-		
-	}
 
 	private void initialisiereKategorieAuswahlBox() {
 		 kategorieFilterButton.getItems().clear();
