@@ -4,9 +4,10 @@
     -fx-background-color: #f3f4f6;
 	-fx-background-insets: 0;
 	-fx-border-color: #e0e0e0;
-	    -fx-border-width: 1;
-		-fx-focus-color: #e0e0e0;
-		-fx-faint-focus-color: transparent;
+	-fx-border-width: 1;
+	-fx-focus-color: #e0e0e0;
+	-fx-faint-focus-color: transparent;
+	
 }
 
 .card {
@@ -16,6 +17,7 @@
     -fx-border-radius: 10;
     -fx-border-color: #e0e0e0;
     -fx-border-width: 1;
+	-fx-focus-color: #e0e0e0
 }
 
 .card-title {
@@ -24,12 +26,20 @@
     -fx-padding: 0 0 4 4;
 }
 
+.table-cell:focused {
+    -fx-background-color: #ffffff;
+    -fx-border-color: #e0e0e0;
+    -fx-border-width: 1;
+    -fx-focus-color: #e0e0e0
+}
+
 .toolbar {
     -fx-background-color: #f3f4f6;
     -fx-padding: 10;
     -fx-spacing: 10;
     -fx-border-color: #e0e0e0;
     -fx-border-width: 0 0 1 0;
+	-fx-focus-color: #e0e0e0
 }
 
 /* Filter Tabs für Buchungen */
@@ -301,6 +311,7 @@
     -fx-background-color: #ffffff;
     -fx-padding: 15;
     -fx-spacing: 10;
+	-fx-focus-color: #e0e0e0
 }
 
 /* Überschriften im Dialog */
@@ -336,3 +347,75 @@
 .button-bar {
     -fx-spacing: 8;
 }
+
+/* Zelle allgemein */
+.wkz-cell {
+    -fx-alignment: CENTER;
+}
+
+/* Symbol */
+.wkz-status {
+    -fx-font-size: 14px;
+}
+
+.wkz-status-pending {
+    -fx-text-fill: #f39c12;      /* orange für „anstehend“ */
+}
+
+.wkz-status-done {
+    -fx-text-fill: #27ae60;      /* grün für „erledigt“ */
+}
+
+/* Button für „jetzt buchen“ */
+.wkz-action-button {
+    -fx-min-width: 22;
+    -fx-min-height: 22;
+    -fx-background-radius: 50;
+    -fx-border-radius: 50;
+    -fx-background-color: transparent;
+    -fx-border-color: #27ae60;
+    -fx-padding: 0;
+    -fx-font-size: 12px;
+    -fx-text-fill: #27ae60;
+}
+
+.wkz-action-button:hover {
+    -fx-background-color: #27ae6015; /* leicht grün hinterlegt beim Hover */
+}
+
+/* ========== LÖSCHEN-BUTTONS ========== */
+.delete-button {
+    -fx-min-width: 25;
+    -fx-min-height: 25;
+    -fx-background-radius: 50;
+    -fx-border-radius: 50;
+    -fx-background-color: transparent;
+    -fx-border-color: #ccc;
+    -fx-border-width: 1;
+    -fx-padding: 0;
+    -fx-text-fill: #e74c3c;
+    -fx-font-size: 16px;
+    -fx-cursor: hand;
+    -fx-alignment: CENTER;
+}
+
+.delete-button:hover {
+	-fx-border-color: #e74c3c;
+	    -fx-text-fill: #e74c3c;
+}
+
+.delete-button:pressed {
+    -fx-background-color: #e74c3c30;
+    -fx-scale-x: 0.95;
+    -fx-scale-y: 0.95;
+}
+
+.delete-button .tooltip {
+    -fx-font-size: 11px;
+    -fx-background-color: #fff5f5;
+    -fx-text-fill: #c0392b;
+    -fx-border-color: #e6b0aa;
+    -fx-border-radius: 4;
+}
+
+

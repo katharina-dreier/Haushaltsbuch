@@ -44,10 +44,10 @@
                     <Label styleClass="card-title" text="Konten" />
                     <TableView fx:id="tblKonten">
                         <columns>
-                            <TableColumn fx:id="colKontonummer" prefWidth="120" text="Kontonummer" />
-                            <TableColumn fx:id="colKontoName" prefWidth="150" text="Name" />
-                            <TableColumn fx:id="colInstitut" prefWidth="140" text="Kreditinstitut" />
-                             <TableColumn fx:id="colKontostand" prefWidth="100" text="Kontostand" />
+                            <TableColumn fx:id="colKontonummer" text="Kontonummer" />
+                            <TableColumn fx:id="colKontoName" text="Name" />
+                            <TableColumn fx:id="colInstitut"  text="Kreditinstitut" />
+                             <TableColumn fx:id="colKontostand" text="Kontostand" />
                         </columns>
                     </TableView>
                     <Label fx:id="summeAlleKontenLbl" style="-fx-padding: 4 0 0 0;" text="Summe: 0,00 €" />
@@ -69,13 +69,13 @@
 
                     <TableView fx:id="tblBuchungen" VBox.vgrow="ALWAYS">
                         <columns>
-                            <TableColumn fx:id="colBuchungsDatum" prefWidth="150" sortType="DESCENDING" text="Buchungsdatum" />
-                            <TableColumn fx:id="colKategorie" prefWidth="150" text="Kategorie" />
-                            <TableColumn fx:id="colBeschreibung" prefWidth="200" text="Beschreibung" />
-                            <TableColumn fx:id="colEmpfaenger" prefWidth="120" text="Empfänger" />
-                            <TableColumn fx:id="colSender" prefWidth="120" text="Sender" />
-                            <TableColumn fx:id="colBetrag" prefWidth="100" text="Betrag" />
-                            <TableColumn fx:id="colKonto" prefWidth="150" text="Konto" />
+                            <TableColumn fx:id="colBuchungsDatum" sortType="DESCENDING" text="Buchungsdatum" />
+                            <TableColumn fx:id="colKategorie" text="Kategorie" />
+                            <TableColumn fx:id="colBeschreibung" text="Beschreibung" />
+                            <TableColumn fx:id="colEmpfaenger" text="Empfänger" />
+                            <TableColumn fx:id="colSender" text="Sender" />
+                            <TableColumn fx:id="colBetrag" text="Betrag" />
+                            <TableColumn fx:id="colKonto" text="Konto" />
                         </columns>
                     </TableView>
                      
@@ -162,14 +162,14 @@
                         
                            <TableView fx:id="tblWiederkehrendeBuchungen" VBox.vgrow="ALWAYS">
                         <columns>
-                            <TableColumn fx:id="colNaechstesBuchungsDatum" prefWidth="150" sortType="ASCENDING" text="Nächste Buchung am" />
-                            <TableColumn fx:id="colWKKategorie" prefWidth="150" text="Kategorie" />
-                            <TableColumn fx:id="colWKBeschreibung" prefWidth="200" text="Beschreibung" />
-                            <TableColumn fx:id="colWKEmpfaenger" prefWidth="120" text="Empfänger" />
-                            <TableColumn fx:id="colWKSender" prefWidth="120" text="Sender" />
-                            <TableColumn fx:id="colWKBetrag" prefWidth="100" text="Betrag" />
-                            <TableColumn fx:id="colWKKonto" prefWidth="150" text="Konto" />
-                            <TableColumn fx:id="colWKGezahlt" prefWidth="120" text="Zahlung ausgeführt" />
+                            <TableColumn fx:id="colNaechstesBuchungsDatum"  sortType="ASCENDING" text="Nächste Buchung am" />
+                            <TableColumn fx:id="colWKKategorie"  text="Kategorie" />
+                            <TableColumn fx:id="colWKBeschreibung"  text="Beschreibung" />
+                            <TableColumn fx:id="colWKEmpfaenger"  text="Empfänger" />
+                            <TableColumn fx:id="colWKSender"  text="Sender" />
+                            <TableColumn fx:id="colWKBetrag"  text="Betrag" />
+                            <TableColumn fx:id="colWKKonto"  text="Konto" />
+                            <TableColumn fx:id="colWKAusfuehren" text="" />
                         </columns>
                     
                         </TableView>

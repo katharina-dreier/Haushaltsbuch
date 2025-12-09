@@ -60,5 +60,39 @@ public class WiederkehrendeZahlungenService {
 		}
 		return naechsteZahlungAm;
 	}
+	
+	public static void wiederkehrendeZahlungAusfuehren(WiederkehrendeZahlung zahlung) {
+		String buchungsart = zahlung.getBuchungsart();
+		switch (buchungsart) {
+		case "Einnahme":
+			BuchungsService.einnahmeTätigen(zahlung.getBetrag(), zahlung.getKategorie(), zahlung.getBeschreibung(), zahlung.getKonto(), zahlung.getSender(), zahlung.getNaechsteZahlungAm(), "", false);
+			
+		case "Ausgabe":
+			BuchungsService.ausgabeTätigen(zahlung.getBetrag(), zahlung.getKategorie(), zahlung.getBeschreibung(),
+					zahlung.getKonto(), zahlung.getEmpfaenger(), zahlung.getNaechsteZahlungAm(), "", false);
+			
+		default: 
+			System.out.println("Fehler: Unbekannte Buchungsart bei wiederkehrender Zahlung: " + buchungsart);
+			
+		}
+		naechstesZahlDatumAktualisieren(zahlung);
+	}
+	
+	public static String bestimmeStatusSysmbolWKZ(WiederkehrendeZahlung zahlung) {
+		
+		if (isNochFaellig(zahlung)) {
+			return "\u23F3"; // Sanduhr-Symbol
+		} else {
+			return "\u2705"; // Haken-Symbol
+		}
+	}
+	
+	public static boolean isNochFaellig(WiederkehrendeZahlung zahlung) {
+		LocalDate aktuellerMonat = LocalDate.now().withDayOfMonth(1);
+		LocalDate zahlungsMonat = zahlung.getNaechsteZahlungAm().withDayOfMonth(1);
+		boolean nochFaellig = !zahlungsMonat.isAfter(aktuellerMonat);
+		return nochFaellig;
+		
+	}
 
 }

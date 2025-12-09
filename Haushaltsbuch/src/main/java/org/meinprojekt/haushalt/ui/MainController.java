@@ -26,6 +26,7 @@ import org.meinprojekt.haushalt.core.service.BuchungsService;
 import org.meinprojekt.haushalt.core.service.DiagrammService;
 import org.meinprojekt.haushalt.core.service.FilterService;
 import org.meinprojekt.haushalt.core.service.KontoService;
+import org.meinprojekt.haushalt.core.service.WiederkehrendeZahlungenService;
 import org.meinprojekt.haushalt.speicher.Datenstroeme;
 
 import javafx.beans.property.ReadOnlyObjectWrapper;
@@ -35,6 +36,7 @@ import javafx.collections.transformation.FilteredList;
 import javafx.collections.transformation.SortedList;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
+import javafx.geometry.Pos;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.chart.AreaChart;
@@ -142,6 +144,8 @@ public class MainController {
 	private TableColumn<WiederkehrendeZahlung, Double> colWKBetrag;
 	@FXML
 	private TableColumn<WiederkehrendeZahlung, String> colWKKonto;
+	@FXML
+	private TableColumn<WiederkehrendeZahlung, Void> colWKAusfuehren;
 
 	private final ObservableList<Konto> kontenListe = FXCollections.observableArrayList();
 	private final ObservableList<Buchung> buchungsListe = FXCollections.observableArrayList();
@@ -173,10 +177,10 @@ public class MainController {
 		initialisiereZeitraumAuswahlBox();
 		
 		tabPane.getSelectionModel().select(tabGesamt);
-		//sichtbarkeitBuchungenAreaAnpassen();
+		
 		tabPane.getSelectionModel().selectedItemProperty().addListener((obs, alt, neu) -> {
 			applyTabFilter();
-			//sichtbarkeitBuchungenAreaAnpassen();
+			
 		});
 		
 		tabPaneAnsichten.getSelectionModel().select(tabDiagramme);
@@ -200,6 +204,8 @@ public class MainController {
 		setupBuchungBearbeiten();
 		
 		setupWiederkehrendeBuchungenTabelle();
+		setupWiederkehrendeZahlungBearbeiten();
+		setupWiederkehrendeZahlungAusfuehren();
 
 		// Liste der Tabelle zuweisen
 		kontenListe.setAll(Konto.getAlleKonten());
@@ -298,6 +304,22 @@ private Set<String> getAusgewaehlteKategorien() {
 				// Nur echte Zeilen + Doppelklick
 				if (event.getClickCount() == 2 && !row.isEmpty()) {
 					Buchung selected = row.getItem();
+					oeffneBearbeitenDialog(selected);
+				}
+			});
+			return row;
+		});
+		
+	}
+	
+	private void setupWiederkehrendeZahlungBearbeiten() {
+		// Doppelklick auf Buchung zum Bearbeiten
+		tblWiederkehrendeBuchungen.setRowFactory(tv -> {
+			TableRow<WiederkehrendeZahlung> row = new TableRow<>();
+			row.setOnMouseClicked(event -> {
+				// Nur echte Zeilen + Doppelklick
+				if (event.getClickCount() == 2 && !row.isEmpty()) {
+					WiederkehrendeZahlung selected = row.getItem();
 					oeffneBearbeitenDialog(selected);
 				}
 			});
@@ -505,6 +527,9 @@ private Set<String> getAusgewaehlteKategorien() {
 	
 	private void setupWiederkehrendeBuchungenTabelle() {
 		colNaechstesBuchungsDatum.setCellValueFactory(new PropertyValueFactory<>("naechsteZahlungAm"));
+		colNaechstesBuchungsDatum.setSortType(TableColumn.SortType.ASCENDING);
+	    tblWiederkehrendeBuchungen.getSortOrder().clear();
+	    tblWiederkehrendeBuchungen.getSortOrder().add(colNaechstesBuchungsDatum);
 		colWKKategorie.setCellValueFactory(new PropertyValueFactory<>("kategorie"));
 		colWKBeschreibung.setCellValueFactory(new PropertyValueFactory<>("beschreibung"));
 		colWKEmpfaenger.setCellValueFactory(new PropertyValueFactory<>("empfaenger"));
@@ -521,7 +546,7 @@ private Set<String> getAusgewaehlteKategorien() {
 			return new ReadOnlyObjectWrapper<>(value);
 		});
 
-		colBetrag.setCellFactory(column -> new TableCell<>() {
+		colWKBetrag.setCellFactory(column -> new TableCell<>() {
 			@Override
 			protected void updateItem(Double betrag, boolean empty) {
 				super.updateItem(betrag, empty);
@@ -539,6 +564,7 @@ private Set<String> getAusgewaehlteKategorien() {
 		});
 		colWKKonto.setCellValueFactory(new PropertyValueFactory<>("kontoAnzeige"));
 		tblWiederkehrendeBuchungen.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY_FLEX_LAST_COLUMN);
+		tblWiederkehrendeBuchungen.sort();
 	}
 
 	private void setupKontenTabelle() {
@@ -808,72 +834,153 @@ private Set<String> getAusgewaehlteKategorien() {
 
 	private void setupBuchungLoeschen() {
 		colBuchungLoeschen = new TableColumn<>("");
-		colBuchungLoeschen.setPrefWidth(36); // schmal
 		colBuchungLoeschen.setSortable(false);
 		colBuchungLoeschen.setResizable(false);
 
 		colBuchungLoeschen.setCellFactory(tc -> new TableCell<>() {
-			private final Button btn = new Button("✖"); // oder "X"
+			private final Button btnBuchungLoeschen = new Button("\uD83D\uDDD1"); 
+			private final HBox box = new HBox(btnBuchungLoeschen);
 			{
-				btn.setFocusTraversable(false);
-				btn.setMinSize(24, 24);
-				btn.setMaxSize(24, 24);
-				btn.setStyle("-fx-font-weight: bold; -fx-text-fill: #a00; -fx-padding: 0;");
+				box.setAlignment(Pos.CENTER);
+	            box.setSpacing(0);
 
-				btn.setOnAction(e -> {
+	            btnBuchungLoeschen.getStyleClass().add("delete-button");
+	            btnBuchungLoeschen.setFocusTraversable(false);
 
-					Buchung b = getTableView().getItems().get(getIndex());
-					bestaetigeUndLoesche(b);
+				Tooltip tooltip = new Tooltip("Löschen");
+				Tooltip.install(btnBuchungLoeschen, tooltip);
+
+				btnBuchungLoeschen.setOnAction(e -> {
+					Buchung buchung = getTableView().getItems().get(getIndex());
+					bestaetigeUndLoesche(buchung);
 				});
 			}
 
 			@Override
-			protected void updateItem(Void item, boolean empty) {
-				super.updateItem(item, empty);
-				setGraphic(empty ? null : btn);
-				setText(null);
-			}
-		});
+	        protected void updateItem(Void item, boolean empty) {
+	            super.updateItem(item, empty);
+	            if (empty) {
+	                setGraphic(null);
+	            } else {
+	                setGraphic(box);   
+	            }
+	            setText(null);
+	        }
+	    });
 
 		if (!tblBuchungen.getColumns().contains(colBuchungLoeschen)) {
 			tblBuchungen.getColumns().add(colBuchungLoeschen);
 		}
+
 	}
+	
 
 	private void setupKontoLoeschen() {
 
 		colKontoLoeschen = new TableColumn<>("");
-		colKontoLoeschen.setPrefWidth(36); // schmal
 		colKontoLoeschen.setSortable(false);
 		colKontoLoeschen.setResizable(false);
 
 		colKontoLoeschen.setCellFactory(tc -> new TableCell<>() {
-			private final Button btn = new Button("✖"); // oder "X"
+			private final Button btnKontoLoeschen = new Button("\uD83D\uDDD1"); // oder "X"
+			private final HBox box = new HBox(btnKontoLoeschen);
 			{
-				btn.setFocusTraversable(false);
-				btn.setMinSize(24, 24);
-				btn.setMaxSize(24, 24);
-				btn.setStyle("-fx-font-weight: bold; -fx-text-fill: #a00; -fx-padding: 0;");
+				box.setAlignment(Pos.CENTER);
+	            box.setSpacing(0);
 
-				btn.setOnAction(e -> {
+	            btnKontoLoeschen.getStyleClass().add("delete-button");
+	            btnKontoLoeschen.setFocusTraversable(false);
+
+				Tooltip tooltip = new Tooltip("Löschen");
+				Tooltip.install(btnKontoLoeschen, tooltip);
+
+				btnKontoLoeschen.setOnAction(e -> {
 					Konto k = getTableView().getItems().get(getIndex());
 					bestaetigeUndLoesche(k);
 				});
 			}
 
 			@Override
-			protected void updateItem(Void item, boolean empty) {
-				super.updateItem(item, empty);
-				setGraphic(empty ? null : btn);
-				setText(null);
-			}
-		});
+	        protected void updateItem(Void item, boolean empty) {
+	            super.updateItem(item, empty);
+	            if (empty) {
+	                setGraphic(null);
+	            } else {
+	                setGraphic(box);   
+	            }
+	            setText(null);
+	        }
+	    });
 
 		if (!tblKonten.getColumns().contains(colKontoLoeschen)) {
 			tblKonten.getColumns().add(colKontoLoeschen);
 		}
 
 	}
+	
+	private void setupWiederkehrendeZahlungAusfuehren() {
+		
+	    colWKAusfuehren.setSortable(false);
+	    colWKAusfuehren.setResizable(false);
+
+	    colWKAusfuehren.setCellFactory(tc -> new TableCell<WiederkehrendeZahlung, Void>() {
+
+	        private final Label statusLabel = new Label();
+	        private final Button btnBuchen = new Button("\u21BB"); // ↻ „ausführen“
+	        private final HBox box = new HBox(6, statusLabel, btnBuchen);
+
+	        {
+	            box.setAlignment(Pos.CENTER);
+	            box.getStyleClass().add("wkz-cell");
+
+	            statusLabel.getStyleClass().add("wkz-status");
+
+	            btnBuchen.getStyleClass().add("wkz-action-button");
+	            btnBuchen.setFocusTraversable(false);
+
+	            Tooltip tooltip = new Tooltip("Jetzt buchen");
+	            tooltip.setShowDelay(Duration.millis(150));
+	            Tooltip.install(btnBuchen, tooltip);
+
+	            btnBuchen.setOnAction(e -> {
+	                WiederkehrendeZahlung wz = getTableView().getItems().get(getIndex());
+	                WiederkehrendeZahlungenService.wiederkehrendeZahlungAusfuehren(wz);
+	                ansichtAktualisieren();
+	            });
+	        }
+
+	        @Override
+	        protected void updateItem(Void item, boolean empty) {
+	            super.updateItem(item, empty);
+
+	            if (empty || getTableRow() == null || getTableRow().getItem() == null) {
+	                setGraphic(null);
+	                return;
+	            }
+
+	            WiederkehrendeZahlung wz =
+	                    (WiederkehrendeZahlung) getTableRow().getItem();
+
+	            boolean faellig = WiederkehrendeZahlungenService.isNochFaellig(wz);
+
+	            if (faellig) {
+	                statusLabel.setText("\u23F3"); // ⏳
+	                statusLabel.getStyleClass().setAll("wkz-status", "wkz-status-pending");
+	                btnBuchen.setVisible(true);
+	                btnBuchen.setManaged(true);
+	            } else {
+	                statusLabel.setText("\u2713"); // ✓
+	                statusLabel.getStyleClass().setAll("wkz-status", "wkz-status-done");
+	                btnBuchen.setVisible(false);   // Button ausblenden
+	                btnBuchen.setManaged(false);
+	            }
+
+	            setGraphic(box);
+	        }
+	    });
+	}
+
+
 
 	private void bestaetigeUndLoesche(Buchung b) {
 		Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
@@ -922,21 +1029,62 @@ private Set<String> getAusgewaehlteKategorien() {
 		case "Einnahme":
 			dialogOeffnen(btnNeueEinnahme, fxmlPfad, titel, (DialogBuchung c) -> {
 				c.setEditMode(true);
+				c.setIsWiederkehrend(false);
 				c.prefillFields(b);
 				c.setOriginal(b);
+				c.applyBuchungsart();
+				
 			});
 			break;
 
 		case "Ausgabe":
 			dialogOeffnen(btnNeueAusgabe, fxmlPfad, titel, (DialogBuchung c) -> {
 				c.setEditMode(true);
+				c.setIsWiederkehrend(false);
 				c.prefillFields(b);
 				c.setOriginal(b);
+				c.applyBuchungsart();
+				
 			});
 			break;
 		default:
 			System.out.println("⚠️ Unbekannte Buchungsart: " + b.getBuchungsart());
 		}
+	}
+	
+	private void oeffneBearbeitenDialog(WiederkehrendeZahlung zahlung) {
+
+		String fxmlPfad = "/org/meinprojekt/haushalt/ui/buchung-dialog.fxml";
+		String titel = "Wiederkehrende Zahlung bearbeiten";
+
+		switch (zahlung.getBuchungsart()) {
+		case "Einnahme":
+			dialogOeffnen(btnNeueEinnahme, fxmlPfad, titel, (DialogBuchung c) -> {
+				
+				c.setIsWiederkehrend(true);
+				c.prefillFields(zahlung);
+				c.setOriginal(zahlung);
+				c.setEditMode(true);
+				c.applyBuchungsart();
+				
+			});
+			break;
+
+		case "Ausgabe":
+			dialogOeffnen(btnNeueAusgabe, fxmlPfad, titel, (DialogBuchung c) -> {
+				
+				c.setIsWiederkehrend(true);
+				c.prefillFields(zahlung);
+				c.setOriginal(zahlung);
+				c.setEditMode(true);
+				c.applyBuchungsart();
+				
+			});
+			break;
+		default:
+			System.out.println("⚠️ Unbekannte Buchungsart: " + zahlung.getBuchungsart());
+		}
+		ansichtAktualisieren();
 	}
 
 	private void oeffneBearbeitenDialog(Konto konto) {
@@ -954,6 +1102,8 @@ private Set<String> getAusgewaehlteKategorien() {
 		});
 		updateGesamtSummeLabel();
 	}
+	
+	
 
 	public double berechneSumme(FilteredList<Buchung> Liste) {
 		double summe = 0.0;

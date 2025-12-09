@@ -57,13 +57,21 @@ public class DialogBuchung {
 	private Stage stage; // wird vom MainController gesetzt
 	
 	private Buchung original;
+	private WiederkehrendeZahlung originalWiederkehrend;
 	
 	private boolean editMode = false;
 	private boolean saved = false;
+	private boolean isWiederkehrend = false;
 	
 	private String buchungsart;
 
+	public void setIsWiederkehrend(boolean isWiederkehrend) {
+		this.isWiederkehrend = isWiederkehrend;
+	}
 	
+	public boolean getIsWiederkehrend() {
+		return isWiederkehrend;
+	}
 
 	public void setStage(Stage stage) {
 		this.stage = stage;
@@ -71,6 +79,14 @@ public class DialogBuchung {
 	
 	public void setOriginal(Buchung b) {
 		this.original = b;
+	}
+	
+	public void setOriginal(WiederkehrendeZahlung w) {
+		this.originalWiederkehrend = w;
+	}
+
+	public WiederkehrendeZahlung getOriginal() {
+		return originalWiederkehrend;
 	}
 	
 	public void setEditMode(boolean editMode) {
@@ -83,7 +99,6 @@ public class DialogBuchung {
 	
 	public void setBuchungsart(String art) {
 		this.buchungsart = art;
-		applyBuchungsart();
 	}
 
 	@FXML
@@ -99,6 +114,11 @@ public class DialogBuchung {
 		lblIsWiederkehrend.setText("Wiederkehrend?");
 		cmbHaeufigkeit.setItems(FXCollections.observableArrayList(Haeufigkeit.values()));
 		cmbHaeufigkeit.setPromptText("Häufigkeit auswählen...");
+		setRowVisible(lblHaeufigkeit, cmbHaeufigkeit, false);
+		chkIsWiederkehrend.selectedProperty().addListener((obs, alt, neu) -> {
+		    setRowVisible(lblHaeufigkeit, cmbHaeufigkeit, neu);
+		});
+
 		dpDatum.setValue(LocalDate.now());
 
 		cmbKategorie.setEditable(true);
@@ -131,7 +151,7 @@ public class DialogBuchung {
 			double betrag = nf.parse(txtBetrag.getText().trim()).doubleValue();
 
 			var datum = dpDatum.getValue();
-			var kat = cmbKategorie.getEditor().getText().trim();
+			var kategorie = cmbKategorie.getEditor().getText().trim();
 			var beschreibung = txtBeschreibung.getText().trim();
 			var isWiederkehrend = chkIsWiederkehrend.isSelected();
 			var haeufigkeit = cmbHaeufigkeit.getValue();
@@ -141,38 +161,57 @@ public class DialogBuchung {
 				Konto ziel = cmbZielKonto.getValue();
 				String sender = txtSender.getText().trim();
 				if (!editMode) {
-					BuchungsService.einnahmeTätigen(betrag, kat, beschreibung, ziel, sender, datum, "", false);
+					BuchungsService.einnahmeTätigen(betrag, kategorie, beschreibung, ziel, sender, datum, "", false);
 					if (isWiederkehrend) {
 						LocalDate naechsteZahlungAm = WiederkehrendeZahlungenService.naechstesBuchungsDatumBerechnen(datum, haeufigkeit);
-                        WiederkehrendeZahlungenService.wiederkehrendeZahlungAnlegen(naechsteZahlungAm, haeufigkeit, buchungsart, kat, beschreibung, ziel.getInhaber(), sender, betrag, ziel);
+                        WiederkehrendeZahlungenService.wiederkehrendeZahlungAnlegen(naechsteZahlungAm, haeufigkeit, buchungsart, kategorie, beschreibung, ziel.getInhaber(), sender, betrag, ziel);
                     }
 				} else {
+					
+					if (isWiederkehrend) {
+						WiederkehrendeZahlungenService.wiederkehrendeZahlungBearbeiten(originalWiederkehrend, datum,
+								haeufigkeit, buchungsart, kategorie, beschreibung, ziel.getInhaber(),
+								sender, betrag);
+					}
+					else if (original != null) {
+						
 					if (original.getIsUmbuchung()) {
 						BuchungsService.umbuchungBearbeiten(original, beschreibung, ziel, betrag, datum);
-					} else {
-						BuchungsService.buchungBearbeiten(original, betrag, kat, beschreibung, ziel, sender, datum);
+					
+					}
+					else {
+						BuchungsService.buchungBearbeiten(original, betrag, kategorie, beschreibung, ziel, sender, datum);
 					}
 				}
 
+			}
 			}
 			case "Ausgabe" -> {
 				Konto quell = cmbQuellKonto.getValue();
 				String empfaenger = txtEmpfaenger.getText().trim();
 				if (!editMode) {
-					BuchungsService.ausgabeTätigen(betrag, kat, beschreibung, quell, empfaenger, datum, "", false);
+					BuchungsService.ausgabeTätigen(betrag, kategorie, beschreibung, quell, empfaenger, datum, "", false);
 					if (isWiederkehrend) {
 						LocalDate naechsteZahlungAm = WiederkehrendeZahlungenService
 								.naechstesBuchungsDatumBerechnen(datum, haeufigkeit);
 						WiederkehrendeZahlungenService.wiederkehrendeZahlungAnlegen(naechsteZahlungAm, haeufigkeit,
-								buchungsart, kat, beschreibung, empfaenger, quell.getInhaber(), betrag, quell);
+								buchungsart, kategorie, beschreibung, empfaenger, quell.getInhaber(), betrag, quell);
 					}
 				} else {
+					if (isWiederkehrend) {
+						WiederkehrendeZahlungenService.wiederkehrendeZahlungBearbeiten(originalWiederkehrend, datum,
+								haeufigkeit, buchungsart, kategorie, beschreibung, empfaenger, quell.getInhaber(),
+								betrag);
+					}
+					else if (original != null) {
 					if (original.getIsUmbuchung()) {
 						BuchungsService.umbuchungBearbeiten(original, beschreibung, quell, betrag, datum);
-					} else
-						BuchungsService.buchungBearbeiten(original, betrag, kat, beschreibung, quell, empfaenger, datum);
+					} 
+					else
+						BuchungsService.buchungBearbeiten(original, betrag, kategorie, beschreibung, quell, empfaenger, datum);
 				}
 			}
+				}
 			case "Umbuchung" -> {
 				Konto quell = cmbQuellKonto.getValue();
 				Konto ziel = cmbZielKonto.getValue();
@@ -197,7 +236,7 @@ public class DialogBuchung {
 	
 
 
-	private void applyBuchungsart() {
+	public void applyBuchungsart() {
 		if (buchungsart == null)
 			return;
 		
@@ -211,14 +250,11 @@ public class DialogBuchung {
 		setRowVisible(lblIsWiederkehrend, chkIsWiederkehrend, false);
 		setRowVisible(lblHaeufigkeit, cmbHaeufigkeit, false);
 		
-		
 		// immer an:
 		setRowVisible(lblBeschreibung, txtBeschreibung, true);
 		setRowVisible(lblBetrag, txtBetrag, true);
 		setRowVisible(lblDatum, dpDatum, true);
-		
-		
-		
+
 		// pro Art an:
 
 		switch (buchungsart) {
@@ -242,8 +278,20 @@ public class DialogBuchung {
 			// optional: Warnung oder Fallback
 		}
 		}
-		if (editMode) 
-			setRowVisible(lblIsWiederkehrend, chkIsWiederkehrend, false);
+		if (editMode) {
+			if (isWiederkehrend) {
+	        
+	        cmbHaeufigkeit.setValue(originalWiederkehrend.getHaeufigkeit());
+	        setRowVisible(lblHaeufigkeit, cmbHaeufigkeit, true);
+	       setRowVisible(lblIsWiederkehrend, chkIsWiederkehrend, false);
+			lblDatum.setText("Nächste Zahlung am:");
+			
+	    }
+			else {
+                chkIsWiederkehrend.setSelected(false);
+                setRowVisible(lblIsWiederkehrend, chkIsWiederkehrend, false);
+			}
+			}
 		
 
 		// Zusätzliche Pflichtfelder pro Art kontrolliert deaktivieren:
@@ -287,7 +335,7 @@ public class DialogBuchung {
 		if (buchung == null)
 			return;
 
-		applyBuchungsart();
+		
 		dpDatum.setValue(buchung.getBuchungsDatum());
 		txtBetrag.setText(String.format("%.2f", buchung.getBetrag()));
 		cmbKategorie.getEditor().setText(buchung.getKategorie());
@@ -312,6 +360,40 @@ public class DialogBuchung {
 		}
 
 		}
+	}
+	
+	public void prefillFields(WiederkehrendeZahlung wkz) {
+		if (wkz == null)
+			return;
+
+		
+		dpDatum.setValue(wkz.getNaechsteZahlungAm());
+		txtBetrag.setText(String.format("%.2f", wkz.getBetrag()));
+		cmbKategorie.getEditor().setText(wkz.getKategorie());
+		txtBeschreibung.setText(wkz.getBeschreibung());
+		
+		
+		switch (wkz.getBuchungsart()) {
+		case "Einnahme" -> {
+            cmbZielKonto.setValue(wkz.getKonto());
+            txtSender.setText(wkz.getSender());
+            setBuchungsart("Einnahme");
+            break;
+		}
+		case "Ausgabe" -> {
+            cmbQuellKonto.setValue(wkz.getKonto());
+            txtEmpfaenger.setText(wkz.getEmpfaenger());
+            setBuchungsart("Ausgabe");
+            break;
+        }
+		default -> {
+			System.out.println("Fehler beim befüllen. Unbekannte Buchungsart: " + wkz.getBuchungsart());
+		}
+		}
+
+		
+		chkIsWiederkehrend.setSelected(true);
+		cmbHaeufigkeit.setValue(wkz.getHaeufigkeit());
 	}
 	
 	@FXML void handleCheckboxWiederkehrend() {
