@@ -94,5 +94,33 @@ public class WiederkehrendeZahlungenService {
 		return nochFaellig;
 		
 	}
+	
+	public static void getAlleWiederkehrendeZahlungen() {
+		for (Konto konto : Konto.getAlleKonten()) {
+			for (WiederkehrendeZahlung zahlung : konto.getWiederkehrendeZahlungen()) {
+				System.out.println(zahlung);
+			}
+		}
+	}
+
+	public static double berechneNochOffeneWKZImAktuellenMonat(Konto konto) {
+		LocalDate aktuellerMonat = LocalDate.now().withDayOfMonth(1);
+		double summe = 0.0;
+		for (WiederkehrendeZahlung zahlung : konto.getWiederkehrendeZahlungen()) {
+			LocalDate zahlungsMonat = zahlung.getNaechsteZahlungAm().withDayOfMonth(1);
+			String buchungsart = zahlung.getBuchungsart();
+			if (!zahlungsMonat.isAfter(aktuellerMonat)) {
+				switch (buchungsart) {
+				case "Einnahme":
+					summe -= zahlung.getBetrag();
+					break;
+				case "Ausgabe":
+                    summe += zahlung.getBetrag();
+                    break;
+                }
+			}
+		}
+		return summe;
+	}
 
 }

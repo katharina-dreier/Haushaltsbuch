@@ -10,6 +10,8 @@ import org.meinprojekt.haushalt.core.model.Konto;
 import org.meinprojekt.haushalt.core.model.Umbuchung;
 import org.meinprojekt.haushalt.speicher.Datenstroeme;
 
+import javafx.collections.transformation.FilteredList;
+
 public class BuchungsService {
 	
 	
@@ -181,6 +183,17 @@ public class BuchungsService {
 		public static List<Buchung> findeBuchungenZuTransferID(String transferId) {
 			return Konto.getAlleBuchungen().stream().filter(b -> transferId.equals(b.getTransferID())).toList();
 		}
+
+		public static double berechneSummeEinnahmen(FilteredList<Buchung> gefilterteBuchungsListe) {
+			return gefilterteBuchungsListe.stream().filter(buchung -> buchung instanceof Einnahme)
+					.mapToDouble(Buchung::getBetrag).sum();
+		}
+		
+		public static double berechneSummeAusgaben(FilteredList<Buchung> gefilterteBuchungsListe) {
+			return gefilterteBuchungsListe.stream().filter(buchung -> buchung instanceof Ausgabe)
+					.mapToDouble(Buchung::getBetrag).sum();
+		}
+		
 		
 		
 

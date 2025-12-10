@@ -14,207 +14,203 @@
 <?import javafx.scene.control.TableColumn?>
 <?import javafx.scene.control.TableView?>
 <?import javafx.scene.control.ToolBar?>
-<?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.RowConstraints?>
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.shape.Circle?>
 
 <BorderPane xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.meinprojekt.haushalt.ui.MainController">
-
     <!-- Oben: Toolbar -->
-    <top>
-        <ToolBar styleClass="toolbar">
-            <Button fx:id="btnNeuesKonto" onAction="#handleNeuesKonto" text="Neues Konto" />
-            <Button fx:id="btnNeueEinnahme" onAction="#handleNeueEinnahme" text="Neue Einnahme" />
-            <Button fx:id="btnNeueAusgabe" onAction="#handleNeueAusgabe" text="Neue Ausgabe" />
-            <Button fx:id="btnNeueUmbuchung" onAction="#handleNeueUmbuchung" text="Neue Umbuchung" />
-        </ToolBar>
-    </top>
+    	<top>
+        	<ToolBar styleClass="toolbar">
+            	<Button fx:id="btnNeuesKonto" onAction="#handleNeuesKonto" text="Neues Konto" />
+            	<Button fx:id="btnNeueEinnahme" onAction="#handleNeueEinnahme" text="Neue Einnahme" />
+            	<Button fx:id="btnNeueAusgabe" onAction="#handleNeueAusgabe" text="Neue Ausgabe" />
+            	<Button fx:id="btnNeueUmbuchung" onAction="#handleNeueUmbuchung" text="Neue Umbuchung" />
+        	</ToolBar>
+   		</top>
 
-    <!-- Mitte: Links Konten+Buchungen, Rechts Diagramme -->
-    <center>
-        <SplitPane fx:id="split" dividerPositions="0.5"> 
+    <!-- Mitte: Links Konten + Übersicht, Rechts Diagramme -->
+    	<center>
+        	<SplitPane fx:id="split" dividerPositions="0.5"> 
 
-            <!-- Linke Seite: Konten + Buchungen untereinander -->
-            <VBox spacing="10">
+            	<!-- Linke Seite: Konten + Übersicht untereinander -->
+            		<VBox spacing="10">
 
-                <!-- Karte: Konten -->
-                <VBox fx:id="kontenArea" spacing="8" styleClass="card">
-                    <Label styleClass="card-title" text="Konten" />
-                    <TableView fx:id="tblKonten">
-                        <columns>
-                            <TableColumn fx:id="colKontonummer" text="Kontonummer" />
-                            <TableColumn fx:id="colKontoName" text="Name" />
-                            <TableColumn fx:id="colInstitut"  text="Kreditinstitut" />
-                             <TableColumn fx:id="colKontostand" text="Kontostand" />
-                        </columns>
-                    </TableView>
-                    <Label fx:id="summeAlleKontenLbl" style="-fx-padding: 4 0 0 0;" text="Summe: 0,00 €" />
-                </VBox>
-
-				
-                <!-- Karte: Buchungen -->
-                <VBox fx:id="buchungenArea" spacing="8" styleClass="card">
-                 <Label styleClass="card-title" text="Buchungen" />
-                 <VBox spacing="0">
-                    <TabPane fx:id="tabPane" minHeight="28.0" prefHeight="28.0" styleClass="filter-tabs">
-                        <tabs>
-                            <Tab fx:id="tabGesamt" text="Gesamt" />
-                            <Tab fx:id="tabEinnahmen" text="Einnahmen" />
-                            <Tab fx:id="tabAusgaben" text="Ausgaben" />
-                            <Tab fx:id="tabUmbuchungen" text="Umbuchungen" />
-                        </tabs>
-                    </TabPane>
-
-                    <TableView fx:id="tblBuchungen" VBox.vgrow="ALWAYS">
-                        <columns>
-                            <TableColumn fx:id="colBuchungsDatum" sortType="DESCENDING" text="Buchungsdatum" />
-                            <TableColumn fx:id="colKategorie" text="Kategorie" />
-                            <TableColumn fx:id="colBeschreibung" text="Beschreibung" />
-                            <TableColumn fx:id="colEmpfaenger" text="Empfänger" />
-                            <TableColumn fx:id="colSender" text="Sender" />
-                            <TableColumn fx:id="colBetrag" text="Betrag" />
-                            <TableColumn fx:id="colKonto" text="Konto" />
-                        </columns>
-                    </TableView>
-                     
-					</VBox>
-                    <Label fx:id="summeBuchungenLbl" style="-fx-padding: 4 0 0 0;" text="Summe: 0,00 €" />
-                </VBox>
- 				</VBox>
-            
-
-            <!-- Rechte Seite: Tab Bereich -->
-           <VBox fx:id="statistikArea" spacing="8" styleClass="card" VBox.vgrow="ALWAYS">
-            <TabPane fx:id="tabPaneAnsichten" styleClass="ansichten-tabs" VBox.vgrow="ALWAYS">
-              <tabs>
-                <!-- TAB 1: Diagramme -->
-                <Tab fx:id="tabDiagramme" text="Diagramme">
-                  <content>
-                  <VBox spacing="8" styleClass="tab-content">
-                    <Label styleClass="card-title" text="Diagramme" />
-    				<HBox fx:id="diagrammLegende" alignment="CENTER" spacing="60" styleClass="chart-header">
-
-    					<children>
-
-        					<!-- Block 1: Einnahmen -->
-        					<VBox alignment="CENTER_LEFT" spacing="2">
-           					 <children>
-                				<HBox alignment="BASELINE_LEFT" spacing="10">
-                    		<children>
-                        		<Circle radius="5" styleClass="legend-dot-einnahmen" />
-                       			 <Label styleClass="chart-header" text="Einnahmen" />
-                    </children>
-                </HBox>
-                <Label fx:id="legendeEinnahmenlbl" styleClass="chart-header-sum" text="Summe: 0,00 €" />
-            </children>
-        </VBox>
-
-        <!-- Block 2: Ausgaben -->
-        <VBox alignment="CENTER_LEFT" spacing="2">
-            <children>
-                <HBox alignment="BASELINE_LEFT" spacing="10">
-                    <children>
-                        <Circle radius="5" styleClass="legend-dot-ausgaben" />
-                        <Label styleClass="chart-header" text="Ausgaben" />
-                    </children>
-                </HBox>
-                <Label fx:id="legendeAusgabenlbl" styleClass="chart-header-sum" text="Summe: 0,00 €" />
-            </children>
-        </VBox>
-
-        <!-- Block 3: Differenz -->
-        <VBox alignment="CENTER_LEFT" spacing="2">
-            <children>
-                <HBox alignment="BASELINE_LEFT" spacing="5">
-                    <children>
-                        <Label styleClass="chart-header" text="Differenz" />
-                    </children>
-                </HBox>
-                <Label fx:id="legendeDifferenzlbl" styleClass="chart-header-sum" text="Summe: 0,00 €" />
-            </children>
-        </VBox>
-
-    </children>
-</HBox>
-
-    				<AreaChart fx:id="einnahmenAusgabenDiagramm" VBox.vgrow="ALWAYS">
-       					<xAxis>
-           					 <CategoryAxis fx:id="xAchseEinnahmenAusgabenDiagramm" />
-       					</xAxis>
-       					<yAxis>
-           					 <NumberAxis fx:id="yAchseEinnahmenAusgabenDiagramm" />
-       					</yAxis>
-       					</AreaChart>
-       					 </VBox>
-                </content>
-            </Tab>
-
-            <!-- TAB 2: Wiederkehrende Zahlungen -->
-                <Tab fx:id="tabWiederkehrendeBuchungen" text="Wiederkehrende Zahlungen">
-                  <content>
-                    <VBox spacing="8" styleClass="tab-content">
-
-                        <Label text="Wiederkehrende Zahlungen"
-                               styleClass="card-title"/>
-
-                        
-                           <TableView fx:id="tblWiederkehrendeBuchungen" VBox.vgrow="ALWAYS">
-                        <columns>
-                            <TableColumn fx:id="colNaechstesBuchungsDatum"  sortType="ASCENDING" text="Nächste Buchung am" />
-                            <TableColumn fx:id="colWKKategorie"  text="Kategorie" />
-                            <TableColumn fx:id="colWKBeschreibung"  text="Beschreibung" />
-                            <TableColumn fx:id="colWKEmpfaenger"  text="Empfänger" />
-                            <TableColumn fx:id="colWKSender"  text="Sender" />
-                            <TableColumn fx:id="colWKBetrag"  text="Betrag" />
-                            <TableColumn fx:id="colWKKonto"  text="Konto" />
-                            <TableColumn fx:id="colWKAusfuehren" text="" />
-                        </columns>
-                    
-                        </TableView>
-
+               			<!-- Karte: Konten -->
+                			<VBox fx:id="kontenArea" spacing="8" styleClass="card">
+                    			<Label styleClass="card-title" text="Konten" />
+                    			<TableView fx:id="tblKonten">
+                        			<columns>
+                            			<TableColumn fx:id="colKontonummer" text="Kontonummer" />
+                            			<TableColumn fx:id="colKontoName" text="Name" />
+                            			<TableColumn fx:id="colInstitut" text="Kreditinstitut" />
+                             			<TableColumn fx:id="colKontostand" text="Kontostand" />
+                        			</columns>
+                    			</TableView>
+                    			<Label fx:id="summeAlleKontenLbl" style="-fx-padding: 4 0 0 0;" text="Summe: 0,00 €" />
+                			</VBox>
+                		<!-- Karte: Übersicht -->
+                			<VBox fx:id="uebersichtArea" spacing="8" styleClass="card">
+                    			<Label styleClass="card-title" text="Übersicht" />
+               					<GridPane alignment="CENTER">
+                  					<children>
+                     					<Label fx:id="lblEinnahmenUebersicht" text="Label"  />
+                     					<Label fx:id="summeEinnahmenUebersicht" text="Label" GridPane.columnIndex="1" GridPane.rowIndex="0"/>
+                     					<Label fx:id="lblAusgabenUebersicht" text="Label" GridPane.rowIndex="1" />
+                     					<Label fx:id="summeAusgabenUebersicht" text="Label" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+                     					<Label fx:id="lblKontostandNachFixkostenUebersicht" text="Label" GridPane.rowIndex="2" />
+										<Label fx:id="summeNachFixkostenUebersicht" text="Label" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+                  					</children>
+               					</GridPane>
+                           	</VBox>
                     </VBox>
-                </content>
-            </Tab>
+            	<!-- Rechte Seite: Ansichten Bereich -->
+          			<VBox fx:id="ansichtenArea" spacing="8" styleClass="card" VBox.vgrow="ALWAYS">
+            			<TabPane fx:id="tabPaneAnsichten" styleClass="ansichten-tabs" VBox.vgrow="ALWAYS">
+              				<tabs>
+                				<!-- TAB 1: Diagramme -->
+                					<Tab fx:id="tabDiagramme" text="Diagramme">
+                  						<content>
+                  							<VBox spacing="8" styleClass="tab-content">
+                    							<Label styleClass="card-title" text="Diagramme" />
+    											<HBox fx:id="diagrammLegende" alignment="CENTER" spacing="60" styleClass="chart-header">
+													<children>
+        												<!-- Block 1: Einnahmen -->
+        													<VBox alignment="CENTER_LEFT" spacing="2">
+           					 									<children>
+                													<HBox alignment="BASELINE_LEFT" spacing="10">
+                    													<children>
+                        													<Circle radius="5" styleClass="legend-dot-einnahmen" />
+                       			 											<Label styleClass="chart-header" text="Einnahmen" />
+                    													</children>
+                													</HBox>
+                													<Label fx:id="legendeEinnahmenlbl" styleClass="chart-header-sum" text="Summe: 0,00 €" />
+            													</children>
+        													</VBox>
 
-        </tabs>
-    </TabPane>
-</VBox>
-        </SplitPane>
-    </center>
+        												<!-- Block 2: Ausgaben -->
+        													<VBox alignment="CENTER_LEFT" spacing="2">
+            													<children>
+                													<HBox alignment="BASELINE_LEFT" spacing="10">
+                    													<children>
+                        													<Circle radius="5" styleClass="legend-dot-ausgaben" />
+                        													<Label styleClass="chart-header" text="Ausgaben" />
+                    													</children>
+                													</HBox>
+                													<Label fx:id="legendeAusgabenlbl" styleClass="chart-header-sum" text="Summe: 0,00 €" />
+           														</children>
+        													</VBox>
+
+        												<!-- Block 3: Differenz -->
+        													<VBox alignment="CENTER_LEFT" spacing="2">
+            													<children>
+                													<HBox alignment="BASELINE_LEFT" spacing="5">
+                    													<children>
+                        													<Label styleClass="chart-header" text="Differenz" />
+                    													</children>
+                													</HBox>
+                													<Label fx:id="legendeDifferenzlbl" styleClass="chart-header-sum" text="Summe: 0,00 €" />
+            													</children>
+        													</VBox>
+
+    												</children>
+												</HBox>
+
+    											<AreaChart fx:id="einnahmenAusgabenDiagramm" VBox.vgrow="ALWAYS">
+       												<xAxis>
+           					 							<CategoryAxis fx:id="xAchseEinnahmenAusgabenDiagramm" />
+       												</xAxis>
+       												<yAxis>
+           					 							<NumberAxis fx:id="yAchseEinnahmenAusgabenDiagramm" />
+       												</yAxis>
+       											</AreaChart>
+       										</VBox>
+                						</content>
+            						</Tab>
+              					<!-- TAB 2: Buchungen -->
+            						<Tab fx:id="tabBuchungen" text="Buchungen">
+                  						<content>
+                    						<VBox styleClass="tab-content">
+                        						<Label styleClass="card-title" text="Buchungen" />
+                    							<TabPane fx:id="tabPaneBuchungen" minHeight="28.0" prefHeight="28.0" styleClass="filter-tabs">
+                        							<tabs>
+                            							<Tab fx:id="tabGesamt" text="Gesamt" />
+                            							<Tab fx:id="tabEinnahmen" text="Einnahmen" />
+                            							<Tab fx:id="tabAusgaben" text="Ausgaben" />
+                            							<Tab fx:id="tabUmbuchungen" text="Umbuchungen" />
+                        							</tabs>
+                    							</TabPane>
+                    							<TableView fx:id="tblBuchungen" VBox.vgrow="ALWAYS">
+                        							<columns>
+                            							<TableColumn fx:id="colBuchungsDatum" sortType="DESCENDING" text="Buchungsdatum" />
+                            							<TableColumn fx:id="colKategorie" text="Kategorie" />
+                            							<TableColumn fx:id="colBeschreibung" text="Beschreibung" />
+                            							<TableColumn fx:id="colEmpfaenger" text="Empfänger" />
+                            							<TableColumn fx:id="colSender" text="Sender" />
+                            							<TableColumn fx:id="colBetrag" text="Betrag" />
+                            							<TableColumn fx:id="colKonto" text="Konto" />
+                        							</columns>
+                    							</TableView>                
+                    							<Label fx:id="summeBuchungenLbl" style="-fx-padding: 4 0 0 0;" text="Summe: 0,00 €" />
+            	 							</VBox>
+                						</content>
+            						</Tab>
+
+            					<!-- TAB 3: Wiederkehrende Zahlungen -->
+                					<Tab fx:id="tabWiederkehrendeZahlungen" text="Wiederkehrende Zahlungen">
+                  						<content>
+                    						<VBox spacing="8" styleClass="tab-content">
+                        						<Label styleClass="card-title" text="Wiederkehrende Zahlungen" />
+												<TableView fx:id="tblWiederkehrendeBuchungen" VBox.vgrow="ALWAYS">
+                        							<columns>
+                            							<TableColumn fx:id="colNaechstesBuchungsDatum" sortType="ASCENDING" text="Nächste Buchung am" />
+                            							<TableColumn fx:id="colWKKategorie" text="Kategorie" />
+                            							<TableColumn fx:id="colWKBeschreibung" text="Beschreibung" />
+                            							<TableColumn fx:id="colWKEmpfaenger" text="Empfänger" />
+                            							<TableColumn fx:id="colWKSender" text="Sender" />
+                            							<TableColumn fx:id="colWKBetrag" text="Betrag" />
+                            							<TableColumn fx:id="colWKKonto" text="Konto" />
+                            							<TableColumn fx:id="colWKAusfuehren" text="" />
+                        							</columns>
+                        						</TableView>
+                    						</VBox>
+                						</content>
+            						</Tab>
+        					</tabs>
+    					</TabPane>
+					</VBox>
+        	</SplitPane>
+    	</center>
 
       <!-- Unten: Filterleiste -->
-  <bottom>
-    <BorderPane styleClass="filter-bar" BorderPane.alignment="CENTER">
+  		<bottom>
+    		<BorderPane styleClass="filter-bar" BorderPane.alignment="CENTER">
+        		<!-- Links: "Filter"-Label -->
+        			<left>
+            			<Label styleClass="filter-title" text="Filter" />
+        			</left>
 
-        <!-- Links: "Filter"-Label -->
-        <left>
-            <Label styleClass="filter-title" text="Filter" />
-        </left>
+        		<!-- Mitte: Filter-Controls -->
+        			<center>
+            			<HBox alignment="CENTER" spacing="12">
+                			<children>
+                    			<Label styleClass="filter-label" text="Kategorie:" />
+                    			<MenuButton fx:id="kategorieFilterButton" styleClass="filter-choice-button" text="Alle Kategorien" />
+                    			<Label styleClass="filter-label" text="Zeitraum:" />
+                    			<ChoiceBox fx:id="auswahlBox" prefWidth="160.0" />
+                    			<Label fx:id="lblVon" styleClass="filter-label" text="von:" />
+                    			<DatePicker fx:id="startDatumPicker" />
+                    			<Label fx:id="lblBis" styleClass="filter-label" text="bis:" />
+                    			<DatePicker fx:id="endDatumPicker" />
+                    			<Button fx:id="btnAuswahlAnwenden" onAction="#handleAuswahlAnwenden" styleClass="primary-button" text="Auswahl anwenden" />
+                			</children>
+            			</HBox>
+        			</center>
 
-        <!-- Mitte: Filter-Controls -->
-        <center>
-            <HBox alignment="CENTER" spacing="12">
-                <children>
-                    <Label styleClass="filter-label" text="Kategorie:" />
-                    <MenuButton fx:id="kategorieFilterButton" styleClass="filter-choice-button" text="Alle Kategorien" />
-
-                    <Label styleClass="filter-label" text="Zeitraum:" />
-                    <ChoiceBox fx:id="auswahlBox" prefWidth="160.0" />
-
-                    <Label fx:id="lblVon" styleClass="filter-label" text="von:" />
-                    <DatePicker fx:id="startDatumPicker" />
-
-                    <Label fx:id="lblBis" styleClass="filter-label" text="bis:" />
-                    <DatePicker fx:id="endDatumPicker" />
-
-                    <Button fx:id="btnAuswahlAnwenden" onAction="#handleAuswahlAnwenden" styleClass="primary-button" text="Auswahl anwenden" />
-                </children>
-            </HBox>
-        </center>
-
-    </BorderPane>
-</bottom>
-
+    		</BorderPane>
+		</bottom>
 </BorderPane>

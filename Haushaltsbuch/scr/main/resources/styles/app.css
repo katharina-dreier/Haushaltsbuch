@@ -45,15 +45,13 @@
 /* Filter Tabs für Buchungen */
 .filter-tabs {
     -fx-background-color: #f3f4f6 ;
-    -fx-padding: 0;
 	-fx-focus-color: transparent;
 	-fx-faint-focus-color: transparent;
 }
 
 .filter-tabs > .tab-header-area {
     -fx-background-color: #f3f4f6;
-    -fx-padding: 0 0 10 0; /* kleiner Abstand nach unten zur Tabelle */
-	
+	    -fx-padding: 0 0 20 0;
 }
 
 .filter-tabs > .tab-header-area > .tab-header-background {
@@ -62,13 +60,8 @@
 
 .filter-tabs > .tab-content-area {
     -fx-background-color: transparent;
-    -fx-padding: 0;
 	-fx-min-height: 0;
 	-fx-pref-height: 0;
-}
-
-.filter-tabs .tab {
-    -fx-padding: 4 10 4 10;
 }
 
 .filter-tabs .tab:selected {
