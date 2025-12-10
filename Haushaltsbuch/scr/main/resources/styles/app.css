@@ -221,7 +221,7 @@
     -fx-fill: #EF4444;
 }
 
-/* ===== Filterleiste (unten) ===================================== */
+/* Filterleiste (unten) */
 
 .filter-bar {
 	-fx-padding: 4 16 4 16;
@@ -265,17 +265,17 @@
     -fx-padding: 2 8 2 8;
 }
 
-/* Pfeil-Button innen etwas schmaler machen */
+/* Pfeil-Button in den Auswahlfeldern */
 .filter-choice > .arrow-button {
     -fx-padding: 0 6 0 6;
 }
 
-/* Wenn du beim Hovern einen kleinen Effekt möchtest */
+/* Hover-Effekt für Auswahlfelder */
 .filter-choice:hover {
     -fx-border-color: #999999;
 }
 
-/* Optional: Fokus minimal hervorheben, ohne blauen Glow */
+/* Fokus-Effekt für Auswahlfelder */
 .filter-choice:focused {
     -fx-border-color: #7fa9d0;
     -fx-effect: none;
@@ -389,7 +389,8 @@
     -fx-min-height: 25;
     -fx-background-radius: 50;
     -fx-border-radius: 50;
-    -fx-background-color: transparent;
+    -fx-background-color: transparent; /*alternative: linear-gradient(to bottom, white, #d6baba);*/
+	
     -fx-border-color: #ccc;
     -fx-border-width: 1;
     -fx-padding: 0;
