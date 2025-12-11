@@ -42,6 +42,53 @@
 	-fx-focus-color: #e0e0e0
 }
 
+/*  Übersichtskarte unten links  */
+
+.overview-grid {
+    -fx-padding: 4 16 8 16;
+}
+
+.overview-label {
+    -fx-font-size: 12px;
+    -fx-text-fill: #666666;
+}
+
+.overview-value-total {
+    -fx-font-size: 13px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #666666;
+}
+
+/* Grün für positive Werte */
+.overview-value-plus {
+    -fx-text-fill: #2e7d32;
+	-fx-font-size: 13px;
+	    -fx-font-weight: bold;
+	    
+}
+
+/* Rot für Ausgaben */
+.overview-value-minus {
+	-fx-text-fill: #c62828;
+	   -fx-font-size: 13px;
+	   -fx-font-weight: bold;
+}
+
+/* Unterste Zeile leicht hervorheben */
+.overview-total-label {
+    -fx-padding: 6 0 0 0;
+	-fx-font-size: 14px;
+	   -fx-text-fill: #444444;
+}
+
+.overview-value-total {
+    -fx-padding: 6 0 0 0;
+    -fx-font-size: 14px;
+	    -fx-font-weight: bold;
+		-fx-text-fill: #333333;
+}
+
+
 /* Filter Tabs für Buchungen */
 .filter-tabs {
     -fx-background-color: #f3f4f6 ;
