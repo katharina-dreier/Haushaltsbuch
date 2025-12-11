@@ -155,22 +155,6 @@ public class Konto {
 		Konto.konten = konten;
 	}
 
-	public double getStartSaldoMonatsanfang() {
-		double saldo = kontostandBeiErstellung;
-		for (Buchung b : buchungen) {
-			if (b.getBuchungsDatum().getDayOfMonth() < 1
-					&& b.getBuchungsDatum().getMonthValue() == java.time.LocalDate.now().getMonthValue()
-					&& b.getBuchungsDatum().getYear() == java.time.LocalDate.now().getYear()) {
-				if (b.getBuchungsart().equals("Einnahme")) {
-					saldo += b.getBetrag();
-				} else if (b.getBuchungsart().equals("Ausgabe")) {
-					saldo -= b.getBetrag();
-				}
-			}
-		}
-		return saldo;
-	}
-
 	
 	
 }

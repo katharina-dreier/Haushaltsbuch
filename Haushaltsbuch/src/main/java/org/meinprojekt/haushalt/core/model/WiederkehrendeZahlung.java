@@ -1,7 +1,6 @@
 package org.meinprojekt.haushalt.core.model;
 
 import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 
 import javafx.util.Callback;
 
@@ -43,8 +42,9 @@ public class WiederkehrendeZahlung {
 	private String buchungsart; // Einnahme, Ausgabe
 	private Haeufigkeit haeufigkeit;
 	private LocalDate naechsteZahlungAm;
+	private LocalDate letzteZahlungAm = null;
 	
-	public WiederkehrendeZahlung(LocalDate naechsteZahlungAm, Haeufigkeit häufigkeit, String buchungsart, String kategorie, String beschreibung, String empfaenger, String sender, double betrag, Konto konto) {
+	public WiederkehrendeZahlung(LocalDate naechsteZahlungAm, Haeufigkeit häufigkeit, String buchungsart, String kategorie, String beschreibung, String empfaenger, String sender, double betrag, Konto konto, LocalDate letzteZahlungAm) {
 		this.betrag = betrag;
 		this.kategorie = kategorie;
 		this.beschreibung = beschreibung;
@@ -54,6 +54,7 @@ public class WiederkehrendeZahlung {
 		this.buchungsart = buchungsart;
 		this.haeufigkeit = häufigkeit;
 		this.naechsteZahlungAm = naechsteZahlungAm;
+		this.letzteZahlungAm = letzteZahlungAm;
 	}
 
 	public Haeufigkeit getHaeufigkeit() {
@@ -133,10 +134,14 @@ public class WiederkehrendeZahlung {
 	    return konto.getKontoName() + " (" + konto.getKreditinstitut() + ")";
 	}
 
-	public String getFormatiertesDatum() {
-	        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy");
-	        return naechsteZahlungAm.format(formatter); 
-	    }
+	public void setLetzteZahlungAm(LocalDate aktuellesDatum) {
+		this.letzteZahlungAm = aktuellesDatum;
+		
+	}
+	
+	public LocalDate getLetzteZahlungAm() {
+		return letzteZahlungAm;
+	}
 	
 	
 	

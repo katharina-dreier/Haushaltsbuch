@@ -82,8 +82,15 @@ public class MainController {
 	private Tab tabGesamt, tabEinnahmen, tabAusgaben, tabUmbuchungen, tabDiagramme, tabWiederkehrendeZahlungen, tabBuchungen;
 
 	@FXML
-	private Label summeAlleKontenLbl, summeBuchungenLbl, legendeEinnahmenlbl, legendeAusgabenlbl, legendeDifferenzlbl,
-			lblVon, lblBis, lblEinnahmenUebersicht, lblAusgabenUebersicht, lblKontostandNachFixkostenUebersicht, summeEinnahmenUebersicht, summeAusgabenUebersicht, summeNachFixkostenUebersicht;
+	private Label summeAlleKontenLbl, summeBuchungenLbl;
+	@FXML
+	private Label legendeEinnahmenlbl, legendeAusgabenlbl, legendeDifferenzlbl;
+	@FXML
+	private Label lblVon, lblBis;
+	@FXML
+	private Label lblEinnahmenUebersicht, lblNochOffeneEinnahmenUebersicht, summeNochOffeneEinnahmenUebersicht, lblAusgabenUebersicht, 
+	lblKontostandNachFixkostenUebersicht, summeEinnahmenUebersicht, summeAusgabenUebersicht, summeNachFixkostenUebersicht, summeNachFixkostenVeraenderungUebersicht, 
+	lblNochOffeneFixkostenUebersicht, summeNochOffeneFixkostenUebersicht;
 	@FXML
 	private Button btnNeuesKonto, btnNeueAusgabe, btnNeueEinnahme, btnNeueUmbuchung, btnAuswahlAnwenden;
 
@@ -194,7 +201,7 @@ public class MainController {
 			applyTabFilter();
 		});
 		
-		ladeUebersicht();
+		
 
 		setupKontenTabelle();
 		setupKontoLoeschen();
@@ -223,16 +230,22 @@ public class MainController {
 		summeBuchungenAktualisieren();
 		ladeEinnahmenAusgabenDiagramm();
 		initialisiereTooltips();
+		ladeUebersicht();
 
 	}
 
 	private void ladeUebersicht() {
 		updateUebersichtEinnahmen();
+		updateUebersichtNochOffeneEinnahmen();
 		updateUebersichtAusgaben();
+		
+		updateUebersichtNochOffeneFixkosten();
 		updateUebersichtNachFixkosten();
+		//updateAusgabenNachKategorienUebersicht();
 		
 	}
 
+	
 	private void updateUebersichtEinnahmen() {
 		String einnahmenText = "Einnahmen in diesem Monat: ";
 		lblEinnahmenUebersicht.setText(einnahmenText);
@@ -243,10 +256,25 @@ public class MainController {
 	private double berechneSummeEinnahmenAktuellerMonat() {
 		FilterService filterService = new FilterService();
 		Zeitraum zeitraum = Zeitraum.aktuellerMonat();
-		Predicate<Buchung> predicate = filterService.predicateFürZeitraum(zeitraum);
+		Predicate<Buchung> predicate = filterService.predicateFuerZeitraum(zeitraum);
 		FilteredList<Buchung> gefilterteBuchungsListeFuerÜbersicht = new FilteredList<>(buchungsListe, predicate);
-		double summeEinnahmen = berechneSumme(gefilterteBuchungsListeFuerÜbersicht);
+		double summeEinnahmen = BuchungsService.berechneSummeEinnahmen(gefilterteBuchungsListeFuerÜbersicht);
 		return summeEinnahmen;
+	}	
+	
+	private void updateUebersichtNochOffeneEinnahmen() {
+		String nochOffeneEinnahmenText = "Noch offen";
+		lblNochOffeneEinnahmenUebersicht.setText(nochOffeneEinnahmenText);
+		Konto konto = tblKonten.getSelectionModel().getSelectedItem();
+		if (konto != null) {
+			double summeNochOffeneEinnahmen = WiederkehrendeZahlungenService.berechneNochOffeneEinnahmenImAktuellenMonat(konto);
+			summeNochOffeneEinnahmenUebersicht.setText(euro.format(summeNochOffeneEinnahmen));
+			return;
+		}
+		else {
+		double summeNochOffeneEinnahmen = WiederkehrendeZahlungenService.berechneNochOffeneEinnahmenImAktuellenMonat();
+		summeNochOffeneEinnahmenUebersicht.setText(euro.format(summeNochOffeneEinnahmen));
+		}
 	}
 	
 	private void updateUebersichtAusgaben() {
@@ -259,17 +287,44 @@ public class MainController {
 	private double berechneSummeAusgabenAktuellerMonat() {
 		FilterService filterService = new FilterService();
 		Zeitraum zeitraum = Zeitraum.aktuellerMonat();
-		Predicate<Buchung> predicate = filterService.predicateFürZeitraum(zeitraum);
+		Predicate<Buchung> predicate = filterService.predicateFuerZeitraum(zeitraum);
 		FilteredList<Buchung> gefilterteBuchungsListeFuerÜbersicht = new FilteredList<>(buchungsListe, predicate);
 		double summeAusgaben = BuchungsService.berechneSummeAusgaben(gefilterteBuchungsListeFuerÜbersicht);
 		return summeAusgaben;
 	}
 	
+	
+
+	private void updateUebersichtNochOffeneFixkosten() {
+		String nochOffeneFixkostenText = "Noch offen";
+		lblNochOffeneFixkostenUebersicht.setText(nochOffeneFixkostenText);
+		Konto konto = tblKonten.getSelectionModel().getSelectedItem();
+		if (konto != null) {
+			double summeNochOffeneFixkosten = WiederkehrendeZahlungenService.berechneNochOffeneFixkostenImAktuellenMonat(konto);
+			summeNochOffeneFixkostenUebersicht.setText(euro.format(summeNochOffeneFixkosten));
+			return;
+		}
+		else {
+		double summeNochOffeneFixkosten = WiederkehrendeZahlungenService.berechneNochOffeneFixkostenImAktuellenMonat();
+		summeNochOffeneFixkostenUebersicht.setText(euro.format(summeNochOffeneFixkosten));
+	}
+		}
+
 	private void updateUebersichtNachFixkosten() {
 		Konto konto = tblKonten.getSelectionModel().getSelectedItem();
 		if (konto == null) {
-			lblKontostandNachFixkostenUebersicht.setText("Bitte ein Konto auswählen.");
-			summeNachFixkostenUebersicht.setText("");
+			String nachFixkostenText = "Vorrausichtliche Summe aller Konten am Monatsende";
+			lblKontostandNachFixkostenUebersicht.setText(nachFixkostenText);
+			double aktuellerKontostand = berechneGesamtSummeKonten(kontenListe);
+			double summeFixkosten = WiederkehrendeZahlungenService.berechneNochOffeneWKZImAktuellenMonat();
+			double summeNachFixkosten = aktuellerKontostand - summeFixkosten;
+			summeNachFixkostenUebersicht.setText(euro.format(summeNachFixkosten));
+			double saldoAmMonatsAnfang = KontoService.getStartSaldoMonatsanfang();
+			double summeVeraenderung = saldoAmMonatsAnfang -summeNachFixkosten;
+			summeNachFixkostenVeraenderungUebersicht.setText(euro.format(summeVeraenderung));
+			summeNachFixkostenVeraenderungUebersicht.getStyleClass().setAll(
+	            summeVeraenderung >= 0 ? "overview-value-plus" : "overview-value-minus"
+	        );
 		}
 		else {
 		String nachFixkostenText = "Voraussichtlicher Kontostand am Monatsende: ";
@@ -278,6 +333,11 @@ public class MainController {
 		double summeFixkosten = WiederkehrendeZahlungenService.berechneNochOffeneWKZImAktuellenMonat(konto);
 		double summeNachFixkosten = aktuellerKontostand - summeFixkosten;
 		summeNachFixkostenUebersicht.setText(euro.format(summeNachFixkosten));
+		double saldoAmMonatsAnfang = KontoService.getStartSaldoMonatsanfang(konto);
+		double summeVeraenderung = saldoAmMonatsAnfang -summeNachFixkosten;
+		summeNachFixkostenVeraenderungUebersicht.setText(euro.format(summeVeraenderung));
+		summeNachFixkostenVeraenderungUebersicht.getStyleClass()
+				.setAll(summeVeraenderung >= 0 ? "overview-value-plus" : "overview-value-minus");
 	}
 	}
 
@@ -485,7 +545,7 @@ public class MainController {
 			LocalDate von = startDatumPicker.getValue();
 			LocalDate bis = endDatumPicker.getValue();
 			aktuellerZeitraum = Zeitraum.benutzerdefinierterZeitraum(von, bis);
-			aktuellerZeitraumFilter = filterService.predicateFürZeitraum(aktuellerZeitraum);
+			aktuellerZeitraumFilter = filterService.predicateFuerZeitraum(aktuellerZeitraum);
 
 		}
 		case ALLE_ZEITEN -> {
@@ -498,7 +558,7 @@ public class MainController {
 		case AKTUELLER_MONAT, VORHERIGER_MONAT, AKTUELLES_JAHR, VORHERIGES_JAHR -> {
 			Zeitraum zeitraum = ZeitraumArt.zeitraumAusArt(zeitraumArt);
 			if (zeitraum != null) {
-				aktuellerZeitraumFilter = filterService.predicateFürZeitraum(zeitraum);
+				aktuellerZeitraumFilter = filterService.predicateFuerZeitraum(zeitraum);
 
 			} else {
 				aktuellerZeitraumFilter = _ -> true; // Alle Zeiten
@@ -640,9 +700,12 @@ public class MainController {
 		            setGraphic(null);
 		            return;
 		        }
-
-		        Konto konto = getTableView().getItems().get(getIndex());
-		        double startSaldo = konto.getStartSaldoMonatsanfang();
+		        Konto konto = (Konto) getTableRow().getItem();
+		        if (konto == null) {
+		            setGraphic(null);
+		            return;
+		             }
+		        double startSaldo = KontoService.getStartSaldoMonatsanfang(konto);
 		        double differenz = kontostand - startSaldo;
 
 		        lblWert.setText(String.format("%,.2f €", kontostand));
@@ -678,6 +741,8 @@ public class MainController {
 	private void ladeWiederkehrendeBuchungenListe() {
 		wiederkehrendeBuchungsListe.setAll(Konto.getAlleWiederkehrendeZahlungen());
 		tblWiederkehrendeBuchungen.setItems(wiederkehrendeBuchungsListe);
+		tblWiederkehrendeBuchungen.getSortOrder().add(colNaechstesBuchungsDatum);
+		tblWiederkehrendeBuchungen.sort();
 	}
 
 	private void ladeEinnahmenAusgabenDiagramm() {
@@ -1186,7 +1251,7 @@ public class MainController {
 		return summe;
 	}
 
-	public double berechneGesamtsummeKonten(ObservableList<Konto> kontenListe) {
+	public double berechneGesamtSummeKonten(ObservableList<Konto> kontenListe) {
 		double summe = 0.0;
 		for (Konto k : kontenListe) {
 			if (k != null) {
@@ -1197,7 +1262,7 @@ public class MainController {
 	}
 
 	private void updateGesamtSummeLabel() {
-		double summe = berechneGesamtsummeKonten(tblKonten.getItems());
+		double summe = berechneGesamtSummeKonten(tblKonten.getItems());
 		summeAlleKontenLbl.setText(String.format("Gesamt: %.2f €", summe));
 	}
 

@@ -11,6 +11,7 @@ import org.meinprojekt.haushalt.core.model.Einnahme;
 import org.meinprojekt.haushalt.core.model.Konto;
 import org.meinprojekt.haushalt.core.model.WiederkehrendeZahlung;
 import org.meinprojekt.haushalt.core.model.WiederkehrendeZahlung.Haeufigkeit;
+import org.meinprojekt.haushalt.core.service.WiederkehrendeZahlungenService;
 
 public class Datenstroeme {
 
@@ -20,7 +21,7 @@ public class Datenstroeme {
 //Hilfsmethoden für die Datenströme:
 	public static String sep = File.separator;
 	public static String headerBuchungen = "Datum;Buchungsart;Kategorie;Empfaenger;Sender;Betrag;Kontostand;Umbuchung;transferID;Beschreibung";
-	public static String headerWiederkehrendeZahlungen = "NaechsteZahlungAm;Haeufigkeit;Buchungsart;Kategorie;Beschreibung;Empfaenger;Sender;Betrag";
+	public static String headerWiederkehrendeZahlungen = "NaechsteZahlungAm;Haeufigkeit;Buchungsart;Kategorie;Beschreibung;Empfaenger;Sender;Betrag;LetzteZahlungAm";
 	public static String headerKonten = "Kontonummer;Kreditinstitut;Kontoname;Kontoinhaber;Kontostand_bei_Erstellung";
 	public static String headerKategorien = "Kategorie";
 	
@@ -68,15 +69,15 @@ public class Datenstroeme {
 	}
 	
 	public static String wiederkehrendeBuchungToCSV(String naechsteZahlungAm, Haeufigkeit haeufigkeit, String buchungsart, String kategorie, String beschreibung,
-			String empfaenger, String sender, double betrag) {
+			String empfaenger, String sender, double betrag, String letzteZahlungAm) {
 		String betragCsv = String.format(Locale.ROOT, "%.2f", betrag);
 		return naechsteZahlungAm + ";" + haeufigkeit + ";" + buchungsart + ";" + kategorie + ";" + beschreibung + ";"
-				+ empfaenger + ";" + sender + ";" + betragCsv;
+				+ empfaenger + ";" + sender + ";" + betragCsv + ";" + letzteZahlungAm;
 	}
 	
 	public static String wiederkehrendeBuchungToCSV(WiederkehrendeZahlung zahlung) {
-		return wiederkehrendeBuchungToCSV(zahlung.getFormatiertesDatum(), zahlung.getHaeufigkeit(), zahlung.getBuchungsart(), zahlung.getKategorie(), zahlung.getBeschreibung(),
-				zahlung.getEmpfaenger(), zahlung.getSender(), zahlung.getBetrag());
+		return wiederkehrendeBuchungToCSV(WiederkehrendeZahlungenService.getFormatiertesDatum(zahlung.getNaechsteZahlungAm()), zahlung.getHaeufigkeit(), zahlung.getBuchungsart(), zahlung.getKategorie(), zahlung.getBeschreibung(),
+				zahlung.getEmpfaenger(), zahlung.getSender(), zahlung.getBetrag(), WiederkehrendeZahlungenService.getFormatiertesDatum(zahlung.getLetzteZahlungAm()));
 	}
 
 	// Diese Methode stellt sicher, dass ein Verzeichnis vorhanden ist
@@ -184,9 +185,9 @@ public class Datenstroeme {
 		ensureVerzeichnisVorhanden(ordnerpfad);
 		String kontopfad = bildeDateiPfad(bildeDateiNameWiederkehrendeZahlungen(zahlung));
 		ensureDateiMitHeader(kontopfad, headerWiederkehrendeZahlungen);
-		String buchungsZeile = wiederkehrendeBuchungToCSV(zahlung.getFormatiertesDatum(), zahlung.getHaeufigkeit(),
+		String buchungsZeile = wiederkehrendeBuchungToCSV(WiederkehrendeZahlungenService.getFormatiertesDatum(zahlung.getNaechsteZahlungAm()), zahlung.getHaeufigkeit(),
 				zahlung.getBuchungsart(), zahlung.getKategorie(), zahlung.getBeschreibung(), zahlung.getEmpfaenger(),
-				zahlung.getSender(), zahlung.getBetrag());
+				zahlung.getSender(), zahlung.getBetrag(), WiederkehrendeZahlungenService.getFormatiertesDatum(zahlung.getLetzteZahlungAm()));
 		zeileInDateiAnhaengen(kontopfad, buchungsZeile);
 		kategorieZurDateiHinzufuegen(zahlung.getKategorie());
 	}
@@ -263,8 +264,9 @@ public static WiederkehrendeZahlung wiederkehrendeBuchungAusCSV(Konto konto, Str
 	String empfaenger = teile.length > 5 ? teile[5].trim() : "";
 	String sender = teile.length > 6 ? teile[6].trim() : "";
 	double betrag = teile.length > 7 ? Double.parseDouble(teile[7].trim().replace(",", ".")) : 0.0;
+	LocalDate letzteZahlungAm = teile.length > 8 && !teile[8].isBlank() ? LocalDate.parse(teile[8].trim(), formatter) : naechsteZahlungAm;
 	
-	return new WiederkehrendeZahlung(naechsteZahlungAm, häufigkeit, art, kategorie, beschreibung, empfaenger, sender, betrag, konto); 
+	return new WiederkehrendeZahlung(naechsteZahlungAm, häufigkeit, art, kategorie, beschreibung, empfaenger, sender, betrag, konto, letzteZahlungAm); 
 	}
 
 	// Diese Methode lädt die Buchungen aus der Datei in die entsprechenden Konten

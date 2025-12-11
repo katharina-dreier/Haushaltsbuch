@@ -46,7 +46,6 @@
 
 .konto-betrag {
     -fx-font-size: 13px;
-    -fx-font-weight: bold;
     -fx-text-fill: #222;
 }
 
@@ -426,14 +425,17 @@
 
 /* Button für „jetzt buchen“ */
 .wkz-action-button {
-    -fx-min-width: 22;
-    -fx-min-height: 22;
+    -fx-min-width: 25;
+    -fx-min-height: 25;
     -fx-background-radius: 50;
     -fx-border-radius: 50;
     -fx-background-color: transparent;
     -fx-border-color: #27ae60;
     -fx-padding: 0;
     -fx-font-size: 12px;
+    -fx-font-weight: bold;
+    -fx-cursor: hand;
+    
     -fx-text-fill: #27ae60;
 }
 

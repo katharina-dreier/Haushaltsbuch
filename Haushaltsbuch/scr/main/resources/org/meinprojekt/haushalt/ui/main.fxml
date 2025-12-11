@@ -54,12 +54,19 @@
                 							 <ColumnConstraints halignment="RIGHT"/>
             							</columnConstraints>
                   						<children>
-                     						<Label fx:id="lblEinnahmenUebersicht" text="Label" styleClass="overview-label" />
-                     						<Label fx:id="summeEinnahmenUebersicht" text="Label" GridPane.columnIndex="1" GridPane.rowIndex="0" styleClass="overview-value-plus"/>
-                     						<Label fx:id="lblAusgabenUebersicht" text="Label" GridPane.rowIndex="1" styleClass="overview-label"/>
-                     						<Label fx:id="summeAusgabenUebersicht" text="Label" GridPane.columnIndex="1" GridPane.rowIndex="1" styleClass="overview-value-minus"/>
-                     						<Label fx:id="lblKontostandNachFixkostenUebersicht" text="Label" GridPane.rowIndex="2"   styleClass="overview-total-label"/>
-											<Label fx:id="summeNachFixkostenUebersicht" text="Label" GridPane.columnIndex="1" GridPane.rowIndex="2" styleClass="overview-value-total"/>
+                     						<Label fx:id="lblEinnahmenUebersicht" text="Label"  GridPane.rowIndex="0" GridPane.columnIndex="0" styleClass="overview-label" />
+                     						<Label fx:id="summeEinnahmenUebersicht" text="Label" GridPane.rowIndex="0" GridPane.columnIndex="1" styleClass="overview-value-plus"/>
+                     						<Label fx:id="lblNochOffeneEinnahmenUebersicht" text="Label" GridPane.rowIndex="1" GridPane.columnIndex="0" styleClass="overview-label"/>
+                     						<Label fx:id="summeNochOffeneEinnahmenUebersicht" text="Label" GridPane.rowIndex="1" GridPane.columnIndex="1" styleClass="overview-value-plus"/>
+                     						<Label fx:id="lblAusgabenUebersicht" text="Label" GridPane.rowIndex="2" GridPane.columnIndex="0" styleClass="overview-label"/>
+                     						<Label fx:id="summeAusgabenUebersicht" text="Label" GridPane.rowIndex="2" GridPane.columnIndex="1" styleClass="overview-value-minus"/>
+                     						
+                     						<Label fx:id="lblNochOffeneFixkostenUebersicht" text="Label" GridPane.rowIndex="3" GridPane.columnIndex="0" styleClass="overview-label"/>
+                     						<Label fx:id="summeNochOffeneFixkostenUebersicht" text="Label" GridPane.rowIndex="3" GridPane.columnIndex="1" styleClass="overview-value-minus"/>
+                     						<Separator GridPane.rowIndex="4" GridPane.columnIndex="0" GridPane.columnSpan="2" />
+                     						<Label fx:id="summeNachFixkostenVeraenderungUebersicht" text="Label" GridPane.rowIndex="5" GridPane.columnIndex="1"/>
+                     						<Label fx:id="lblKontostandNachFixkostenUebersicht" text="Label" GridPane.rowIndex="6" GridPane.columnIndex="0"  styleClass="overview-total-label"/>
+ 											<Label fx:id="summeNachFixkostenUebersicht" text="Label" GridPane.rowIndex="6" GridPane.columnIndex="1" styleClass="overview-value-total"/>
                   						</children>
                						</GridPane>
                					</children>

@@ -15,7 +15,7 @@ public class FilterService {
 		return _ -> true; 
 	}
 	
-	public Predicate<Buchung> predicateFürZeitraum(Zeitraum zeitraum) {
+	public Predicate<Buchung> predicateFuerZeitraum(Zeitraum zeitraum) {
 		
 		if (zeitraum != null) {
 			return buchung -> {

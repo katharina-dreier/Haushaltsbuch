@@ -164,7 +164,7 @@ public class DialogBuchung {
 					BuchungsService.einnahmeTätigen(betrag, kategorie, beschreibung, ziel, sender, datum, "", false);
 					if (isWiederkehrend) {
 						LocalDate naechsteZahlungAm = WiederkehrendeZahlungenService.naechstesBuchungsDatumBerechnen(datum, haeufigkeit);
-                        WiederkehrendeZahlungenService.wiederkehrendeZahlungAnlegen(naechsteZahlungAm, haeufigkeit, buchungsart, kategorie, beschreibung, ziel.getInhaber(), sender, betrag, ziel);
+                        WiederkehrendeZahlungenService.wiederkehrendeZahlungAnlegen(naechsteZahlungAm, haeufigkeit, buchungsart, kategorie, beschreibung, ziel.getInhaber(), sender, betrag, ziel, null);
                     }
 				} else {
 					
@@ -195,7 +195,7 @@ public class DialogBuchung {
 						LocalDate naechsteZahlungAm = WiederkehrendeZahlungenService
 								.naechstesBuchungsDatumBerechnen(datum, haeufigkeit);
 						WiederkehrendeZahlungenService.wiederkehrendeZahlungAnlegen(naechsteZahlungAm, haeufigkeit,
-								buchungsart, kategorie, beschreibung, empfaenger, quell.getInhaber(), betrag, quell);
+								buchungsart, kategorie, beschreibung, empfaenger, quell.getInhaber(), betrag, quell, null);
 					}
 				} else {
 					if (isWiederkehrend) {

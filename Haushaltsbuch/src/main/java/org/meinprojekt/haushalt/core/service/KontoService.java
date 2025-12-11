@@ -56,6 +56,30 @@ public class KontoService {
 			System.out.println("Konto wurde erfoglreich bearbeitet: " + kontoAlt);
 		}
 
+		public static double getStartSaldoMonatsanfang(Konto konto) {
+			double saldo = konto.getKontostand();
+			LocalDate monatsAnfang = LocalDate.now().withDayOfMonth(1);
+			for (org.meinprojekt.haushalt.core.model.Buchung b : konto.getBuchungen()) {
+				LocalDate buchungsDatumMonat = b.getBuchungsDatum().withDayOfMonth(1);
+				if (buchungsDatumMonat.equals(monatsAnfang)) {
+					if (b.getBuchungsart().equals("Einnahme")) {
+						saldo -= b.getBetrag();
+					} else if (b.getBuchungsart().equals("Ausgabe")) {
+						saldo += b.getBetrag();
+					}
+				}
+			}
+			return saldo;
+		}
+		
+		public static double getStartSaldoMonatsanfang() {
+			double saldo = 0.0;
+			for (Konto konto : Konto.getAlleKonten()) {
+				saldo += getStartSaldoMonatsanfang(konto);
+			}
+			return saldo;
+		}
+
 		/*public static void kontoBearbeiten(Konto kontoAlt, String kontoname, String inhaber, double saldo,
 				String institut) {
 			if (kontoAlt.getKontoName().equals(kontoname) && kontoAlt.getKreditinstitut().equals(institut)) {
