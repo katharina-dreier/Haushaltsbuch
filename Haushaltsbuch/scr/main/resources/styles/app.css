@@ -7,6 +7,8 @@
 	-fx-border-width: 1;
 	-fx-focus-color: #e0e0e0;
 	-fx-faint-focus-color: transparent;
+	-fx-negativ-color: #EF4444;
+	-fx-positiv-color: #16A34A;
 	
 }
 
@@ -42,6 +44,22 @@
 	-fx-focus-color: #e0e0e0
 }
 
+.konto-betrag {
+    -fx-font-size: 13px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #222;
+}
+
+.konto-diff-positiv {
+    -fx-font-size: 10px;
+    -fx-text-fill: -fx-positiv-color; 
+}
+
+.konto-diff-negativ {
+    -fx-font-size: 10px;
+    -fx-text-fill: -fx-negativ-color; 
+}
+
 /*  Übersichtskarte unten links  */
 
 .overview-grid {
@@ -61,7 +79,7 @@
 
 /* Grün für positive Werte */
 .overview-value-plus {
-    -fx-text-fill: #2e7d32;
+    -fx-text-fill: -fx-positiv-color;
 	-fx-font-size: 13px;
 	    -fx-font-weight: bold;
 	    
@@ -69,7 +87,7 @@
 
 /* Rot für Ausgaben */
 .overview-value-minus {
-	-fx-text-fill: #c62828;
+	-fx-text-fill: -fx-negativ-color;
 	   -fx-font-size: 13px;
 	   -fx-font-weight: bold;
 }
@@ -190,7 +208,7 @@
 
 /* Serie 0 = Einnahmen (grün) */
 .chart-series-area-line.default-color0 {
-    -fx-stroke: #16A34A;
+    -fx-stroke: -fx-positiv-color;
     -fx-stroke-width: 2px;
 }
 
@@ -200,7 +218,7 @@
 
 /* Serie 1 = Ausgaben (rot) */
 .chart-series-area-line.default-color1 {
-    -fx-stroke: #EF4444;
+    -fx-stroke: -fx-negativ-color;
     -fx-stroke-width: 2px;
 }
 
@@ -218,16 +236,16 @@
 }
 
 .chart-area-symbol.default-color0 {
-    -fx-background-color: #16A34A, white;
+    -fx-background-color: -fx-positiv-color, white;
 }
 .chart-area-symbol.default-color0:hover {
-    -fx-background-color: #16A34A, #16A34A;
+    -fx-background-color: -fx-positiv-color, -fx-positiv-color;
 }
 .chart-area-symbol.default-color1 {
-    -fx-background-color: #EF4444, white;
+    -fx-background-color: -fx-negativ-color, white;
 }
 .chart-area-symbol.default-color1:hover {
-    -fx-background-color: #EF4444, #EF4444;
+    -fx-background-color: -fx-negativ-color, -fx-negativ-color;
 }
 
 .tooltip {
@@ -254,11 +272,11 @@
 }
 
 .legend-dot-einnahmen {
-    -fx-fill: #16A34A;
+    -fx-fill: -fx-positiv-color;
 }
 
 .legend-dot-ausgaben {
-    -fx-fill: #EF4444;
+    -fx-fill: -fx-negativ-color;
 }
 
 /* Filterleiste (unten) */
@@ -458,5 +476,3 @@
     -fx-border-color: #e6b0aa;
     -fx-border-radius: 4;
 }
-
-

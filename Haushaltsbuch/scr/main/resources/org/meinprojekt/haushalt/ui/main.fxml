@@ -25,7 +25,7 @@
 
     <!-- Mitte: Links Konten + Übersicht, Rechts Diagramme -->
     	<center>
-        	<SplitPane fx:id="split" dividerPositions="0.5"> 
+        	<SplitPane fx:id="split" dividerPositions="0.3"> 
 
             	<!-- Linke Seite: Konten + Übersicht untereinander -->
             		<VBox spacing="10">

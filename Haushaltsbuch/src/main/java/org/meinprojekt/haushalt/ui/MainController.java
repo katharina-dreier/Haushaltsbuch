@@ -623,21 +623,40 @@ public class MainController {
 		colKontoName.setCellValueFactory(new PropertyValueFactory<>("kontoName"));
 		colInstitut.setCellValueFactory(new PropertyValueFactory<>("kreditinstitut"));
 		colKontostand.setCellValueFactory(new PropertyValueFactory<>("kontostand"));
-		colKontostand.setCellFactory(column -> new TableCell<>() {
-			@Override
-			protected void updateItem(Double betrag, boolean empty) {
-				super.updateItem(betrag, empty);
-				if (empty || betrag == null) {
-					setText(null);
-				} else {
-					setText(String.format("%.2f €", betrag));
-					if (betrag < 0)
-						setStyle("-fx-text-fill: red;");
-					else
-						setStyle("-fx-text-fill: green;");
-				}
-			}
+		colKontostand.setCellFactory(tc -> new TableCell<Konto, Double>() {
+		    private final Label lblWert = new Label();
+		    private final Label lblDiff = new Label();
+		    private final HBox box = new HBox(6, lblWert, lblDiff);
+
+		    {
+		        box.setAlignment(Pos.CENTER_LEFT);
+		    }
+
+		    @Override
+		    protected void updateItem(Double kontostand, boolean empty) {
+		        super.updateItem(kontostand, empty);
+
+		        if (empty || kontostand == null) {
+		            setGraphic(null);
+		            return;
+		        }
+
+		        Konto konto = getTableView().getItems().get(getIndex());
+		        double startSaldo = konto.getStartSaldoMonatsanfang();
+		        double differenz = kontostand - startSaldo;
+
+		        lblWert.setText(String.format("%,.2f €", kontostand));
+		        lblWert.getStyleClass().setAll("konto-betrag");
+
+		        lblDiff.setText(String.format("%+.0f €", differenz));
+		        lblDiff.getStyleClass().setAll(
+		            differenz >= 0 ? "konto-diff-positiv" : "konto-diff-negativ"
+		        );
+
+		        setGraphic(box);
+		    }
 		});
+
 		tblKonten.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY_FLEX_LAST_COLUMN);
 	}
 
