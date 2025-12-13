@@ -1,7 +1,9 @@
 package org.meinprojekt.haushalt.core.service;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import org.meinprojekt.haushalt.core.model.Ausgabe;
 import org.meinprojekt.haushalt.core.model.Buchung;
@@ -10,6 +12,7 @@ import org.meinprojekt.haushalt.core.model.Konto;
 import org.meinprojekt.haushalt.core.model.Umbuchung;
 import org.meinprojekt.haushalt.speicher.Datenstroeme;
 
+import javafx.collections.ObservableList;
 import javafx.collections.transformation.FilteredList;
 
 public class BuchungsService {
@@ -192,6 +195,21 @@ public class BuchungsService {
 		public static double berechneSummeAusgaben(FilteredList<Buchung> gefilterteBuchungsListe) {
 			return gefilterteBuchungsListe.stream().filter(buchung -> buchung instanceof Ausgabe)
 					.mapToDouble(Buchung::getBetrag).sum();
+		}
+
+		public static List<Map.Entry<String, Double>> bestimmeAusgabenNachKategorien(FilteredList<Buchung> gefilterteBuchungsListe) {
+			Map<String, Double> kategorienSumme = new java.util.HashMap<>();
+			for (Buchung buchung : gefilterteBuchungsListe) {
+				if (buchung instanceof Ausgabe) {
+					String kategorie = buchung.getKategorie();
+					double betrag = buchung.getBetrag();
+					kategorienSumme.put(kategorie, kategorienSumme.getOrDefault(kategorie, 0.0) + betrag);
+				}
+			}
+			List<Map.Entry<String, Double>> kategorienListe = new ArrayList<>(kategorienSumme.entrySet());
+			kategorienListe.sort((e1, e2) -> Double.compare(e2.getValue(), e1.getValue()));
+			
+			return kategorienListe;
 		}
 		
 		

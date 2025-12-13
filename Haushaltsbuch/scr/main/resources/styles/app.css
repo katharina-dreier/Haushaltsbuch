@@ -9,6 +9,7 @@
 	-fx-faint-focus-color: transparent;
 	-fx-negativ-color: #EF4444;
 	-fx-positiv-color: #16A34A;
+	-fx-text-color: #666666;
 	
 }
 
@@ -68,6 +69,7 @@
 .overview-label {
     -fx-font-size: 12px;
     -fx-text-fill: #666666;
+    -fx-font-weight: bold;
 }
 
 .overview-value-total {
@@ -94,16 +96,40 @@
 /* Unterste Zeile leicht hervorheben */
 .overview-total-label {
     -fx-padding: 6 0 0 0;
-	-fx-font-size: 14px;
+	-fx-font-size: 13px;
 	   -fx-text-fill: #444444;
+	   -fx-font-weight: bold;
 }
 
 .overview-value-total {
     -fx-padding: 6 0 0 0;
-    -fx-font-size: 14px;
+    -fx-font-size: 13px;
 	    -fx-font-weight: bold;
 		-fx-text-fill: #333333;
 }
+
+.overview-subtitle {
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #666;
+    -fx-padding: 8 0 2 0;      /* mehr Abstand nach oben */
+    -fx-border-color: #ddd;
+    -fx-border-width: 1 0 0 0; /* feine Linie oben */
+    -fx-border-insets: 4 0 2 0;
+}
+
+
+.top-ausgabe-zeile {
+    -fx-text-fill: -fx-text-color;
+    -fx-font-size: 11px;
+}
+
+.top-ausgabe-empty {
+    -fx-text-fill: #888888;
+    -fx-font-size: 11px;
+    -fx-font-style: italic;
+}
+
 
 
 /* Filter Tabs für Buchungen */

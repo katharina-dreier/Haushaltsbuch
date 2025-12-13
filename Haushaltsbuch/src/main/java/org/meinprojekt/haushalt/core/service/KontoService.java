@@ -59,7 +59,7 @@ public class KontoService {
 		public static double getStartSaldoMonatsanfang(Konto konto) {
 			double saldo = konto.getKontostand();
 			LocalDate monatsAnfang = LocalDate.now().withDayOfMonth(1);
-			for (org.meinprojekt.haushalt.core.model.Buchung b : konto.getBuchungen()) {
+			for (Buchung b : konto.getBuchungen()) {
 				LocalDate buchungsDatumMonat = b.getBuchungsDatum().withDayOfMonth(1);
 				if (buchungsDatumMonat.equals(monatsAnfang)) {
 					if (b.getBuchungsart().equals("Einnahme")) {

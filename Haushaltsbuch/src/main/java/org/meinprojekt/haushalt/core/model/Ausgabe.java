@@ -20,8 +20,8 @@ public class Ausgabe extends Buchung{
 	}
 
 	public Ausgabe(Konto konto2, LocalDate datum, String art, String kategorie, String beschreibung, String empfaenger2, String sender,
-			double betrag, double kontostand, String transferID, boolean isUmbuchung) {
-		super(konto2, datum, art, kategorie, beschreibung, empfaenger2, sender, betrag, kontostand, transferID, isUmbuchung);
+			double betrag, String transferID, boolean isUmbuchung) {
+		super(konto2, datum, art, kategorie, beschreibung, empfaenger2, sender, betrag, transferID, isUmbuchung);
 	}
 
 	public String getEmpfaenger() {

@@ -99,10 +99,12 @@ public class DialogBuchung {
 	
 	public void setBuchungsart(String art) {
 		this.buchungsart = art;
+		System.out.println("Set Buchungsart: " + buchungsart);
 	}
 
 	@FXML
 	private void initialize() {
+		
 
 		cmbQuellKonto.setItems(alleKonten);
 		cmbQuellKonto.setPromptText("Konto auswählen...");
@@ -141,6 +143,7 @@ public class DialogBuchung {
 			return neu.matches("\\d*(?:[\\.,]\\d{0,2})?") ? change : null;
 		}));
 
+		applyBuchungsart();
 	}
 
 	@FXML
@@ -237,6 +240,7 @@ public class DialogBuchung {
 
 
 	public void applyBuchungsart() {
+		System.out.println("Apply Buchungsart: " + buchungsart);
 		if (buchungsart == null)
 			return;
 		

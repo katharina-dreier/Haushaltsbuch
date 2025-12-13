@@ -46,12 +46,12 @@
                 		<!-- Karte: Übersicht -->
                 			<VBox fx:id="uebersichtArea" spacing="8" styleClass="card" VBox.vgrow="ALWAYS">
                 				<children>
-                    				<Label styleClass="card-title" text="Übersicht" />
+                    				<Label styleClass="card-title" text="Übersicht aktueller Monat" />
                     				<Separator />
                						 <GridPane hgap="12" vgap="4" styleClass="overview-grid">
                							<columnConstraints>
-                							<ColumnConstraints hgrow="ALWAYS" halignment="LEFT"/>
-                							 <ColumnConstraints halignment="RIGHT"/>
+                							<ColumnConstraints halignment="LEFT" hgrow="NEVER"/>
+                							 <ColumnConstraints halignment="RIGHT" hgrow="ALWAYS"/>
             							</columnConstraints>
                   						<children>
                      						<Label fx:id="lblEinnahmenUebersicht" text="Label"  GridPane.rowIndex="0" GridPane.columnIndex="0" styleClass="overview-label" />
@@ -67,6 +67,17 @@
                      						<Label fx:id="summeNachFixkostenVeraenderungUebersicht" text="Label" GridPane.rowIndex="5" GridPane.columnIndex="1"/>
                      						<Label fx:id="lblKontostandNachFixkostenUebersicht" text="Label" GridPane.rowIndex="6" GridPane.columnIndex="0"  styleClass="overview-total-label"/>
  											<Label fx:id="summeNachFixkostenUebersicht" text="Label" GridPane.rowIndex="6" GridPane.columnIndex="1" styleClass="overview-value-total"/>
+ 											    <!-- Überschrift Top-Ausgabenkategorien -->
+    										<Label text="Top-Ausgabenkategorien" GridPane.rowIndex="8" GridPane.columnIndex="0" GridPane.columnSpan="2" styleClass="overview-subtitle"/>
+												<!-- Zeile 1 -->
+    										<Label fx:id="lblTopKat1Name" GridPane.rowIndex="9" GridPane.columnIndex="0"  styleClass="overview-label"/>
+    										<Label fx:id="lblTopKat1Betrag" GridPane.rowIndex="9" GridPane.columnIndex="1" styleClass="overview-value-minus"/>
+    											<!-- Zeile 2 -->
+    										<Label fx:id="lblTopKat2Name" GridPane.rowIndex="10" GridPane.columnIndex="0" styleClass="overview-label"/>
+    										<Label fx:id="lblTopKat2Betrag" GridPane.rowIndex="10" GridPane.columnIndex="1" styleClass="overview-value-minus"/>
+    											<!-- Zeile 3 -->
+    										<Label fx:id="lblTopKat3Name" GridPane.rowIndex="11" GridPane.columnIndex="0" styleClass="overview-label"/>
+    										<Label fx:id="lblTopKat3Betrag" GridPane.rowIndex="11" GridPane.columnIndex="1" styleClass="overview-value-minus"/>
                   						</children>
                						</GridPane>
                					</children>

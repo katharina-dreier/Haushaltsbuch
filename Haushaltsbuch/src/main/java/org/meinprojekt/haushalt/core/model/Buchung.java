@@ -30,7 +30,7 @@ public class Buchung {
 		kategorieHinzufuegen(kategorie);
 	}
 	
-	public Buchung (Konto konto, LocalDate datum, String buchungsart, String kategorie, String beschreibung, String empfänger , String sender , double betrag2, double kontostand, String transferID, boolean isUmbuchung) {
+	public Buchung (Konto konto, LocalDate datum, String buchungsart, String kategorie, String beschreibung, String empfänger , String sender , double betrag2, String transferID, boolean isUmbuchung) {
 		this.konto = konto;
 		this.buchungsDatum = datum;
 		this.buchungsart = buchungsart;
