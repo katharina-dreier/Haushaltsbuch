@@ -19,6 +19,16 @@ public class Buchung {
 	
 	public static ArrayList<String> listeMitKategorien = new ArrayList<>();
 
+	public Buchung() {
+		this.betrag = 0.0;
+		this.kategorie = "";
+		this.beschreibung = "";
+		this.buchungsDatum = LocalDate.now();
+		this.buchungsart = "Buchung";
+		this.empfaenger = "";
+		this.sender = "";
+	}
+	
 	public Buchung(double betrag, String kategorie, LocalDate buchungsDatum) {
 		this.betrag = betrag;
 		this.kategorie = kategorie;
