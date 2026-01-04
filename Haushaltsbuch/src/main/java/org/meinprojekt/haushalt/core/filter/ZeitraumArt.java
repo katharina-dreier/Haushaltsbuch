@@ -25,10 +25,12 @@ public enum ZeitraumArt {
 	        case VORHERIGER_MONAT: return Zeitraum.vorherigerMonat();
 	        case AKTUELLES_JAHR: return Zeitraum.aktuellesJahr();
 	        case VORHERIGES_JAHR: return Zeitraum.vorherigesJahr();
-	      
+	        case ALLE_ZEITEN, BENUTZERDEFINIERT :
+            throw new IllegalArgumentException("Kein fester Zeitraum für: " + zeitraumArt);
+		default:
+			throw new IllegalArgumentException("Unbekannte ZeitraumArt: " + zeitraumArt);
 	    }
 	    	
-	    return null;
 	
 	}}
 

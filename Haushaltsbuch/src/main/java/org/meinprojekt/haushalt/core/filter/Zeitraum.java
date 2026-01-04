@@ -24,31 +24,35 @@ public class Zeitraum {
 		// Statische Fabrikmethoden
 	    public static Zeitraum aktuellerMonat() {
 			LocalDate jetzt = LocalDate.now();
-			LocalDate von = jetzt.withDayOfMonth(1);
-			LocalDate bis = jetzt.withDayOfMonth(jetzt.lengthOfMonth());
-			return new Zeitraum(von, bis);
+			return monatAusDatum(jetzt);
+	    }
+	    
+		public static Zeitraum monatAusDatum(LocalDate datum) {
+        	            LocalDate von = datum.withDayOfMonth(1);
+        	            LocalDate bis = datum.withDayOfMonth(datum.lengthOfMonth());
+        	            return new Zeitraum(von, bis);
 	    }
 	    
 	    public static Zeitraum vorherigerMonat() {
 	    	            LocalDate letzerMonat = LocalDate.now().minusMonths(1);
-	    	            LocalDate von = letzerMonat.withDayOfMonth(1);
-	    	            LocalDate bis = letzerMonat.withDayOfMonth(letzerMonat.lengthOfMonth());
-	    	            return new Zeitraum(von, bis);            
+	    	            return monatAusDatum(letzerMonat);            
 	    }
 	    
 	    
 	    public static Zeitraum aktuellesJahr()  {
 	    	            LocalDate jetzt = LocalDate.now();
-	    	            LocalDate von = jetzt.withDayOfYear(1);
-	    	            LocalDate bis = jetzt.withDayOfYear(jetzt.lengthOfYear());
-	    	            return new Zeitraum(von, bis);
+	    	            return jahrAusDatum(jetzt);
 	    }
+	    
+	    public static Zeitraum jahrAusDatum(LocalDate datum) {
+            LocalDate von = datum.withDayOfYear(1);
+            LocalDate bis = datum.withDayOfYear(datum.lengthOfYear());
+            return new Zeitraum(von, bis);
+}
 	    
 		public static Zeitraum vorherigesJahr() {
 			LocalDate letztesJahr = LocalDate.now().minusYears(1);
-			LocalDate von = letztesJahr.withDayOfYear(1);
-			LocalDate bis = letztesJahr.withDayOfYear(letztesJahr.lengthOfYear());
-			return new Zeitraum(von, bis);
+			return jahrAusDatum(letztesJahr);
 		}
 	    
 		public static Zeitraum benutzerdefinierterZeitraum(LocalDate von, LocalDate bis) {
