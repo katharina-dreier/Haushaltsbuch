@@ -44,6 +44,12 @@ public class WiederkehrendeZahlung {
 	private LocalDate naechsteZahlungAm;
 	private LocalDate letzteZahlungAm = null;
 	
+	public WiederkehrendeZahlung() {
+		
+		
+
+	}
+	
 	public WiederkehrendeZahlung(LocalDate naechsteZahlungAm, Haeufigkeit häufigkeit, String buchungsart, String kategorie, String beschreibung, String empfaenger, String sender, double betrag, Konto konto, LocalDate letzteZahlungAm) {
 		this.betrag = betrag;
 		this.kategorie = kategorie;

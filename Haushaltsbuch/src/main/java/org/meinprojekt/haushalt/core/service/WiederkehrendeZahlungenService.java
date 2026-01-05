@@ -86,7 +86,8 @@ public class WiederkehrendeZahlungenService {
 	public static String bestimmeStatusSysmbolWKZ(WiederkehrendeZahlung zahlung) {
 
 		if (isNochFaellig(zahlung)) {
-			return "\u23F3"; // Sanduhr-Symbol
+			if (zahlung.getNaechsteZahlungAm().isBefore(LocalDate.now())) return"\u26A0"; // Warn-Symbol
+			else return "\u23F3"; // Sanduhr-Symbol
 		} else {
 			return "\u2705"; // Haken-Symbol
 		}
@@ -210,8 +211,13 @@ public class WiederkehrendeZahlungenService {
 	}
 
 	public static String getFormatiertesDatum(LocalDate datum) {
-	    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy");
-	    return datum.format(formatter); 
+	    if (datum != null) {
+	    	DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy");
+	    
+	    return datum.format(formatter);
+	} else {
+		return "";
+	}
 	}
 
 	public static double berechneNochOffeneEinnahmenImAktuellenMonat() {

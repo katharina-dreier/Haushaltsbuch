@@ -18,7 +18,12 @@ public class Konto {
     private static Map<Integer, Konto> konten = new HashMap<>();
    
     
-        // Konstruktor
+        // Konstruktoren
+    
+		public Konto() {
+    	anzahlKonten++;
+    	kontonummer = anzahlKonten;
+		}
 
 	public Konto(String kontoName, String inhaber, double kontostand, String kreditinstitut) {
 		// Attribute belegen
