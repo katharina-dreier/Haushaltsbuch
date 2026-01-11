@@ -375,6 +375,10 @@ class DiagrammServiceTest {
 		assertEquals(600.0, diagrammDaten.getSummeDifferenz());
 		assertEquals(Aufloesung.TAGE, diagrammDaten.getAufloesung());
 		assertEquals(59, diagrammDaten.getxWerteSortiert().size());
+		assertEquals(500.0, diagrammDaten.getMaxWert());
+		assertEquals(200.0, diagrammDaten.getTickEinheit());
+		assertEquals(2, diagrammDaten.getGefilterteEinnahmen().size());
+		assertEquals(1, diagrammDaten.getGefilterteAusgaben().size());
 
 	}
 	
