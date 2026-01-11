@@ -45,8 +45,6 @@ public class WiederkehrendeZahlung {
 	private LocalDate letzteZahlungAm = null;
 	
 	public WiederkehrendeZahlung() {
-		
-		
 
 	}
 	
