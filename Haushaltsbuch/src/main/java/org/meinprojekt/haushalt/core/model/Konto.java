@@ -23,6 +23,8 @@ public class Konto {
 		public Konto() {
     	anzahlKonten++;
     	kontonummer = anzahlKonten;
+    	this.buchungen = new ArrayList<>();
+		this.wiederkehrendeZahlungen = new ArrayList<>();
 		}
 
 	public Konto(String kontoName, String inhaber, double kontostand, String kreditinstitut) {
@@ -42,9 +44,6 @@ public class Konto {
 		return kontonummer;
 	}
 
-	public void setKontonummer(int kontonummer) {
-		this.kontonummer = kontonummer;
-	}
 
 	public String getKontoName() {
 		return kontoName;
@@ -66,9 +65,6 @@ public class Konto {
 		return anzahlKonten;
 	}
 
-	public static void setAnzahlKonten(int anzahlKonten) {
-		Konto.anzahlKonten = anzahlKonten;
-	}
 
 	public String getInhaber() {
 		return inhaber;
@@ -123,13 +119,7 @@ public class Konto {
 		return alleWiederkehrendeZahlungen;
 	}
 	
-	public void addBuchung(Buchung b) {
-        buchungen.add(b);
-    }
-
-	public void removeBuchung(Buchung b) {
-		buchungen.remove(b);
-	}
+	
 	
 	public double getKontostand() {
 		double berechneterKontostand = 0.0;
