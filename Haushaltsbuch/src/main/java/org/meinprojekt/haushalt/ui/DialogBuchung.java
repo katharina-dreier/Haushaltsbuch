@@ -51,7 +51,8 @@ public class DialogBuchung {
 	Button btnAbbrechen;
 	@FXML
 	Button btnOk;
-	ObservableList<Konto> alleKonten = KontoService.getAlleKontenAlsObservableList();
+	ObservableList<Konto> alleKonten = FXCollections.observableArrayList();
+			
 
 	
 	private Stage stage; // wird vom MainController gesetzt
@@ -105,7 +106,7 @@ public class DialogBuchung {
 	@FXML
 	private void initialize() {
 		
-
+		alleKonten.addAll(Konto.getAlleKonten());
 		cmbQuellKonto.setItems(alleKonten);
 		cmbQuellKonto.setPromptText("Konto auswählen...");
 		kontoListeKonvertieren(cmbQuellKonto);
