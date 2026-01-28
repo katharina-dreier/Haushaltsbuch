@@ -6,7 +6,7 @@ import java.util.Objects;
 public final class BuchungsDaten {
 
 	public enum Buchungstyp {
-		EINNAHME("Einnahme"), AUSGABE("Ausgabe"), BUCHUNG("Buchung");
+		EINNAHME("Einnahme"), AUSGABE("Ausgabe"), UMBUCHUNG("Umbuchung");
 		
 		private final String label;
 
@@ -23,9 +23,11 @@ public final class BuchungsDaten {
 			 else if (typ.equalsIgnoreCase("Ausgbe")) {
 					 return Buchungstyp.AUSGABE;
 				 }
-			 else return Buchungstyp.BUCHUNG;
-			 }
+			 else return Buchungstyp.UMBUCHUNG;
+			 
+			 
 		 }
+	}
 		
 	
 

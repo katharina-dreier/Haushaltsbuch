@@ -16,6 +16,7 @@ import java.util.function.Predicate;
 import org.meinprojekt.haushalt.core.filter.Zeitraum;
 import org.meinprojekt.haushalt.core.filter.ZeitraumArt;
 import org.meinprojekt.haushalt.core.model.Buchung;
+import org.meinprojekt.haushalt.core.model.BuchungsDaten.Buchungstyp;
 import org.meinprojekt.haushalt.core.model.DiagrammDaten;
 import org.meinprojekt.haushalt.core.model.DiagrammDaten.Aufloesung;
 import org.meinprojekt.haushalt.core.model.Konto;
@@ -890,7 +891,7 @@ public class MainController {
 		String fxmlPfad = "/org/meinprojekt/haushalt/ui/buchung-dialog.fxml";
 		String titel = "Neue Einnahme anlegen";
 		dialogOeffnen(btnNeueEinnahme, fxmlPfad, titel, (DialogBuchung c) -> {
-			c.setBuchungsart("Einnahme");
+			c.setBuchungsart(Buchungstyp.EINNAHME);
 			c.applyBuchungsart();
 		});
 		aktualisiereKontenTabelle();
@@ -904,7 +905,7 @@ public class MainController {
 		String fxmlPfad = "/org/meinprojekt/haushalt/ui/buchung-dialog.fxml";
 		String titel = "Neue Ausgabe anlegen";
 		dialogOeffnen(btnNeueAusgabe, fxmlPfad, titel, (DialogBuchung c) -> {
-			c.setBuchungsart("Ausgabe");
+			c.setBuchungsart(Buchungstyp.AUSGABE);
 			c.applyBuchungsart();
 		});
 		aktualisiereKontenTabelle();
@@ -918,7 +919,7 @@ public class MainController {
 		String fxmlPfad = "/org/meinprojekt/haushalt/ui/buchung-dialog.fxml";
 		String titel = "Neue Umbuchung anlegen";
 		dialogOeffnen(btnNeueUmbuchung, fxmlPfad, titel, (DialogBuchung c) -> {
-			c.setBuchungsart("Umbuchung");
+			c.setBuchungsart(Buchungstyp.UMBUCHUNG);
 			c.applyBuchungsart();
 		});
 		aktualisiereKontenTabelle();

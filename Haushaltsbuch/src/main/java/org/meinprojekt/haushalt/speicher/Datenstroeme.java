@@ -229,7 +229,7 @@ public class Datenstroeme {
 		String[] teile = csvZeile.split(";", -1); // -1 um leere Felder zu behalten
 		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy");
 		LocalDate datum = LocalDate.parse(teile[0].trim(), formatter);
-		Buchungstyp typ = teile.length > 1 ? Buchungstyp.typAusString(teile[1].trim()) : Buchungstyp.BUCHUNG;
+		Buchungstyp typ = Buchungstyp.typAusString(teile[1].trim());
 		String art = teile.length > 1 ? teile[1].trim() : "";
 		String kategorie = teile.length > 2 ? teile[2].trim() : "";
 		String empfaenger = teile.length > 3 ? teile[3].trim() : "";
@@ -243,7 +243,7 @@ public class Datenstroeme {
 		switch (typ) {
 		case Buchungstyp.EINNAHME:  gegenpartei = sender; break;
 		case Buchungstyp.AUSGABE: gegenpartei = empfaenger; break;
-		case Buchungstyp.BUCHUNG: gegenpartei = "nicht bekannt"; break;
+		case Buchungstyp.UMBUCHUNG: gegenpartei = "nicht bekannt"; break;
 		}
 		BuchungsDaten daten = BuchungsDaten
 			    .builder(betrag, kategorie, datum, konto, typ)

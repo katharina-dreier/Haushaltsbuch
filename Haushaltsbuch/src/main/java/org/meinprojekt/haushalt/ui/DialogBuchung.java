@@ -5,6 +5,7 @@ import java.time.LocalDate;
 
 import org.meinprojekt.haushalt.core.filter.ZeitraumArt;
 import org.meinprojekt.haushalt.core.model.Buchung;
+import org.meinprojekt.haushalt.core.model.BuchungsDaten.Buchungstyp;
 import org.meinprojekt.haushalt.core.model.Konto;
 import org.meinprojekt.haushalt.core.model.WiederkehrendeZahlung;
 import org.meinprojekt.haushalt.core.model.WiederkehrendeZahlung.Haeufigkeit;
@@ -64,7 +65,7 @@ public class DialogBuchung {
 	private boolean saved = false;
 	private boolean isWiederkehrend = false;
 	
-	private String buchungsart;
+	private Buchungstyp buchungsart;
 
 	public void setIsWiederkehrend(boolean isWiederkehrend) {
 		this.isWiederkehrend = isWiederkehrend;
@@ -98,8 +99,8 @@ public class DialogBuchung {
 		return saved;
 	}
 	
-	public void setBuchungsart(String art) {
-		this.buchungsart = art;
+	public void setBuchungsart(Buchungstyp typ) {
+		this.buchungsart = typ;
 		System.out.println("Set Buchungsart: " + buchungsart);
 	}
 
@@ -161,20 +162,20 @@ public class DialogBuchung {
 			var haeufigkeit = cmbHaeufigkeit.getValue();
 			
 			switch (buchungsart) {
-			case "Einnahme" -> {
+			case EINNAHME: {
 				Konto ziel = cmbZielKonto.getValue();
 				String sender = txtSender.getText().trim();
 				if (!editMode) {
 					BuchungsService.einnahmeTaetigen(betrag, kategorie, beschreibung, ziel, sender, datum, "", false);
 					if (isWiederkehrend) {
 						LocalDate naechsteZahlungAm = WiederkehrendeZahlungenService.naechstesBuchungsDatumBerechnen(datum, haeufigkeit);
-                        WiederkehrendeZahlungenService.wiederkehrendeZahlungAnlegen(naechsteZahlungAm, haeufigkeit, buchungsart, kategorie, beschreibung, ziel.getInhaber(), sender, betrag, ziel, null);
+                        WiederkehrendeZahlungenService.wiederkehrendeZahlungAnlegen(naechsteZahlungAm, haeufigkeit, buchungsart.toString(), kategorie, beschreibung, ziel.getInhaber(), sender, betrag, ziel, null);
                     }
 				} else {
 					
 					if (isWiederkehrend) {
 						WiederkehrendeZahlungenService.wiederkehrendeZahlungBearbeiten(originalWiederkehrend, datum,
-								haeufigkeit, buchungsart, kategorie, beschreibung, ziel.getInhaber(),
+								haeufigkeit, buchungsart.toString(), kategorie, beschreibung, ziel.getInhaber(),
 								sender, betrag);
 					}
 					else if (original != null) {
@@ -189,8 +190,9 @@ public class DialogBuchung {
 				}
 
 			}
+				break;
 			}
-			case "Ausgabe" -> {
+			case AUSGABE: {
 				Konto quell = cmbQuellKonto.getValue();
 				String empfaenger = txtEmpfaenger.getText().trim();
 				if (!editMode) {
@@ -199,12 +201,12 @@ public class DialogBuchung {
 						LocalDate naechsteZahlungAm = WiederkehrendeZahlungenService
 								.naechstesBuchungsDatumBerechnen(datum, haeufigkeit);
 						WiederkehrendeZahlungenService.wiederkehrendeZahlungAnlegen(naechsteZahlungAm, haeufigkeit,
-								buchungsart, kategorie, beschreibung, empfaenger, quell.getInhaber(), betrag, quell, null);
+								buchungsart.toString(), kategorie, beschreibung, empfaenger, quell.getInhaber(), betrag, quell, null);
 					}
 				} else {
 					if (isWiederkehrend) {
 						WiederkehrendeZahlungenService.wiederkehrendeZahlungBearbeiten(originalWiederkehrend, datum,
-								haeufigkeit, buchungsart, kategorie, beschreibung, empfaenger, quell.getInhaber(),
+								haeufigkeit, buchungsart.toString(), kategorie, beschreibung, empfaenger, quell.getInhaber(),
 								betrag);
 					}
 					else if (original != null) {
@@ -215,8 +217,10 @@ public class DialogBuchung {
 						BuchungsService.buchungBearbeiten(original, betrag, kategorie, beschreibung, quell, empfaenger, datum);
 				}
 			}
+				break;
 				}
-			case "Umbuchung" -> {
+			
+			case UMBUCHUNG: {
 				Konto quell = cmbQuellKonto.getValue();
 				Konto ziel = cmbZielKonto.getValue();
 
@@ -225,9 +229,11 @@ public class DialogBuchung {
 					return;
 				}
 				BuchungsService.umbuchungTätigen(betrag, beschreibung, quell, ziel, datum);
+				break;
 
 			}
 			}
+			
 			// schließen
 			btnOk.getScene().getWindow().hide();
 			saved = true;
@@ -263,19 +269,19 @@ public class DialogBuchung {
 		// pro Art an:
 
 		switch (buchungsart) {
-		case "Einnahme" -> {
+		case EINNAHME-> {
 			setRowVisible(lblZielKonto, cmbZielKonto, true);
 			setRowVisible(lblSender, txtSender, true);
 			setRowVisible(lblKategorie, cmbKategorie, true);
 			setRowVisible(lblIsWiederkehrend, chkIsWiederkehrend, true);
 		}
-		case "Ausgabe" -> {
+		case AUSGABE -> {
 			setRowVisible(lblQuellKonto, cmbQuellKonto, true);
 			setRowVisible(lblEmpfaenger, txtEmpfaenger, true);
 			setRowVisible(lblKategorie, cmbKategorie, true);
 			setRowVisible(lblIsWiederkehrend, chkIsWiederkehrend, true);
 		}
-		case "Umbuchung" -> {
+		case UMBUCHUNG-> {
 			setRowVisible(lblQuellKonto, cmbQuellKonto, true);
 			setRowVisible(lblZielKonto, cmbZielKonto, true);
 		}
@@ -346,18 +352,18 @@ public class DialogBuchung {
 		cmbKategorie.getEditor().setText(buchung.getKategorie());
 		txtBeschreibung.setText(buchung.getBeschreibung());
 
-		switch (buchung.getBuchungsart()) {
-		case "Einnahme" -> {
+		switch (buchung.getBuchungstyp()) {
+		case EINNAHME-> {
 			cmbZielKonto.setValue(buchung.getKonto());
 			txtSender.setText(buchung.getSender());
-			setBuchungsart("Einnahme");
+			setBuchungsart(Buchungstyp.EINNAHME);
 			break;
 		}
 
-		case "Ausgabe" -> {
+		case AUSGABE -> {
 			cmbQuellKonto.setValue(buchung.getKonto());
 			txtEmpfaenger.setText(buchung.getEmpfaenger());
-			setBuchungsart("Ausgabe");
+			setBuchungsart(Buchungstyp.AUSGABE);
 			break;
 		}
 		default -> {
@@ -382,13 +388,13 @@ public class DialogBuchung {
 		case "Einnahme" -> {
             cmbZielKonto.setValue(wkz.getKonto());
             txtSender.setText(wkz.getSender());
-            setBuchungsart("Einnahme");
+            setBuchungsart(Buchungstyp.EINNAHME);
             break;
 		}
 		case "Ausgabe" -> {
             cmbQuellKonto.setValue(wkz.getKonto());
             txtEmpfaenger.setText(wkz.getEmpfaenger());
-            setBuchungsart("Ausgabe");
+            setBuchungsart(Buchungstyp.AUSGABE);
             break;
         }
 		default -> {
