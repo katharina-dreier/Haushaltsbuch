@@ -24,36 +24,40 @@ public class BuchungsService {
 	
 	//Notwendige Daten einlesen und Einnahme tätigen
 		
-		public static void einnahmeTaetigen(Double betragEin, String kategorieEin, String beschreibung, Konto gewaehltesKonto, String sender,  LocalDate datum, String transferID, boolean isUmbuchung) {
+		public static void einnahmeTaetigen(Double betragEin, String kategorie, String beschreibung, Konto konto, String sender,  LocalDate datum, String transferID, boolean isUmbuchung) {
 
 			BuchungsDaten daten = BuchungsDaten
-				    .builder(betragEin, kategorieEin, datum, gewaehltesKonto, Buchungstyp.EINNAHME)
+				    .builder(betragEin, kategorie, datum, konto, Buchungstyp.EINNAHME)
 				    .beschreibung(beschreibung)
 				    .gegenpartei(sender)
 				    .transfer(transferID, isUmbuchung)   // optional
 				    .build();
 			Buchung einnahme = new Buchung(daten);
+			einnahme.kategorieHinzufuegen(kategorie);
+			konto.buchungen.add(einnahme);
 			Datenstroeme.buchungHinzufuegen(einnahme);
 		}
 		
 		//Notwendige Daten einlesen und Ausgabe tätigen
-		public static void ausgabeTätigen(Double betrag, String kat, String beschreibung, Konto quell, String empfaenger, LocalDate datum, String transferID, boolean isUmbuchung) {
-			System.out.println("Ausgabe wird getätigt mit folgenden Daten: Betrag: " + betrag + ", Kategorie: " + kat + ", Konto: " + quell.getKontoName() + ", Empfänger: " + empfaenger + ", Datum: " + datum);
-			Ausgabe ausgabe = new Ausgabe(betrag, kat, beschreibung, quell, empfaenger, datum, transferID, isUmbuchung); // Ausgabe erstellen
+		/*public static void ausgabeTätigen(Double betrag, String kategorie, String beschreibung, Konto quell, String empfaenger, LocalDate datum, String transferID, boolean isUmbuchung) {
+			System.out.println("Ausgabe wird getätigt mit folgenden Daten: Betrag: " + betrag + ", Kategorie: " + kategorie + ", Konto: " + quell.getKontoName() + ", Empfänger: " + empfaenger + ", Datum: " + datum);
+			Ausgabe ausgabe = new Ausgabe(betrag, kategorie, beschreibung, quell, empfaenger, datum, transferID, isUmbuchung); // Ausgabe erstellen
 			ausgabe.setBuchungsart("Ausgabe");
 			Datenstroeme.buchungHinzufuegen(ausgabe);
 			System.out.println("Ausgabe wurde getätigt: " + ausgabe);
-		}
+		}*/
 		
-		public static void ausgabeTätigenNeu(Double betrag, String kat, String beschreibung, Konto quell, String empfaenger, LocalDate datum, String transferID, boolean isUmbuchung) {
+		public static void ausgabeTaetigen(Double betrag, String kategorie, String beschreibung, Konto konto, String empfaenger, LocalDate datum, String transferID, boolean isUmbuchung) {
 
 			BuchungsDaten daten = BuchungsDaten
-				    .builder(betrag, kat, datum, quell, Buchungstyp.AUSGABE)
+				    .builder(betrag, kategorie, datum, konto, Buchungstyp.AUSGABE)
 				    .beschreibung(beschreibung)
 				    .gegenpartei(empfaenger)
 				    .transfer(transferID, isUmbuchung)   // optional
 				    .build();
 			Buchung ausgabe = new Buchung(daten);
+			ausgabe.kategorieHinzufuegen(kategorie);
+			konto.buchungen.add(ausgabe);
 			Datenstroeme.buchungHinzufuegen(ausgabe);
 		}
 		
@@ -62,7 +66,7 @@ public class BuchungsService {
 			System.out.println("Umbuchung wird getätigt mit folgenden Daten: Betrag: " + betrag + ", Von Konto: " + quell.getKontoName() + ", Zu Konto: " + ziel.getKontoName() + ", Datum: " + datum);
 			Umbuchung umbuchung = new Umbuchung(betrag, quell, ziel,  datum);
 			String ID = umbuchung.getTransferID();
-			ausgabeTätigen(betrag, "Umbuchung", beschreibung, quell, umbuchung.getEmpfaenger(), datum, ID, true);
+			ausgabeTaetigen(betrag, "Umbuchung", beschreibung, quell, umbuchung.getEmpfaenger(), datum, ID, true);
 			einnahmeTaetigen(betrag, "Umbuchung", beschreibung, ziel, umbuchung.getSender(), datum, ID, true) ;
 			System.out.println("Umbuchung wurde getätigt: " + umbuchung);
 		}
@@ -103,11 +107,11 @@ public class BuchungsService {
 		        //Gegenbuchung ändern
 		        buchungGegenpart.setIsUmbuchung(false);
 		        buchungGegenpart.setTransferID("");
-		        String beteiligterGegenpart = buchungGegenpart instanceof Einnahme ? "gelöschtes Konto: " + buchungGegenpart.getSender() : "gelöschtes Konto: " + buchungGegenpart.getEmpfaenger();
-		        if (buchungGegenpart instanceof Einnahme e) {
-					e.setSender(beteiligterGegenpart);
-				} else if (buchungGegenpart instanceof Ausgabe a) {
-					a.setEmpfaenger(beteiligterGegenpart);
+		        String beteiligterGegenpart = buchungGegenpart.getBuchungstyp()== Buchungstyp.EINNAHME ? "gelöschtes Konto: " + buchungGegenpart.getSender() : "gelöschtes Konto: " + buchungGegenpart.getEmpfaenger();
+		        if (buchungGegenpart.getBuchungstyp()== Buchungstyp.EINNAHME) {
+		        	buchungGegenpart.setSender(beteiligterGegenpart);
+				} else if (buchungGegenpart.getBuchungstyp()== Buchungstyp.AUSGABE) {
+					buchungGegenpart.setEmpfaenger(beteiligterGegenpart);
 		                     }
 		        // CSV neu schreiben (beide)
 		        if (konto2 != null) Datenstroeme.kontoBuchungenNeuSpeichern(konto2);
@@ -140,12 +144,12 @@ public class BuchungsService {
 			original.setBeschreibung(beschreibung);
 			original.setBuchungsDatum(datum);
 			
-			if (original instanceof Einnahme e) {
-				e.setSender(beteiligter);
-				e.setKonto(konto);
-			} else if (original instanceof Ausgabe a) {
-				a.setEmpfaenger(beteiligter);
-				a.setKonto(konto);	
+			if (original.getBuchungstyp()== Buchungstyp.EINNAHME) {
+				original.setSender(beteiligter);
+				original.setKonto(konto);
+			} else if (original.getBuchungstyp()== Buchungstyp.AUSGABE) {
+				original.setEmpfaenger(beteiligter);
+				original.setKonto(konto);	
 			}
 			
 			if (altesKonto != konto) {
@@ -191,14 +195,14 @@ public class BuchungsService {
 			String beteiligter2;
 			
 			// Beteiligte aktualisieren
-			beteiligter1 = buchungOriginal instanceof Einnahme ? buchungOriginal.getSender() : buchungOriginal.getEmpfaenger();
+			beteiligter1 = buchungOriginal.getBuchungstyp()== Buchungstyp.EINNAHME ? buchungOriginal.getSender() : buchungOriginal.getEmpfaenger();
 			buchungBearbeiten(buchungOriginal, betrag, buchungOriginal.getKategorie(), beschreibung, konto, beteiligter1, datum);
 			// Wenn das Konto geändert wurde, Beteiligten der Gegenpart-Buchung anpassen
 			Konto kontoAlt = buchungOriginal.getKonto();
 			if (kontoAlt != konto) {
 					beteiligter2 = konto.getKontoName() + "(" + konto.getKreditinstitut() + ")";
 			}
-			else  beteiligter2 = buchungGegenpart instanceof Einnahme ? buchungGegenpart.getSender() : buchungGegenpart.getEmpfaenger();
+			else  beteiligter2 = buchungGegenpart.getBuchungstyp()== Buchungstyp.EINNAHME ? buchungGegenpart.getSender() : buchungGegenpart.getEmpfaenger();
 			
 			buchungBearbeiten(buchungGegenpart, betrag, buchungGegenpart.getKategorie(), beschreibung, buchungGegenpart.getKonto(), beteiligter2, datum);
 			System.out.println("Umbuchung bearbeitet: " + buchungOriginal + " und " + buchungGegenpart);
@@ -210,19 +214,19 @@ public class BuchungsService {
 		}
 
 		public static double berechneSummeEinnahmen(FilteredList<Buchung> gefilterteBuchungsListe) {
-			return gefilterteBuchungsListe.stream().filter(buchung -> buchung instanceof Einnahme)
+			return gefilterteBuchungsListe.stream().filter(buchung -> buchung.getBuchungstyp()== Buchungstyp.EINNAHME)
 					.mapToDouble(Buchung::getBetrag).sum();
 		}
 		
 		public static double berechneSummeAusgaben(FilteredList<Buchung> gefilterteBuchungsListe) {
-			return gefilterteBuchungsListe.stream().filter(buchung -> buchung instanceof Ausgabe)
+			return gefilterteBuchungsListe.stream().filter(buchung -> buchung.getBuchungstyp()== Buchungstyp.AUSGABE)
 					.mapToDouble(Buchung::getBetrag).sum();
 		}
 
 		public static List<Map.Entry<String, Double>> bestimmeAusgabenNachKategorien(FilteredList<Buchung> gefilterteBuchungsListe) {
 			Map<String, Double> kategorienSumme = new java.util.HashMap<>();
 			for (Buchung buchung : gefilterteBuchungsListe) {
-				if (buchung instanceof Ausgabe) {
+				if (buchung.getBuchungstyp()== Buchungstyp.AUSGABE) {
 					String kategorie = buchung.getKategorie();
 					double betrag = buchung.getBetrag();
 					kategorienSumme.put(kategorie, kategorienSumme.getOrDefault(kategorie, 0.0) + betrag);

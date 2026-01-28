@@ -255,19 +255,7 @@ public class Datenstroeme {
 		buchung.setBuchungsart(art);
 		return buchung;
 
-		/*if (art.equalsIgnoreCase("Einnahme")) {
-			return new Einnahme(konto, datum, art, kategorie, beschreibung, empfaenger, sender, betrag, transferID, isUmbuchung);
-		} else if (art.equalsIgnoreCase("Ausgabe")) {
-			return new Ausgabe(konto, datum, art, kategorie, beschreibung, empfaenger, sender, betrag, transferID, isUmbuchung);
-		} 
-		else if (art.equalsIgnoreCase("Erstellung")) {
-			return new Buchung(konto, datum, art, kategorie,beschreibung, empfaenger, sender,  betrag, transferID, isUmbuchung);
-		}
-	else
-	{
-		System.out.println("⚠️ Unbekannte Buchungsart: " + art);
-		return null;
-	}*/
+		
 	}
 	
 public static WiederkehrendeZahlung wiederkehrendeBuchungAusCSV(Konto konto, String csvZeile) {

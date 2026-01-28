@@ -46,7 +46,7 @@ public class Buchung {
 		kategorieHinzufuegen(kategorie);
 	}
 	
-	public Buchung (Konto konto, LocalDate datum, String buchungsart, String kategorie, String beschreibung, String empfaenger , String sender , double betrag2, String transferID, boolean isUmbuchung) {
+	/*public Buchung (Konto konto, LocalDate datum, String buchungsart, String kategorie, String beschreibung, String empfaenger , String sender , double betrag2, String transferID, boolean isUmbuchung) {
 		this.konto = konto;
 		this.buchungsDatum = datum;
 		this.buchungsart = buchungsart;
@@ -58,7 +58,7 @@ public class Buchung {
 		kategorieHinzufuegen(kategorie);
 		this.transferID = transferID;
 		this.isUmbuchung = isUmbuchung;
-	}
+	}*/
 	
 	public Buchung(BuchungsDaten daten) {
 		 this.typ = daten.getTyp();

@@ -73,7 +73,7 @@ public class WiederkehrendeZahlungenService {
 					zahlung.getKonto(), zahlung.getSender(), zahlung.getNaechsteZahlungAm(), "", false);
 
 		case "Ausgabe":
-			BuchungsService.ausgabeTätigen(zahlung.getBetrag(), zahlung.getKategorie(), zahlung.getBeschreibung(),
+			BuchungsService.ausgabeTaetigen(zahlung.getBetrag(), zahlung.getKategorie(), zahlung.getBeschreibung(),
 					zahlung.getKonto(), zahlung.getEmpfaenger(), zahlung.getNaechsteZahlungAm(), "", false);
 
 		default:

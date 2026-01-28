@@ -21,9 +21,6 @@ public class Einnahme extends Buchung{
 		konto.buchungen.add(this); //Buchung zur Liste hinzufügen
 	}
 
-	public Einnahme(Konto konto, LocalDate datum, String art, String kategorie, String beschreibung, String empfaenger, String sender,double betrag, String transferID, boolean isUmbuchung) {
-		super(konto, datum, art, kategorie, beschreibung, empfaenger, sender, betrag, transferID, isUmbuchung);
-	}
 
 	
 	@Override

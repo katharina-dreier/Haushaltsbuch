@@ -19,10 +19,7 @@ public class Ausgabe extends Buchung{
 		konto.buchungen.add(this); // Buchung zur Liste hinzufügen
 	}
 
-	public Ausgabe(Konto konto2, LocalDate datum, String art, String kategorie, String beschreibung, String empfaenger2, String sender,
-			double betrag, String transferID, boolean isUmbuchung) {
-		super(konto2, datum, art, kategorie, beschreibung, empfaenger2, sender, betrag, transferID, isUmbuchung);
-	}
+	
 
 	@Override
 	public String getEmpfaenger() {

@@ -194,7 +194,7 @@ public class DialogBuchung {
 				Konto quell = cmbQuellKonto.getValue();
 				String empfaenger = txtEmpfaenger.getText().trim();
 				if (!editMode) {
-					BuchungsService.ausgabeTätigen(betrag, kategorie, beschreibung, quell, empfaenger, datum, "", false);
+					BuchungsService.ausgabeTaetigen(betrag, kategorie, beschreibung, quell, empfaenger, datum, "", false);
 					if (isWiederkehrend) {
 						LocalDate naechsteZahlungAm = WiederkehrendeZahlungenService
 								.naechstesBuchungsDatumBerechnen(datum, haeufigkeit);
