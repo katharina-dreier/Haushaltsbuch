@@ -387,7 +387,7 @@ public class MainController {
 		kategorieFilterButton.getItems().clear();
 		kategoriemap.clear();
 
-		for (String kat : Buchung.listeMitKategorien) {
+		for (String kat : Buchung.getListeMitKategorien()) {
 			CheckMenuItem item = new CheckMenuItem(kat);
 			item.setSelected(true); // standardmäßig alle an
 			item.selectedProperty().addListener((obs, alt, neu) -> aktualisiereKategorieFilter());
@@ -419,7 +419,7 @@ public class MainController {
 	private void updateKategorieButtonText(Set<String> ausgewaehlteKategorien) {
 		if (ausgewaehlteKategorien.isEmpty()) {
 			kategorieFilterButton.setText("Keine Kategorie");
-		} else if (ausgewaehlteKategorien.size() == Buchung.listeMitKategorien.size()) {
+		} else if (ausgewaehlteKategorien.size() == Buchung.getListeMitKategorien().size()) {
 			kategorieFilterButton.setText("Alle Kategorien");
 		} else if (ausgewaehlteKategorien.size() == 1) {
 			kategorieFilterButton.setText(ausgewaehlteKategorien.iterator().next());

@@ -23,7 +23,9 @@ public class Buchung {
 	private boolean isUmbuchung = false;
 	private String transferID = "";
 	
-	public static List<String> listeMitKategorien = new ArrayList<>();
+	private static List<String> listeMitKategorien = new ArrayList<>();
+
+	
 
 	public Buchung() {
 		this.betrag = 0.0;
@@ -46,19 +48,6 @@ public class Buchung {
 		kategorieHinzufuegen(kategorie);
 	}
 	
-	/*public Buchung (Konto konto, LocalDate datum, String buchungsart, String kategorie, String beschreibung, String empfaenger , String sender , double betrag2, String transferID, boolean isUmbuchung) {
-		this.konto = konto;
-		this.buchungsDatum = datum;
-		this.buchungsart = buchungsart;
-		this.kategorie = kategorie;
-		this.beschreibung = beschreibung;
-		this.setEmpfaenger(empfaenger);
-		this.setSender(sender);
-		this.betrag = betrag2;
-		kategorieHinzufuegen(kategorie);
-		this.transferID = transferID;
-		this.isUmbuchung = isUmbuchung;
-	}*/
 	
 	public Buchung(BuchungsDaten daten) {
 		 this.typ = daten.getTyp();
@@ -190,8 +179,18 @@ public class Buchung {
 	    if (konto == null) return "";
 	    return konto.getKontoName() + " (" + konto.getKreditinstitut() + ")";
 	}
-
 	
+	public UUID getID() {
+		return id;
+	}
+
+	public static List<String> getListeMitKategorien() {
+		return listeMitKategorien;
+	}
+
+	public static void setListeMitKategorien(List<String> listeMitKategorien) {
+		Buchung.listeMitKategorien = listeMitKategorien;
+	}
 
 
 

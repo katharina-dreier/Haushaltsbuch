@@ -125,7 +125,7 @@ public class DialogBuchung {
 		dpDatum.setValue(LocalDate.now());
 
 		cmbKategorie.setEditable(true);
-		cmbKategorie.setItems(javafx.collections.FXCollections.observableArrayList(Buchung.listeMitKategorien));
+		cmbKategorie.setItems(javafx.collections.FXCollections.observableArrayList(Buchung.getListeMitKategorien()));
 		cmbKategorie.setPromptText("Kategorie eingeben...");
 
 		if (btnOk != null)

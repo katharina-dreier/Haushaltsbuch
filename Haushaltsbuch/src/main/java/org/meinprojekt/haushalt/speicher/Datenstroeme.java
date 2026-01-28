@@ -348,8 +348,8 @@ public static WiederkehrendeZahlung wiederkehrendeBuchungAusCSV(Konto konto, Str
 					continue;
 				}
 				String kategorie = zeile.trim();
-				if (!kategorie.isEmpty() && !Buchung.listeMitKategorien.contains(kategorie)) {
-					Buchung.listeMitKategorien.add(kategorie);
+				if (!kategorie.isEmpty() && !Buchung.getListeMitKategorien().contains(kategorie)) {
+					Buchung.getListeMitKategorien().add(kategorie);
 				}
 			}
 
