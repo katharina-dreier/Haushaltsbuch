@@ -69,7 +69,7 @@ public class WiederkehrendeZahlungenService {
 		String buchungsart = zahlung.getBuchungsart();
 		switch (buchungsart) {
 		case "Einnahme":
-			BuchungsService.einnahmeTätigen(zahlung.getBetrag(), zahlung.getKategorie(), zahlung.getBeschreibung(),
+			BuchungsService.einnahmeTaetigen(zahlung.getBetrag(), zahlung.getKategorie(), zahlung.getBeschreibung(),
 					zahlung.getKonto(), zahlung.getSender(), zahlung.getNaechsteZahlungAm(), "", false);
 
 		case "Ausgabe":

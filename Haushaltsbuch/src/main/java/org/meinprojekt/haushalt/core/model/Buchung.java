@@ -2,22 +2,28 @@ package org.meinprojekt.haushalt.core.model;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
+
+import org.meinprojekt.haushalt.core.model.BuchungsDaten.Buchungstyp;
 
 public class Buchung {
 	
-	
+	private final UUID id = UUID.randomUUID();
+
 	private double betrag;
 	private String kategorie;
 	private String beschreibung;
 	private LocalDate buchungsDatum;
-	private String buchungsart; // Einnahme, Ausgabe, Umbuchung
+	private String buchungsart;// Einnahme, Ausgabe, Umbuchung
+	private Buchungstyp typ;
 	private String empfaenger;
 	private String sender;
 	private Konto konto; 
 	private boolean isUmbuchung = false;
 	private String transferID = "";
 	
-	public static ArrayList<String> listeMitKategorien = new ArrayList<>();
+	public static List<String> listeMitKategorien = new ArrayList<>();
 
 	public Buchung() {
 		this.betrag = 0.0;
@@ -40,13 +46,13 @@ public class Buchung {
 		kategorieHinzufuegen(kategorie);
 	}
 	
-	public Buchung (Konto konto, LocalDate datum, String buchungsart, String kategorie, String beschreibung, String empfänger , String sender , double betrag2, String transferID, boolean isUmbuchung) {
+	public Buchung (Konto konto, LocalDate datum, String buchungsart, String kategorie, String beschreibung, String empfaenger , String sender , double betrag2, String transferID, boolean isUmbuchung) {
 		this.konto = konto;
 		this.buchungsDatum = datum;
 		this.buchungsart = buchungsart;
 		this.kategorie = kategorie;
 		this.beschreibung = beschreibung;
-		this.setEmpfaenger(empfänger);
+		this.setEmpfaenger(empfaenger);
 		this.setSender(sender);
 		this.betrag = betrag2;
 		kategorieHinzufuegen(kategorie);
@@ -54,6 +60,25 @@ public class Buchung {
 		this.isUmbuchung = isUmbuchung;
 	}
 	
+	public Buchung(BuchungsDaten daten) {
+		 this.typ = daten.getTyp();
+	        this.konto = daten.getKonto();
+	        this.buchungsDatum = daten.getBuchungsdatum();
+	        this.kategorie = daten.getKategorie();
+	        this.beschreibung = daten.getBeschreibung();
+
+	        if (typ == Buchungstyp.EINNAHME) {
+	            this.betrag = Math.abs(daten.getBetrag());
+	            this.sender = daten.getGegenpartei();
+	            this.empfaenger = konto.getInhaber();
+	        } else {
+	            this.betrag = -Math.abs(daten.getBetrag());
+	            this.sender = konto.getInhaber();
+	            this.empfaenger = daten.getGegenpartei();
+		
+	}
+	}
+
 	public String getTransferID() {
 		return transferID;
 	}
@@ -150,6 +175,14 @@ public class Buchung {
 
 	public void setBuchungsart(String buchungsart) {
 		this.buchungsart = buchungsart;
+	}
+	
+	public Buchungstyp getBuchungstyp() {
+		return typ;
+	}
+	
+	public void setBuchungstyp(Buchungstyp typ) {
+		this.typ = typ;
 	}
 	
 

@@ -7,6 +7,8 @@ import java.util.Locale;
 
 import org.meinprojekt.haushalt.core.model.Ausgabe;
 import org.meinprojekt.haushalt.core.model.Buchung;
+import org.meinprojekt.haushalt.core.model.BuchungsDaten;
+import org.meinprojekt.haushalt.core.model.BuchungsDaten.Buchungstyp;
 import org.meinprojekt.haushalt.core.model.Einnahme;
 import org.meinprojekt.haushalt.core.model.Konto;
 import org.meinprojekt.haushalt.core.model.WiederkehrendeZahlung;
@@ -55,15 +57,15 @@ public class Datenstroeme {
 	}
 
 	// Diese Methode formatiert eine Buchung in CSV-Format
-	public static String buchungToCSV(String date, String buchungsart, String kategorie, String empfaenger,
+	public static String buchungToCSV(String date, Buchungstyp typ, String kategorie, String empfaenger,
 			String sender, double betrag, boolean isUmbuchung, String transferID, String beschreibung) {
 		String betragCsv = String.format(Locale.ROOT, "%.2f", betrag);
-		return date + ";" + buchungsart + ";" + kategorie + ";" + empfaenger + ";" + sender + ";" + betragCsv + ";"
+		return date + ";" + typ.toString() + ";" + kategorie + ";" + empfaenger + ";" + sender + ";" + betragCsv + ";"
 				 +  isUmbuchung + ";" + transferID + ";" + beschreibung;
 	}
 	
 	public static String buchungToCSV(Buchung buchung) {
-		return buchungToCSV(buchung.getFormatiertesDatum(), buchung.getBuchungsart(), buchung.getKategorie(),
+		return buchungToCSV(buchung.getFormatiertesDatum(), buchung.getBuchungstyp(), buchung.getKategorie(),
 				buchung.getEmpfaenger(), buchung.getSender(), buchung.getBetrag(),
 				buchung.getIsUmbuchung(), buchung.getTransferID(), buchung.getBeschreibung());
 	}
@@ -173,7 +175,7 @@ public class Datenstroeme {
 			ensureVerzeichnisVorhanden(ordnerpfad);
 			String kontopfad = bildeDateiPfad(bildeDateiNameBuchungsliste(buchung));
 			ensureDateiMitHeader(kontopfad, headerBuchungen);
-			String buchungsZeile = buchungToCSV(buchung.getFormatiertesDatum(), buchung.getBuchungsart(),
+			String buchungsZeile = buchungToCSV(buchung.getFormatiertesDatum(), buchung.getBuchungstyp(),
 					buchung.getKategorie(), buchung.getEmpfaenger(), buchung.getSender(), buchung.getBetrag(), buchung.getIsUmbuchung(), buchung.getTransferID(), buchung.getBeschreibung());
 			zeileInDateiAnhaengen(kontopfad, buchungsZeile);
 			kontenNeuSpeichern();
@@ -227,6 +229,7 @@ public class Datenstroeme {
 		String[] teile = csvZeile.split(";", -1); // -1 um leere Felder zu behalten
 		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy");
 		LocalDate datum = LocalDate.parse(teile[0].trim(), formatter);
+		Buchungstyp typ = teile.length > 1 ? Buchungstyp.typAusString(teile[1].trim()) : Buchungstyp.BUCHUNG;
 		String art = teile.length > 1 ? teile[1].trim() : "";
 		String kategorie = teile.length > 2 ? teile[2].trim() : "";
 		String empfaenger = teile.length > 3 ? teile[3].trim() : "";
@@ -235,8 +238,24 @@ public class Datenstroeme {
 		boolean isUmbuchung = teile.length >6 ? Boolean.parseBoolean(teile[6].trim()) : false;
 		String transferID =  teile.length > 7 && !teile[7].isBlank() ? teile[7].trim() : null;;
 		String beschreibung = teile.length > 8 ? teile[8].trim() : "";
+		
+		String gegenpartei = "";
+		switch (typ) {
+		case Buchungstyp.EINNAHME:  gegenpartei = sender; break;
+		case Buchungstyp.AUSGABE: gegenpartei = empfaenger; break;
+		case Buchungstyp.BUCHUNG: gegenpartei = "nicht bekannt"; break;
+		}
+		BuchungsDaten daten = BuchungsDaten
+			    .builder(betrag, kategorie, datum, konto, typ)
+			    .beschreibung(beschreibung)
+			    .gegenpartei(gegenpartei)
+			    .transfer(transferID, isUmbuchung)   // optional
+			    .build();
+		Buchung buchung = new Buchung(daten);
+		buchung.setBuchungsart(art);
+		return buchung;
 
-		if (art.equalsIgnoreCase("Einnahme")) {
+		/*if (art.equalsIgnoreCase("Einnahme")) {
 			return new Einnahme(konto, datum, art, kategorie, beschreibung, empfaenger, sender, betrag, transferID, isUmbuchung);
 		} else if (art.equalsIgnoreCase("Ausgabe")) {
 			return new Ausgabe(konto, datum, art, kategorie, beschreibung, empfaenger, sender, betrag, transferID, isUmbuchung);
@@ -248,7 +267,8 @@ public class Datenstroeme {
 	{
 		System.out.println("⚠️ Unbekannte Buchungsart: " + art);
 		return null;
-	}}
+	}*/
+	}
 	
 public static WiederkehrendeZahlung wiederkehrendeBuchungAusCSV(Konto konto, String csvZeile) {
 	String[] teile = csvZeile.split(";", -1); // -1 um leere Felder zu behalten

@@ -4,9 +4,12 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Logger;
 
 import org.meinprojekt.haushalt.core.model.Ausgabe;
 import org.meinprojekt.haushalt.core.model.Buchung;
+import org.meinprojekt.haushalt.core.model.BuchungsDaten;
+import org.meinprojekt.haushalt.core.model.BuchungsDaten.Buchungstyp;
 import org.meinprojekt.haushalt.core.model.Einnahme;
 import org.meinprojekt.haushalt.core.model.Konto;
 import org.meinprojekt.haushalt.core.model.Umbuchung;
@@ -16,14 +19,21 @@ import javafx.collections.ObservableList;
 import javafx.collections.transformation.FilteredList;
 
 public class BuchungsService {
+	// Logger logger = Logger.getLogger(getClass().getName());
 	
 	
 	//Notwendige Daten einlesen und Einnahme tätigen
-		public static void einnahmeTätigen(Double betragEin, String kategorieEin, String beschreibung, Konto gewaehltesKonto, String sender,  LocalDate datum, String transferID, boolean isUmbuchung) {
-			System.out.println("Einnahme wird getätigt mit folgenden Daten: Betrag: " + betragEin + ", Kategorie: " + kategorieEin + ", Konto: " + gewaehltesKonto.getKontoName() + ", Sender: " + sender + ", Datum: " + datum);
-			Einnahme einnahme = new Einnahme(betragEin, kategorieEin, beschreibung, gewaehltesKonto, sender,  datum, transferID, isUmbuchung); //Einnahme erstellen
+		
+		public static void einnahmeTaetigen(Double betragEin, String kategorieEin, String beschreibung, Konto gewaehltesKonto, String sender,  LocalDate datum, String transferID, boolean isUmbuchung) {
+
+			BuchungsDaten daten = BuchungsDaten
+				    .builder(betragEin, kategorieEin, datum, gewaehltesKonto, Buchungstyp.EINNAHME)
+				    .beschreibung(beschreibung)
+				    .gegenpartei(sender)
+				    .transfer(transferID, isUmbuchung)   // optional
+				    .build();
+			Buchung einnahme = new Buchung(daten);
 			Datenstroeme.buchungHinzufuegen(einnahme);
-			System.out.println("Einnahme wurde getätigt: " + einnahme);
 		}
 		
 		//Notwendige Daten einlesen und Ausgabe tätigen
@@ -35,13 +45,25 @@ public class BuchungsService {
 			System.out.println("Ausgabe wurde getätigt: " + ausgabe);
 		}
 		
+		public static void ausgabeTätigenNeu(Double betrag, String kat, String beschreibung, Konto quell, String empfaenger, LocalDate datum, String transferID, boolean isUmbuchung) {
+
+			BuchungsDaten daten = BuchungsDaten
+				    .builder(betrag, kat, datum, quell, Buchungstyp.AUSGABE)
+				    .beschreibung(beschreibung)
+				    .gegenpartei(empfaenger)
+				    .transfer(transferID, isUmbuchung)   // optional
+				    .build();
+			Buchung ausgabe = new Buchung(daten);
+			Datenstroeme.buchungHinzufuegen(ausgabe);
+		}
+		
 		//Umbuchung tätigen
 		public static void umbuchungTätigen(Double betrag, String beschreibung, Konto quell, Konto ziel, LocalDate datum) {
 			System.out.println("Umbuchung wird getätigt mit folgenden Daten: Betrag: " + betrag + ", Von Konto: " + quell.getKontoName() + ", Zu Konto: " + ziel.getKontoName() + ", Datum: " + datum);
 			Umbuchung umbuchung = new Umbuchung(betrag, quell, ziel,  datum);
 			String ID = umbuchung.getTransferID();
 			ausgabeTätigen(betrag, "Umbuchung", beschreibung, quell, umbuchung.getEmpfaenger(), datum, ID, true);
-			einnahmeTätigen(betrag, "Umbuchung", beschreibung, ziel, umbuchung.getSender(), datum, ID, true) ;
+			einnahmeTaetigen(betrag, "Umbuchung", beschreibung, ziel, umbuchung.getSender(), datum, ID, true) ;
 			System.out.println("Umbuchung wurde getätigt: " + umbuchung);
 		}
 		

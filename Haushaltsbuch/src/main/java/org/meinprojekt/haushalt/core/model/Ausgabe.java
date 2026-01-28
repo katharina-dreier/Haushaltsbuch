@@ -7,8 +7,8 @@ public class Ausgabe extends Buchung{
 	
 	private String empfaenger;
 	
-	public Ausgabe(double betrag, String Kategorie, String beschreibung, Konto konto, String empfaenger, LocalDate buchungsDatum, String transferID, boolean isUmbuchung) {
-		super(betrag, Kategorie, buchungsDatum);
+	public Ausgabe(double betrag, String kategorie, String beschreibung, Konto konto, String empfaenger, LocalDate buchungsDatum, String transferID, boolean isUmbuchung) {
+		super(betrag, kategorie, buchungsDatum);
 		this.empfaenger = empfaenger;
 		super.setSender(konto.getInhaber());
 		super.setBuchungsart("Ausgabe");
@@ -24,6 +24,7 @@ public class Ausgabe extends Buchung{
 		super(konto2, datum, art, kategorie, beschreibung, empfaenger2, sender, betrag, transferID, isUmbuchung);
 	}
 
+	@Override
 	public String getEmpfaenger() {
 		return empfaenger;
 	}

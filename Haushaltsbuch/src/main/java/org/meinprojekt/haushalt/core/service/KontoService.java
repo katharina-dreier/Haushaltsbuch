@@ -15,7 +15,7 @@ public class KontoService {
 			System.out.println("Kontoerstellung gestartet mit folgenden Daten: " + kontoName + ", " + inhaber + ", " + kontostand + ", " + kreditinstitut);
 			Konto konto = new Konto(kontoName, inhaber, kontostand, kreditinstitut);
 			Konto.getKonten().put(konto.getKontonummer(), konto);
-			BuchungsService.einnahmeTätigen(kontostand, "Kontoerstellung", "Initiale Buchung zu diesem Konto", konto, inhaber, LocalDate.now() , "", false);
+			BuchungsService.einnahmeTaetigen(kontostand, "Kontoerstellung", "Initiale Buchung zu diesem Konto", konto, inhaber, LocalDate.now() , "", false);
 			System.out.println("Konto wurde erstellt: " + konto);
 		}
 		

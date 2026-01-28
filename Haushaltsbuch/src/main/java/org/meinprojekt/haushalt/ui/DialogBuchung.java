@@ -165,7 +165,7 @@ public class DialogBuchung {
 				Konto ziel = cmbZielKonto.getValue();
 				String sender = txtSender.getText().trim();
 				if (!editMode) {
-					BuchungsService.einnahmeTätigen(betrag, kategorie, beschreibung, ziel, sender, datum, "", false);
+					BuchungsService.einnahmeTaetigen(betrag, kategorie, beschreibung, ziel, sender, datum, "", false);
 					if (isWiederkehrend) {
 						LocalDate naechsteZahlungAm = WiederkehrendeZahlungenService.naechstesBuchungsDatumBerechnen(datum, haeufigkeit);
                         WiederkehrendeZahlungenService.wiederkehrendeZahlungAnlegen(naechsteZahlungAm, haeufigkeit, buchungsart, kategorie, beschreibung, ziel.getInhaber(), sender, betrag, ziel, null);
