@@ -4,18 +4,13 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Logger;
-
-import org.meinprojekt.haushalt.core.model.Ausgabe;
 import org.meinprojekt.haushalt.core.model.Buchung;
 import org.meinprojekt.haushalt.core.model.BuchungsDaten;
 import org.meinprojekt.haushalt.core.model.BuchungsDaten.Buchungstyp;
-import org.meinprojekt.haushalt.core.model.Einnahme;
 import org.meinprojekt.haushalt.core.model.Konto;
 import org.meinprojekt.haushalt.core.model.Umbuchung;
 import org.meinprojekt.haushalt.speicher.Datenstroeme;
 
-import javafx.collections.ObservableList;
 import javafx.collections.transformation.FilteredList;
 
 public class BuchungsService {
