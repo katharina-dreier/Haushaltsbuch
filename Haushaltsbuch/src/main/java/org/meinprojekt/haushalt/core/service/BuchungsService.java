@@ -40,6 +40,16 @@ public final class BuchungsService {
 			logger.info("Einnahme auf Konto " + konto.getKontoName() + " getaetigt.");
 		}
 		
+		public static void einnahmeTaetigen(BuchungsDaten daten) {
+
+			logger.info("Einnahme buchen gestartet");
+			Buchung einnahme = new Buchung(daten);
+			einnahme.kategorieHinzufuegen(daten.getKategorie());
+			daten.getKonto().addBuchung(einnahme);
+			Datenstroeme.buchungHinzufuegen(einnahme);
+			logger.info("Einnahme auf Konto " + daten.getKonto().getKontoName() + " getaetigt.");
+		}
+		
 		
 		public static void ausgabeTaetigen(Double betrag, String kategorie, String beschreibung, Konto konto, String empfaenger, LocalDate datum, String transferID, boolean isUmbuchung) {
 			logger.info("Ausgabe buchen gestartet");
@@ -55,6 +65,16 @@ public final class BuchungsService {
 			konto.addBuchung(ausgabe);
 			Datenstroeme.buchungHinzufuegen(ausgabe);
 			logger.info("Ausgabe auf Konto " + konto.getKontoName() + " getaetigt.");
+
+		}
+		
+		public static void ausgabeTaetigen(BuchungsDaten daten) {
+			logger.info("Ausgabe buchen gestartet");
+			Buchung ausgabe = new Buchung(daten);
+			ausgabe.kategorieHinzufuegen(daten.getKategorie());
+			daten.getKonto().addBuchung(ausgabe);
+			Datenstroeme.buchungHinzufuegen(ausgabe);
+			logger.info("Ausgabe auf Konto " + daten.getKonto().getKontoName() + " getaetigt.");
 
 		}
 		
@@ -165,6 +185,10 @@ public final class BuchungsService {
 			
 			logger.info("Buchung gelöscht und Gegenbuchung geändert");
 		}
+		
+		public static void buchungBearbeiten(Buchung original, BuchungsDaten daten) {
+			buchungBearbeiten(original, daten.getBetrag(), daten.getKategorie(), daten.getBeschreibung(), daten.getKonto(), daten.getGegenpartei(), daten.getBuchungsdatum());
+		}
 
 		public static void buchungBearbeiten(Buchung original, double betrag, String kat, String beschreibung, Konto konto, String beteiligter,
 				LocalDate datum) {
@@ -198,6 +222,9 @@ public final class BuchungsService {
 			logger.info("Buchung bearbeitet");
 		}
 		
+		public static void umbuchungBearbeiten(Buchung original, BuchungsDaten daten) {
+			umbuchungBearbeiten(original, daten.getBeschreibung(), daten.getKonto(), daten.getBetrag(), daten.getBuchungsdatum());
+		}
 		
 		public static void umbuchungBearbeiten(Buchung original,String beschreibung, Konto konto, double betrag, LocalDate datum) {
 			logger.info("Starte mit Bearbeiten der Umbuchung");

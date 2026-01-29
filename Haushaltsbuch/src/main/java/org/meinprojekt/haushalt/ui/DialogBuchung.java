@@ -4,6 +4,7 @@ import java.text.ParseException;
 import java.time.LocalDate;
 
 import org.meinprojekt.haushalt.core.model.Buchung;
+import org.meinprojekt.haushalt.core.model.BuchungsDaten;
 import org.meinprojekt.haushalt.core.model.BuchungsDaten.Buchungstyp;
 import org.meinprojekt.haushalt.core.model.Konto;
 import org.meinprojekt.haushalt.core.model.WiederkehrendeZahlung;
@@ -151,67 +152,37 @@ public class DialogBuchung {
 			var datum = dpDatum.getValue();
 			var kategorie = cmbKategorie.getEditor().getText().trim();
 			var beschreibung = txtBeschreibung.getText().trim();
-			var isWiederkehrend = chkIsWiederkehrend.isSelected();
+			var wiederkehrendIsAusgewaehlt = chkIsWiederkehrend.isSelected();
 			var haeufigkeit = cmbHaeufigkeit.getValue();
-			
+			if (wiederkehrendIsAusgewaehlt) {datum = WiederkehrendeZahlungenService.naechstesBuchungsDatumBerechnen(datum, haeufigkeit);}
+
 			switch (buchungsart) {
 			case EINNAHME: {
 				Konto ziel = cmbZielKonto.getValue();
 				String sender = txtSender.getText().trim();
-				if (!editMode) {
-					BuchungsService.einnahmeTaetigen(betrag, kategorie, beschreibung, ziel, sender, datum, "", false);
-					if (isWiederkehrend) {
-						LocalDate naechsteZahlungAm = WiederkehrendeZahlungenService.naechstesBuchungsDatumBerechnen(datum, haeufigkeit);
-                        WiederkehrendeZahlungenService.wiederkehrendeZahlungAnlegen(naechsteZahlungAm, haeufigkeit, buchungsart, kategorie, beschreibung, ziel.getInhaber(), sender, betrag, ziel);
-                    }
-				} else {
-					
-					if (isWiederkehrend) {
-						WiederkehrendeZahlungenService.wiederkehrendeZahlungBearbeiten(originalWiederkehrend, datum,
-								haeufigkeit, buchungsart.toString(), kategorie, beschreibung, ziel.getInhaber(),
-								sender, betrag);
-					}
-					else if (original != null) {
-						
-					if (original.getIsUmbuchung()) {
-						BuchungsService.umbuchungBearbeiten(original, beschreibung, ziel, betrag, datum);
-					
-					}
-					else {
-						BuchungsService.buchungBearbeiten(original, betrag, kategorie, beschreibung, ziel, sender, datum);
-					}
-				}
-
-			}
+				BuchungsDaten daten = BuchungsDaten.builder(betrag, kategorie, datum, ziel, Buchungstyp.EINNAHME)
+					    .beschreibung(beschreibung)
+					    .gegenpartei(sender)
+					    .build();
+				if (!editMode) {neueEinnahmeAnlegen(daten, haeufigkeit);
+				} else {bestehendeBuchungBearbeiten(daten, haeufigkeit);}
 				break;
+
 			}
 			case AUSGABE: {
 				Konto quell = cmbQuellKonto.getValue();
 				String empfaenger = txtEmpfaenger.getText().trim();
-				if (!editMode) {
-					BuchungsService.ausgabeTaetigen(betrag, kategorie, beschreibung, quell, empfaenger, datum, "", false);
-					if (isWiederkehrend) {
-						LocalDate naechsteZahlungAm = WiederkehrendeZahlungenService
-								.naechstesBuchungsDatumBerechnen(datum, haeufigkeit);
-						WiederkehrendeZahlungenService.wiederkehrendeZahlungAnlegen(naechsteZahlungAm, haeufigkeit,
-								buchungsart, kategorie, beschreibung, empfaenger, quell.getInhaber(), betrag, quell);
-					}
-				} else {
-					if (isWiederkehrend) {
-						WiederkehrendeZahlungenService.wiederkehrendeZahlungBearbeiten(originalWiederkehrend, datum,
-								haeufigkeit, buchungsart.toString(), kategorie, beschreibung, empfaenger, quell.getInhaber(),
-								betrag);
-					}
-					else if (original != null) {
-					if (original.getIsUmbuchung()) {
-						BuchungsService.umbuchungBearbeiten(original, beschreibung, quell, betrag, datum);
-					} 
-					else
-						BuchungsService.buchungBearbeiten(original, betrag, kategorie, beschreibung, quell, empfaenger, datum);
+				BuchungsDaten daten = BuchungsDaten.builder(betrag, kategorie, datum, quell, Buchungstyp.AUSGABE)
+					    .beschreibung(beschreibung)
+					    .gegenpartei(empfaenger)
+					    .build();
+				if (!editMode) {neueAusgabeAnlegen(daten, haeufigkeit);}
+				 else {bestehendeBuchungBearbeiten(daten, haeufigkeit);
+					
+				
 				}
-			}
 				break;
-				}
+			}
 			
 			case UMBUCHUNG: {
 				Konto quell = cmbQuellKonto.getValue();
@@ -238,6 +209,43 @@ public class DialogBuchung {
 
 	
 
+
+
+	private void bestehendeBuchungBearbeiten(BuchungsDaten daten, Haeufigkeit haeufigkeit) {
+		
+		var wiederkehrendIsAusgewaehlt = chkIsWiederkehrend.isSelected();
+		if (wiederkehrendIsAusgewaehlt) {
+			WiederkehrendeZahlungenService.wiederkehrendeZahlungBearbeiten(originalWiederkehrend, daten, haeufigkeit);
+		}
+		else if (original != null) {
+			
+		if (original.getIsUmbuchung()) {
+			BuchungsService.umbuchungBearbeiten(original, daten);
+		
+		}
+		else {
+			BuchungsService.buchungBearbeiten(original, daten);
+		}
+	}
+		
+	}
+	
+	private void neueEinnahmeAnlegen(BuchungsDaten daten, Haeufigkeit haeufigkeit) {
+		var wiederkehrendIsAusgewaehlt = chkIsWiederkehrend.isSelected();
+		BuchungsService.einnahmeTaetigen(daten);
+		if (wiederkehrendIsAusgewaehlt) {
+            WiederkehrendeZahlungenService.wiederkehrendeZahlungAnlegen(daten, haeufigkeit);
+        }
+		
+	}
+	private void neueAusgabeAnlegen(BuchungsDaten daten, Haeufigkeit haeufigkeit) {
+		var wiederkehrendIsAusgewaehlt = chkIsWiederkehrend.isSelected();
+		BuchungsService.ausgabeTaetigen(daten);
+		if (wiederkehrendIsAusgewaehlt) {
+            WiederkehrendeZahlungenService.wiederkehrendeZahlungAnlegen(daten, haeufigkeit);
+        }
+		
+	}
 
 	public void applyBuchungsart() {
 		System.out.println("Apply Buchungsart: " + buchungsart);

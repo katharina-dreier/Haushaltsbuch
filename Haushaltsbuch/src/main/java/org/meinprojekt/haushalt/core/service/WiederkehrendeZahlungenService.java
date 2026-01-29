@@ -38,6 +38,14 @@ public class WiederkehrendeZahlungenService {
 		Datenstroeme.wiederkehrendeBuchungHinzufuegen(wkz);
 
 	}
+	
+	public static void wiederkehrendeZahlungAnlegen(BuchungsDaten daten, Haeufigkeit haeufigkeit) {
+		
+		WiederkehrendeZahlung wkz = new WiederkehrendeZahlung(daten, haeufigkeit);
+		daten.getKonto().addWiederkehrendeZahlung(wkz);
+		Datenstroeme.wiederkehrendeBuchungHinzufuegen(wkz);
+
+	}
 
 	public static void wiederkehrendeZahlungBearbeiten(WiederkehrendeZahlung zahlung, LocalDate datum,
 			Haeufigkeit haeufigkeit, String buchungsart, String kategorie, String beschreibung, String empfaenger,
@@ -51,6 +59,24 @@ public class WiederkehrendeZahlungenService {
 		zahlung.setEmpfaenger(empfaenger);
 		zahlung.setSender(sender);
 		zahlung.setBetrag(betrag);
+
+		Datenstroeme.kontoWiederkehrendeZahlungenNeuSpeichern(zahlung.getKonto());
+
+	}
+	
+	public static void wiederkehrendeZahlungBearbeiten(WiederkehrendeZahlung zahlung, BuchungsDaten daten, Haeufigkeit haeufigkeit) {
+
+		zahlung.setNaechsteZahlungAm(daten.getBuchungsdatum());
+		zahlung.setHaeufigkeit(haeufigkeit);
+		zahlung.setBuchungstyp(daten.getTyp());
+		zahlung.setKategorie(daten.getKategorie());
+		zahlung.setBeschreibung(daten.getBeschreibung());
+		switch (daten.getTyp()) {
+		case Buchungstyp.EINNAHME:  zahlung.setEmpfaenger(daten.getKonto().getInhaber()); zahlung.setSender(daten.getGegenpartei()); break;
+		case Buchungstyp.AUSGABE: zahlung.setEmpfaenger(daten.getGegenpartei()); zahlung.setSender(daten.getKonto().getInhaber()); break;
+		case Buchungstyp.UMBUCHUNG: System.out.println("nicht bekannt"); break;
+		}
+		zahlung.setBetrag(daten.getBetrag());
 
 		Datenstroeme.kontoWiederkehrendeZahlungenNeuSpeichern(zahlung.getKonto());
 
