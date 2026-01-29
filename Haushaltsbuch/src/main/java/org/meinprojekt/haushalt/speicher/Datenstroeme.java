@@ -261,7 +261,8 @@ public static WiederkehrendeZahlung wiederkehrendeBuchungAusCSV(Konto konto, Str
 	DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy");
 	LocalDate naechsteZahlungAm = LocalDate.parse(teile[0].trim(), formatter);
 	System.out.println("Parsed date: " + naechsteZahlungAm);
-	Haeufigkeit häufigkeit = teile.length > 1 ? Haeufigkeit.haeufigkeitFromString(teile[1].trim()) : Haeufigkeit.MONATLICH;
+	Haeufigkeit haeufigkeit = teile.length > 1 ? Haeufigkeit.haeufigkeitFromString(teile[1].trim()) : Haeufigkeit.MONATLICH;
+	Buchungstyp typ = Buchungstyp.typAusString(teile[2].trim());
 	String art = teile.length > 2 ? teile[2].trim() : "";
 	String kategorie = teile.length > 3 ? teile[3].trim() : "";
 	String beschreibung = teile.length > 4 ? teile[4].trim() : "";
@@ -269,8 +270,21 @@ public static WiederkehrendeZahlung wiederkehrendeBuchungAusCSV(Konto konto, Str
 	String sender = teile.length > 6 ? teile[6].trim() : "";
 	double betrag = teile.length > 7 ? Double.parseDouble(teile[7].trim().replace(",", ".")) : 0.0;
 	LocalDate letzteZahlungAm = teile.length > 8 && !teile[8].isBlank() ? LocalDate.parse(teile[8].trim(), formatter) : naechsteZahlungAm;
-	
-	return new WiederkehrendeZahlung(naechsteZahlungAm, häufigkeit, art, kategorie, beschreibung, empfaenger, sender, betrag, konto, letzteZahlungAm); 
+	String gegenpartei = "";
+	switch (typ) {
+	case Buchungstyp.EINNAHME:  gegenpartei = sender; break;
+	case Buchungstyp.AUSGABE: gegenpartei = empfaenger; break;
+	case Buchungstyp.UMBUCHUNG: gegenpartei = "nicht bekannt"; break;
+	}
+	BuchungsDaten daten = BuchungsDaten
+		    .builder(betrag, kategorie, naechsteZahlungAm, konto, typ)
+		    .beschreibung(beschreibung)
+		    .gegenpartei(gegenpartei)
+		    .build();
+	WiederkehrendeZahlung zahlung = new WiederkehrendeZahlung(daten, haeufigkeit);
+	zahlung.setBuchungsart(art);
+	zahlung.setLetzteZahlungAm(letzteZahlungAm);
+	return zahlung;
 	}
 
 	// Diese Methode lädt die Buchungen aus der Datei in die entsprechenden Konten

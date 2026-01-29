@@ -2,6 +2,8 @@ package org.meinprojekt.haushalt.core.model;
 
 import java.time.LocalDate;
 
+import org.meinprojekt.haushalt.core.model.BuchungsDaten.Buchungstyp;
+
 import javafx.util.Callback;
 
 public class WiederkehrendeZahlung {
@@ -40,6 +42,9 @@ public class WiederkehrendeZahlung {
 	private String empfaenger;
 	private String sender;
 	private String buchungsart; // Einnahme, Ausgabe
+	private Buchungstyp typ;
+	
+
 	private Haeufigkeit haeufigkeit;
 	private LocalDate naechsteZahlungAm;
 	private LocalDate letzteZahlungAm = null;
@@ -48,17 +53,25 @@ public class WiederkehrendeZahlung {
 
 	}
 	
-	public WiederkehrendeZahlung(LocalDate naechsteZahlungAm, Haeufigkeit häufigkeit, String buchungsart, String kategorie, String beschreibung, String empfaenger, String sender, double betrag, Konto konto, LocalDate letzteZahlungAm) {
-		this.betrag = betrag;
-		this.kategorie = kategorie;
-		this.beschreibung = beschreibung;
-		this.konto = konto;
-		this.empfaenger = empfaenger;
-		this.sender = sender;
-		this.buchungsart = buchungsart;
-		this.haeufigkeit = häufigkeit;
-		this.naechsteZahlungAm = naechsteZahlungAm;
-		this.letzteZahlungAm = letzteZahlungAm;
+	
+	public WiederkehrendeZahlung(BuchungsDaten daten, Haeufigkeit haeufigkeit) {
+		 	this.typ = daten.getTyp();
+	        this.konto = daten.getKonto();
+	        this.kategorie = daten.getKategorie();
+	        this.beschreibung = daten.getBeschreibung();
+	        this.haeufigkeit = haeufigkeit;
+	        this.naechsteZahlungAm = daten.getBuchungsdatum();
+
+	        if (typ == Buchungstyp.EINNAHME) {
+	            this.betrag = Math.abs(daten.getBetrag());
+	            this.sender = daten.getGegenpartei();
+	            this.empfaenger = konto.getInhaber();
+	        } else {
+	            this.betrag = -Math.abs(daten.getBetrag());
+	            this.sender = konto.getInhaber();
+	            this.empfaenger = daten.getGegenpartei();
+		
+	}
 	}
 
 	public Haeufigkeit getHaeufigkeit() {
@@ -147,7 +160,14 @@ public class WiederkehrendeZahlung {
 		return letzteZahlungAm;
 	}
 	
-	
+	public Buchungstyp getBuchungstyp() {
+		return typ;
+	}
+
+
+	public void setBuchungstyp(Buchungstyp typ) {
+		this.typ = typ;
+	}
 	
 
 }

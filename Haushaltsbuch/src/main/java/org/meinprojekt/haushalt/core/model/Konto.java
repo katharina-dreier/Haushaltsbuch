@@ -157,4 +157,8 @@ public class Konto {
 		buchungen.add(buchung);
 	}
 	
+	public void addWiederkehrendeZahlung(WiederkehrendeZahlung zahlung) {
+		wiederkehrendeZahlungen.add(zahlung);
+	}
+	
 }

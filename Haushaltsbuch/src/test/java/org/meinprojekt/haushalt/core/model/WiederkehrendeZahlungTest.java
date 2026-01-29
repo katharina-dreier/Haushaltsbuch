@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import java.time.LocalDate;
 
 import org.junit.jupiter.api.Test;
+import org.meinprojekt.haushalt.core.model.BuchungsDaten.Buchungstyp;
 import org.meinprojekt.haushalt.core.model.WiederkehrendeZahlung.Haeufigkeit;
 
 class WiederkehrendeZahlungTest {
@@ -103,12 +104,17 @@ class WiederkehrendeZahlungTest {
 		Konto konto = new Konto();
 		konto.setKontoName("Girokonto");
 		LocalDate datum = LocalDate.of(2024, 1, 15);
-		LocalDate letzteZahlung = LocalDate.of(2023, 12, 15);
+		BuchungsDaten daten = BuchungsDaten
+			    .builder(500.0, "Miete", datum, konto, Buchungstyp.AUSGABE)
+			    .beschreibung("Monatliche Miete")
+			    .gegenpartei("Vermieter GmbH")
+			    .build();
+		konto.setInhaber("Max Mustermann");
 
-		WiederkehrendeZahlung wz = new WiederkehrendeZahlung(datum, Haeufigkeit.MONATLICH, "Ausgabe", "Miete", "Monatliche Miete", "Vermieter GmbH", "Max Mustermann", 500.0, konto, letzteZahlung);
+		WiederkehrendeZahlung wz = new WiederkehrendeZahlung(daten, Haeufigkeit.MONATLICH);
 
 		assertEquals(Haeufigkeit.MONATLICH, wz.getHaeufigkeit());
-		assertEquals(500.0, wz.getBetrag());
+		assertEquals(-500.0, wz.getBetrag());
 		assertEquals("Miete", wz.getKategorie());
 		assertEquals("Monatliche Miete", wz.getBeschreibung());
 		assertEquals(konto, wz.getKonto());

@@ -4,20 +4,34 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 
+import org.meinprojekt.haushalt.core.model.Buchung;
+import org.meinprojekt.haushalt.core.model.BuchungsDaten;
 import org.meinprojekt.haushalt.core.model.Konto;
 import org.meinprojekt.haushalt.core.model.WiederkehrendeZahlung;
+import org.meinprojekt.haushalt.core.model.BuchungsDaten.Buchungstyp;
 import org.meinprojekt.haushalt.core.model.WiederkehrendeZahlung.Haeufigkeit;
 import org.meinprojekt.haushalt.speicher.Datenstroeme;
 
 public class WiederkehrendeZahlungenService {
 
-	public static void wiederkehrendeZahlungAnlegen(LocalDate datum, Haeufigkeit haeufigkeit, String buchungsart,
-			String kategorie, String beschreibung, String empfaenger, String sender, double betrag, Konto konto, LocalDate letzteZahlungAm) {
-
-		WiederkehrendeZahlung zahlung = new WiederkehrendeZahlung(datum, haeufigkeit, buchungsart, kategorie,
-				beschreibung, empfaenger, sender, betrag, konto, letzteZahlungAm);
-		konto.wiederkehrendeZahlungen.add(zahlung);
-		Datenstroeme.wiederkehrendeBuchungHinzufuegen(zahlung);
+	
+	
+	public static void wiederkehrendeZahlungAnlegen(LocalDate datum, Haeufigkeit haeufigkeit, Buchungstyp typ,
+			String kategorie, String beschreibung, String empfaenger, String sender, double betrag, Konto konto) {
+		String gegenpartei = "";
+		switch (typ) {
+		case Buchungstyp.EINNAHME:  gegenpartei = sender; break;
+		case Buchungstyp.AUSGABE: gegenpartei = empfaenger; break;
+		case Buchungstyp.UMBUCHUNG: gegenpartei = "nicht bekannt"; break;
+		}
+		BuchungsDaten daten = BuchungsDaten
+			    .builder(betrag, kategorie, datum, konto, typ)
+			    .beschreibung(beschreibung)
+			    .gegenpartei(gegenpartei)
+			    .build();
+		WiederkehrendeZahlung wkz = new WiederkehrendeZahlung(daten, haeufigkeit);
+		konto.addWiederkehrendeZahlung(wkz);
+		Datenstroeme.wiederkehrendeBuchungHinzufuegen(wkz);
 
 	}
 
@@ -66,18 +80,18 @@ public class WiederkehrendeZahlungenService {
 	}
 
 	public static void wiederkehrendeZahlungAusfuehren(WiederkehrendeZahlung zahlung) {
-		String buchungsart = zahlung.getBuchungsart();
-		switch (buchungsart) {
-		case "Einnahme":
+		Buchungstyp typ = zahlung.getBuchungstyp();
+		switch (typ) {
+		case EINNAHME:
 			BuchungsService.einnahmeTaetigen(zahlung.getBetrag(), zahlung.getKategorie(), zahlung.getBeschreibung(),
-					zahlung.getKonto(), zahlung.getSender(), zahlung.getNaechsteZahlungAm(), "", false);
+					zahlung.getKonto(), zahlung.getSender(), zahlung.getNaechsteZahlungAm(), "", false); break;
 
-		case "Ausgabe":
+		case AUSGABE:
 			BuchungsService.ausgabeTaetigen(zahlung.getBetrag(), zahlung.getKategorie(), zahlung.getBeschreibung(),
-					zahlung.getKonto(), zahlung.getEmpfaenger(), zahlung.getNaechsteZahlungAm(), "", false);
+					zahlung.getKonto(), zahlung.getEmpfaenger(), zahlung.getNaechsteZahlungAm(), "", false); break;
 
 		default:
-			System.out.println("Fehler: Unbekannte Buchungsart bei wiederkehrender Zahlung: " + buchungsart);
+			System.out.println("Fehler: Unbekannte Buchungsart bei wiederkehrender Zahlung");
 
 		}
 		naechstesZahlDatumAktualisieren(zahlung);
@@ -96,8 +110,8 @@ public class WiederkehrendeZahlungenService {
 	public static boolean isNochFaellig(WiederkehrendeZahlung zahlung) {
 		LocalDate aktuellerMonat = LocalDate.now().withDayOfMonth(1);
 		LocalDate zahlungsMonat = zahlung.getNaechsteZahlungAm().withDayOfMonth(1);
-		boolean nochFaellig = !zahlungsMonat.isAfter(aktuellerMonat);
-		return nochFaellig;
+		return !zahlungsMonat.isAfter(aktuellerMonat);
+		
 
 	}
 
@@ -116,15 +130,16 @@ public class WiederkehrendeZahlungenService {
 		double summe = 0.0;
 		for (WiederkehrendeZahlung zahlung : getAlleWiederkehrendeZahlungen()) {
 			LocalDate zahlungsMonat = zahlung.getNaechsteZahlungAm().withDayOfMonth(1);
-			String buchungsart = zahlung.getBuchungsart();
+			Buchungstyp typ = zahlung.getBuchungstyp();
 			if (!zahlungsMonat.isAfter(aktuellerMonat)) {
-				switch (buchungsart) {
-				case "Einnahme":
+				switch (typ) {
+				case EINNAHME:
 					summe -= zahlung.getBetrag();
 					break;
-				case "Ausgabe":
+				case AUSGABE:
 					summe += zahlung.getBetrag();
 					break;
+				default: System.out.println("fehlerhafte Buchungsart");
 				}
 			}
 		}
@@ -138,15 +153,16 @@ public class WiederkehrendeZahlungenService {
 		double summe = 0.0;
 		for (WiederkehrendeZahlung zahlung : konto.getWiederkehrendeZahlungen()) {
 			LocalDate zahlungsMonat = zahlung.getNaechsteZahlungAm().withDayOfMonth(1);
-			String buchungsart = zahlung.getBuchungsart();
+			Buchungstyp typ = zahlung.getBuchungstyp();
 			if (!zahlungsMonat.isAfter(aktuellerMonat)) {
-				switch (buchungsart) {
-				case "Einnahme":
+				switch (typ) {
+				case EINNAHME:
 					summe -= zahlung.getBetrag();
 					break;
-				case "Ausgabe":
+				case AUSGABE:
 					summe += zahlung.getBetrag();
 					break;
+				default: System.out.println("fehlerhafte Buchungsart");
 				}
 			}
 		}
@@ -171,12 +187,13 @@ public class WiederkehrendeZahlungenService {
 				zahlung.setLetzteZahlungAm(monatNaechsteZahlung);
 			}
 			LocalDate monatLetzteZahlung = zahlung.getLetzteZahlungAm().withDayOfMonth(1);
-			String buchungsart = zahlung.getBuchungsart();
+			Buchungstyp typ = zahlung.getBuchungstyp();
 			if (!monatNaechsteZahlung.equals(aktuellerMonat) || !monatLetzteZahlung.equals(aktuellerMonat)) {
-				switch (buchungsart) {
-				case "Ausgabe":
+				switch (typ) {
+				case AUSGABE:
 					gesamtFixkosten += zahlung.getBetrag();
 					break;
+					default: break;
 				}
 			}
 		}
@@ -198,12 +215,13 @@ public class WiederkehrendeZahlungenService {
 		List<WiederkehrendeZahlung> alleZahlungenKonto = konto.getWiederkehrendeZahlungen();
 		for (WiederkehrendeZahlung zahlung : alleZahlungenKonto) {
 			LocalDate zahlungsMonat = zahlung.getNaechsteZahlungAm().withDayOfMonth(1);
-			String buchungsart = zahlung.getBuchungsart();
+			Buchungstyp typ = zahlung.getBuchungstyp();
 			if (!zahlungsMonat.isAfter(aktuellerMonat)) {
-				switch (buchungsart) {
-				case "Ausgabe":
+				switch (typ) {
+				case AUSGABE:
 					gesamtFixkosten += zahlung.getBetrag();
 					break;
+					default: break;
 				}
 			}
 		}
@@ -234,12 +252,13 @@ public class WiederkehrendeZahlungenService {
 		double summe = 0.0;
 		for (WiederkehrendeZahlung zahlung : konto.getWiederkehrendeZahlungen()) {
 			LocalDate zahlungsMonat = zahlung.getNaechsteZahlungAm().withDayOfMonth(1);
-			String buchungsart = zahlung.getBuchungsart();
+			Buchungstyp typ = zahlung.getBuchungstyp();
 			if (!zahlungsMonat.isAfter(aktuellerMonat)) {
-				switch (buchungsart) {
-				case "Einnahme":
+				switch (typ) {
+				case EINNAHME:
 					summe += zahlung.getBetrag();
 					break;
+					default: break;
 				}
 			}
 		}
