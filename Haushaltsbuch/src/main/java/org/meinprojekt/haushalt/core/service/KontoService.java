@@ -1,7 +1,6 @@
 package org.meinprojekt.haushalt.core.service;
 
 import java.io.IOException;
-import java.nio.file.DirectoryNotEmptyException;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.logging.Logger;

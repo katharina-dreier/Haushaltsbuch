@@ -1,9 +1,7 @@
 package org.meinprojekt.haushalt.speicher;
 
 import java.io.*;
-import java.nio.file.DirectoryNotEmptyException;
 import java.nio.file.Files;
-import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
