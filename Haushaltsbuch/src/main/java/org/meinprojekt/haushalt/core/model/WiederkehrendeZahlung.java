@@ -4,8 +4,6 @@ import java.time.LocalDate;
 
 import org.meinprojekt.haushalt.core.model.BuchungsDaten.Buchungstyp;
 
-import javafx.util.Callback;
-
 public class WiederkehrendeZahlung {
 	
 	public enum Haeufigkeit {
