@@ -13,8 +13,8 @@ public class Konto {
 	private double kontostandBeiErstellung;
 	private String kreditinstitut;
 	
-    public List<Buchung> buchungen;
-    public List<WiederkehrendeZahlung> wiederkehrendeZahlungen;
+    private List<Buchung> buchungen;
+    private List<WiederkehrendeZahlung> wiederkehrendeZahlungen;
     private static Map<Integer, Konto> konten = new HashMap<>();
    
     

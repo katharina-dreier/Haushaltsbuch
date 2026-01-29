@@ -1,5 +1,8 @@
 package org.meinprojekt.haushalt.ui;
 
+import java.io.IOException;
+import java.nio.file.DirectoryNotEmptyException;
+import java.nio.file.NoSuchFileException;
 import java.text.NumberFormat;
 import java.text.ParseException;
 import java.time.LocalDate;
@@ -1184,7 +1187,18 @@ public class MainController {
 
 		confirm.showAndWait().ifPresent(result -> {
 			if (result == ButtonType.OK) {
-				KontoService.loescheKonto(k);
+				try {
+					KontoService.loescheKonto(k);
+				} catch (NoSuchFileException e) {
+					
+					e.printStackTrace();
+				} catch (DirectoryNotEmptyException e) {
+					
+					e.printStackTrace();
+				} catch (IOException e) {
+					
+					e.printStackTrace();
+				}
 			}
 			kontenListe.setAll(Konto.getAlleKonten());
 			tblKonten.refresh();

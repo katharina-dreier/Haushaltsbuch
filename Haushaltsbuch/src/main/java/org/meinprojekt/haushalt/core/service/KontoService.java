@@ -1,5 +1,7 @@
 package org.meinprojekt.haushalt.core.service;
 
+import java.io.IOException;
+import java.nio.file.DirectoryNotEmptyException;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.logging.Logger;
@@ -27,9 +29,9 @@ public class KontoService {
 		
 		
 
-		public static void loescheKonto(Konto k) {
+		public static void loescheKonto(Konto k) throws IOException{
 			logger.info("Starte mit Löschen von Konto");
-			for (Buchung b : new ArrayList<>(k.buchungen)) {
+			for (Buchung b : new ArrayList<>(k.getBuchungen())) {
 				BuchungsService.loescheBuchung(b);
 				}
 			Datenstroeme.kontoLoeschen(k);

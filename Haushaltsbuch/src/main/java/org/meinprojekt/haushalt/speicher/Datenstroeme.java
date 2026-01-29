@@ -1,9 +1,15 @@
 package org.meinprojekt.haushalt.speicher;
 
 import java.io.*;
+import java.nio.file.DirectoryNotEmptyException;
+import java.nio.file.Files;
+import java.nio.file.NoSuchFileException;
+import java.nio.file.Path;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.Locale;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import org.meinprojekt.haushalt.core.model.Buchung;
 import org.meinprojekt.haushalt.core.model.BuchungsDaten;
@@ -17,75 +23,73 @@ public class Datenstroeme {
 
 	// Diese Klasse ist für die Datenströme verantwortlich
 	// Hier werden die CSV-Dateien erstellt und verwaltet
+	
+	
+	
+	private static final Logger logger = Logger.getLogger(Datenstroeme.class.getName());
+	
+	private Datenstroeme() {
+	    throw new IllegalStateException("Utility class");
+	  }
 
 //Hilfsmethoden für die Datenströme:
-	public static String sep = File.separator;
-	public static String headerBuchungen = "Datum;Buchungsart;Kategorie;Empfaenger;Sender;Betrag;Umbuchung;transferID;Beschreibung";
-	public static String headerWiederkehrendeZahlungen = "NaechsteZahlungAm;Haeufigkeit;Buchungsart;Kategorie;Beschreibung;Empfaenger;Sender;Betrag;LetzteZahlungAm";
-	public static String headerKonten = "Kontonummer;Kreditinstitut;Kontoname;Kontoinhaber;Kontostand_bei_Erstellung";
-	public static String headerKategorien = "Kategorie";
+	private static String sep = File.separator;
+	private static String headerBuchungen = "Datum;Buchungsart;Kategorie;Empfaenger;Sender;Betrag;Umbuchung;transferID;Beschreibung";
+	private static String headerWiederkehrendeZahlungen = "NaechsteZahlungAm;Haeufigkeit;Buchungsart;Kategorie;Beschreibung;Empfaenger;Sender;Betrag;LetzteZahlungAm";
+	private static String headerKonten = "Kontonummer;Kreditinstitut;Kontoname;Kontoinhaber;Kontostand_bei_Erstellung";
+	private static String headerKategorien = "Kategorie";
 	
-	static String kontenlistePfad = sep + "Haushaltsbuch" + sep + "Kontoliste.csv";
-	static String ordnerpfad = sep + "Haushaltsbuch" + sep + "Konten" + sep;
+	private static String ordnerNameKonten = "Konten";
+	private static String nameHauptOrdner = "Haushaltsbuch";
+	
+	private static String ordnerpfad = sep + nameHauptOrdner + sep + ordnerNameKonten + sep;
 	
 	public static String bildeDateiNameBuchungsliste (Konto konto) {
-		return  sep + "Konten" + sep + konto.getKontonummer() + "_" + konto.getKreditinstitut() + "_" + konto.getKontoName() + "_Buchungen";
+		return  sep + ordnerNameKonten + sep + konto.getKontonummer() + "_" + konto.getKreditinstitut() + "_" + konto.getKontoName() + "_Buchungen";
 	}
 	public static String bildeDateiNameBuchungsliste (Buchung buchung) {
-		String dateiname = bildeDateiNameBuchungsliste(buchung.getKonto());
-		return dateiname;
+		return bildeDateiNameBuchungsliste(buchung.getKonto());
+		
 	}
 	
 	public static String bildeDateiNameWiederkehrendeZahlungen(Konto konto) {
-		return sep + "Konten" + sep + konto.getKontonummer() + "_" + konto.getKreditinstitut() + "_" + konto.getKontoName()
+		return sep + ordnerNameKonten + sep + konto.getKontonummer() + "_" + konto.getKreditinstitut() + "_" + konto.getKontoName()
 				+ "_WiederkehrendeZahlungen";
 	}
 	
 	public static String bildeDateiNameWiederkehrendeZahlungen(WiederkehrendeZahlung zahlung) {
-		String dateiname = bildeDateiNameWiederkehrendeZahlungen(zahlung.getKonto());
-		return dateiname;
+		return bildeDateiNameWiederkehrendeZahlungen(zahlung.getKonto());
 	}
 	
 	public static String bildeDateiPfad(String dateiname) {
-		String verzeichnis = sep + "Haushaltsbuch";
+		String verzeichnis = sep + nameHauptOrdner;
 		File ordner = ensureVerzeichnisVorhanden(verzeichnis);
 		String ordnerName = ordner.getAbsolutePath();
-		String dateipfad = ordnerName + sep + dateiname + ".csv";
-        return dateipfad;
+		return ordnerName + sep + dateiname + ".csv";
+        
 	}
 
 	// Diese Methode formatiert eine Buchung in CSV-Format
-	public static String buchungToCSV(String date, Buchungstyp typ, String kategorie, String empfaenger,
-			String sender, double betrag, boolean isUmbuchung, String transferID, String beschreibung) {
-		String betragCsv = String.format(Locale.ROOT, "%.2f", betrag);
-		return date + ";" + typ.toString() + ";" + kategorie + ";" + empfaenger + ";" + sender + ";" + betragCsv + ";"
-				 +  isUmbuchung + ";" + transferID + ";" + beschreibung;
-	}
-	
 	public static String buchungToCSV(Buchung buchung) {
-		return buchungToCSV(buchung.getFormatiertesDatum(), buchung.getBuchungstyp(), buchung.getKategorie(),
-				buchung.getEmpfaenger(), buchung.getSender(), buchung.getBetrag(),
-				buchung.getIsUmbuchung(), buchung.getTransferID(), buchung.getBeschreibung());
+		String betragCsv = String.format(Locale.ROOT, "%.2f", buchung.getBetrag());
+		return buchung.getFormatiertesDatum() + ";" + buchung.getBuchungstyp().toString() + ";" + buchung.getKategorie() + ";" + buchung.getEmpfaenger() + ";" + buchung.getSender() + ";" + betragCsv + ";"
+				 +  buchung.getIsUmbuchung() + ";" + buchung.getTransferID() + ";" + buchung.getBeschreibung();
 	}
 	
-	public static String wiederkehrendeBuchungToCSV(String naechsteZahlungAm, Haeufigkeit haeufigkeit, String buchungsart, String kategorie, String beschreibung,
-			String empfaenger, String sender, double betrag, String letzteZahlungAm) {
-		String betragCsv = String.format(Locale.ROOT, "%.2f", betrag);
-		return naechsteZahlungAm + ";" + haeufigkeit + ";" + buchungsart + ";" + kategorie + ";" + beschreibung + ";"
-				+ empfaenger + ";" + sender + ";" + betragCsv + ";" + letzteZahlungAm;
-	}
 	
 	public static String wiederkehrendeBuchungToCSV(WiederkehrendeZahlung zahlung) {
-		return wiederkehrendeBuchungToCSV(WiederkehrendeZahlungenService.getFormatiertesDatum(zahlung.getNaechsteZahlungAm()), zahlung.getHaeufigkeit(), zahlung.getBuchungsart(), zahlung.getKategorie(), zahlung.getBeschreibung(),
-				zahlung.getEmpfaenger(), zahlung.getSender(), zahlung.getBetrag(), WiederkehrendeZahlungenService.getFormatiertesDatum(zahlung.getLetzteZahlungAm()));
+		return WiederkehrendeZahlungenService.getFormatiertesDatum(zahlung.getNaechsteZahlungAm()) + ";" + zahlung.getHaeufigkeit() + ";" + zahlung.getBuchungstyp().toString() + ";" + zahlung.getKategorie() + ";" + zahlung.getBeschreibung() + ";"
+				+ zahlung.getEmpfaenger() + ";" + zahlung.getSender() + ";" + zahlung.getBetrag() + ";" + WiederkehrendeZahlungenService.getFormatiertesDatum(zahlung.getLetzteZahlungAm());
 	}
+	
+	
 
 	// Diese Methode stellt sicher, dass ein Verzeichnis vorhanden ist
 	public static File ensureVerzeichnisVorhanden(String pfad) {
 		File dir = new File(pfad);
 		if (!dir.exists()) {
 			dir.mkdirs();
-			System.out.println("Verzeichnis wurde erstellt: " + dir.getAbsolutePath());
+			logger.info("Verzeichnis wurde erstellt");
 		}
 		return dir;
 	}
@@ -97,9 +101,9 @@ public class Datenstroeme {
 			try (BufferedWriter bw = new BufferedWriter(new FileWriter(datei))) {
 				bw.write(headerZeile);
 				bw.newLine();
-				System.out.println("Datei wurde erstellt: " + dateipfad);
+				logger.info("Datei wurde erstellt");
 			} catch (IOException e) {
-				System.out.println("Fehler beim Erstellen der Datei: " + e.getMessage());
+				logger.log(Level.WARNING, "Fehler beim Erstellen der Datei: {}", e.getMessage());
 			}
 		}
 		return datei;
@@ -110,9 +114,9 @@ public class Datenstroeme {
 		try (BufferedWriter bw = new BufferedWriter(new FileWriter(datei))) {
 			bw.write(headerZeile);
 			bw.newLine();
-			System.out.println("Datei wurde neu erstellt: " + dateipfad);
+			logger.info("Datei wurde neu erstellt");
 		} catch (IOException e) {
-			System.out.println("Fehler beim Erstellen der Datei: " + e.getMessage());
+			logger.log(Level.WARNING, "Fehler beim Erstellen der Datei: {}", e.getMessage());
 		}
 		return datei;
 	}
@@ -122,9 +126,9 @@ public class Datenstroeme {
 		try (BufferedWriter bw = new BufferedWriter(new FileWriter(dateipfad, true))) {
 			bw.write(zeile);
 			bw.newLine();
-			System.out.println("Zeile: " + zeile + " wurde angehängt an Datei: " + dateipfad);
+			logger.info("Zeile wurde angehängt");
 		} catch (IOException e) {
-			System.out.println("Fehler beim Schreiben in Datei: " + e.getMessage());
+			logger.log(Level.WARNING, "Fehler beim Schreiben in der Datei: {}", e.getMessage());
 		}
 	}
 	
@@ -157,13 +161,13 @@ public class Datenstroeme {
 	public static void kontoBuchungenDateiAnlegen(Konto konto) {
 		String dateiPfad = bildeDateiPfad(bildeDateiNameBuchungsliste(konto));
 		ensureDateiMitHeader(dateiPfad, headerBuchungen);
-		System.out.println("Konto-Datei wurde angelegt: " + dateiPfad);
+		logger.info("Konto-Datei wurde angelegt");
 	}
 	
 	public static void kontoWiederkehrendeZahlungenDateiAnlegen(Konto konto) {
 		String dateiPfad = bildeDateiPfad(bildeDateiNameWiederkehrendeZahlungen(konto));
 		ensureDateiMitHeader(dateiPfad, headerWiederkehrendeZahlungen);
-		System.out.println("Konto-Datei für wiederkehrende Zahlungen wurde angelegt: " + dateiPfad);
+		logger.info("Konto-Datei für wiederkehrende Zahlungen wurde angelegt");
 	}
 
 	// Diese Methoden fügen eine Buchung (Einnahme, Ausgabe, Umbuchung) zur
@@ -173,8 +177,7 @@ public class Datenstroeme {
 			ensureVerzeichnisVorhanden(ordnerpfad);
 			String kontopfad = bildeDateiPfad(bildeDateiNameBuchungsliste(buchung));
 			ensureDateiMitHeader(kontopfad, headerBuchungen);
-			String buchungsZeile = buchungToCSV(buchung.getFormatiertesDatum(), buchung.getBuchungstyp(),
-					buchung.getKategorie(), buchung.getEmpfaenger(), buchung.getSender(), buchung.getBetrag(), buchung.getIsUmbuchung(), buchung.getTransferID(), buchung.getBeschreibung());
+			String buchungsZeile = buchungToCSV(buchung);
 			zeileInDateiAnhaengen(kontopfad, buchungsZeile);
 			kontenNeuSpeichern();
 			kategorieZurDateiHinzufuegen(buchung.getKategorie());
@@ -184,9 +187,7 @@ public class Datenstroeme {
 		ensureVerzeichnisVorhanden(ordnerpfad);
 		String kontopfad = bildeDateiPfad(bildeDateiNameWiederkehrendeZahlungen(zahlung));
 		ensureDateiMitHeader(kontopfad, headerWiederkehrendeZahlungen);
-		String buchungsZeile = wiederkehrendeBuchungToCSV(WiederkehrendeZahlungenService.getFormatiertesDatum(zahlung.getNaechsteZahlungAm()), zahlung.getHaeufigkeit(),
-				zahlung.getBuchungsart(), zahlung.getKategorie(), zahlung.getBeschreibung(), zahlung.getEmpfaenger(),
-				zahlung.getSender(), zahlung.getBetrag(), WiederkehrendeZahlungenService.getFormatiertesDatum(zahlung.getLetzteZahlungAm()));
+		String buchungsZeile = wiederkehrendeBuchungToCSV(zahlung);
 		zeileInDateiAnhaengen(kontopfad, buchungsZeile);
 		kategorieZurDateiHinzufuegen(zahlung.getKategorie());
 	}
@@ -218,7 +219,7 @@ public class Datenstroeme {
 			}
 
 		} catch (IOException e) {
-			System.out.println("Fehler beim Laden der Konten: " + e.getMessage());
+			logger.log(Level.WARNING, "Fehler beim Ledaen der Konten: {}", e.getMessage());
 		}
 	}
 
@@ -233,8 +234,8 @@ public class Datenstroeme {
 		String empfaenger = teile.length > 3 ? teile[3].trim() : "";
 		String sender = teile.length > 4 ? teile[4].trim() : "";
 		double betrag        = teile.length > 5 ? Double.parseDouble(teile[5].trim().replace(",", ".")) : 0.0;
-		boolean isUmbuchung = teile.length >6 ? Boolean.parseBoolean(teile[6].trim()) : false;
-		String transferID =  teile.length > 7 && !teile[7].isBlank() ? teile[7].trim() : null;;
+		boolean isUmbuchung = teile.length >6 && Boolean.parseBoolean(teile[6].trim());
+		String transferID =  teile.length > 7 && !teile[7].isBlank() ? teile[7].trim() : null;
 		String beschreibung = teile.length > 8 ? teile[8].trim() : "";
 		
 		String gegenpartei = "";
@@ -260,7 +261,6 @@ public static WiederkehrendeZahlung wiederkehrendeBuchungAusCSV(Konto konto, Str
 	String[] teile = csvZeile.split(";", -1); // -1 um leere Felder zu behalten
 	DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy");
 	LocalDate naechsteZahlungAm = LocalDate.parse(teile[0].trim(), formatter);
-	System.out.println("Parsed date: " + naechsteZahlungAm);
 	Haeufigkeit haeufigkeit = teile.length > 1 ? Haeufigkeit.haeufigkeitFromString(teile[1].trim()) : Haeufigkeit.MONATLICH;
 	Buchungstyp typ = Buchungstyp.typAusString(teile[2].trim());
 	String art = teile.length > 2 ? teile[2].trim() : "";
@@ -292,7 +292,7 @@ public static WiederkehrendeZahlung wiederkehrendeBuchungAusCSV(Konto konto, Str
 		for (Konto konto : Konto.getKonten().values()) {
 			File buchungsDatei = new File(bildeDateiPfad(bildeDateiNameBuchungsliste(konto)));
 			if (!buchungsDatei.exists()) {
-				System.out.println("⚠️ Buchungsdatei für Konto " + bildeDateiPfad(bildeDateiNameBuchungsliste(konto)) + " nicht gefunden.");
+				logger.log(Level.WARNING, "⚠️ Buchungsdatei für Konto {} nicht gefunden.", konto);
 				continue;
 			}
 			try (BufferedReader br = new BufferedReader(new FileReader(buchungsDatei))) {
@@ -304,14 +304,13 @@ public static WiederkehrendeZahlung wiederkehrendeBuchungAusCSV(Konto konto, Str
 						ersteZeile = false; // Header überspringen
 						continue;
 					}
-					System.out.println("Lade Buchung: " + zeile);
+					logger.log(Level.INFO, "Lade Buchung: {}", zeile);
 					Buchung buchung = buchungAusCSV(konto, zeile);
 					konto.getBuchungen().add(buchung);
 				}
-				System.out.println("✅ Buchungen für Konto " + konto.getKontoName() + " geladen.");
+				logger.info("✅ Buchungen für Konto " + konto.getKontoName() + " geladen.");
 			} catch (IOException e) {
-				System.out.println("Fehler beim Laden der Buchungen für Konto " + konto.getKontoName());
-				e.printStackTrace();
+				logger.log(Level.WARNING, "Fehler beim Laden der Buchungen für Konto {}: {}",  new Object[] {konto.getKontoName(), e.getMessage()});
 			}
 		}
 	}
@@ -320,7 +319,7 @@ public static WiederkehrendeZahlung wiederkehrendeBuchungAusCSV(Konto konto, Str
 		for (Konto konto : Konto.getKonten().values()) {
 			File dateiWiederkehrendeBuchungen = new File(bildeDateiPfad(bildeDateiNameWiederkehrendeZahlungen(konto)));
 			if (!dateiWiederkehrendeBuchungen.exists()) {
-				System.out.println("⚠️ Buchungsdatei für Konto " + bildeDateiPfad(bildeDateiNameWiederkehrendeZahlungen(konto)) + " nicht gefunden.");
+				logger.log(Level.WARNING, "⚠️ Buchungsdatei für Konto {} nicht gefunden.", bildeDateiPfad(bildeDateiNameWiederkehrendeZahlungen(konto)));
 				continue;
 			}
 			try (BufferedReader br = new BufferedReader(new FileReader(dateiWiederkehrendeBuchungen))) {
@@ -332,13 +331,13 @@ public static WiederkehrendeZahlung wiederkehrendeBuchungAusCSV(Konto konto, Str
 						ersteZeile = false; // Header überspringen
 						continue;
 					}
-					System.out.println("Lade Wiederkehrende Buchung: " + zeile);
+					logger.info("Lade Wiederkehrende Buchung");
 					WiederkehrendeZahlung zahlung = wiederkehrendeBuchungAusCSV(konto, zeile);
 					konto.getWiederkehrendeZahlungen().add(zahlung);
 				}
-				System.out.println("✅ Buchungen für Konto " + konto.getKontoName() + " geladen.");
+				logger.info("✅ Buchungen für Konto geladen.");
 			} catch (IOException e) {
-				System.out.println("Fehler beim Laden der Buchungen für Konto " + konto.getKontoName());
+				logger.info("Fehler beim Laden der Buchungen");
 				e.printStackTrace();
 			}
 		}
@@ -347,7 +346,7 @@ public static WiederkehrendeZahlung wiederkehrendeBuchungAusCSV(Konto konto, Str
 	public static void ladeKategorienAusDatei() {
 		File kategorienDatei = new File(kategorieUebersichtAnlegen());
 		if (!kategorienDatei.exists()) {
-			System.out.println("⚠️ Kategorien-Datei nicht gefunden.");
+			logger.log(Level.WARNING, "⚠️ Kategorien-Datei nicht gefunden.");
 			return;
 		}
 		try (BufferedReader br = new BufferedReader(new FileReader(kategorienDatei))) {
@@ -365,10 +364,10 @@ public static WiederkehrendeZahlung wiederkehrendeBuchungAusCSV(Konto konto, Str
 				}
 			}
 
-			System.out.println("✅ Kategorien geladen.");
+			logger.info("✅ Kategorien geladen.");
 
 		} catch (IOException e) {
-			System.out.println("Fehler beim Laden der Kategorien: " + e.getMessage());
+			logger.log(Level.WARNING, "Fehler beim Ledaen der Kategorien: {}", e.getMessage());
 		}
 	}
 
@@ -387,19 +386,15 @@ public static WiederkehrendeZahlung wiederkehrendeBuchungAusCSV(Konto konto, Str
 				bw.newLine();
 			}
 		} catch (IOException e) {
-			System.out.println(
-					"Fehler beim Speichern der Buchungen für Konto " + konto.getKontoName() + ": " + e.getMessage());
+			logger.log(Level.WARNING,
+					"Fehler beim Speichern der Buchungen für Konto {0}: {1}", new Object[] {konto.getKontoName(), e.getMessage()});
 		}
 	}
 
-	public static void kontoLoeschen(Konto konto) {
+	public static void kontoLoeschen(Konto konto) throws IOException{
 		String kontopfad = bildeDateiPfad(bildeDateiNameBuchungsliste(konto));
-		File datei = new File(kontopfad);
-		if (datei.delete()) {
-			System.out.println("Datei gelöscht: " + kontopfad);
-		} else {
-			System.out.println("Fehler beim Löschen der Datei: " + kontopfad);
-		}
+		Path path = Path.of(kontopfad);
+		Files.delete(path);
 		kontenNeuSpeichern();
 	}
 	public static void kontoWiederkehrendeZahlungenNeuSpeichern(Konto konto) {
@@ -413,7 +408,7 @@ public static WiederkehrendeZahlung wiederkehrendeBuchungAusCSV(Konto konto, Str
 				bw.newLine();
 			}
 		} catch (IOException e) {
-			System.out.println("Fehler beim Speichern der wiederkehrenden Zahlungen für Konto "
+			logger.info("Fehler beim Speichern der wiederkehrenden Zahlungen für Konto "
 					+ konto.getKontoName() + ": " + e.getMessage());
 		}
 	}
