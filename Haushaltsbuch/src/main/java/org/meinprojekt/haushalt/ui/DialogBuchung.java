@@ -3,14 +3,12 @@ package org.meinprojekt.haushalt.ui;
 import java.text.ParseException;
 import java.time.LocalDate;
 
-import org.meinprojekt.haushalt.core.filter.ZeitraumArt;
 import org.meinprojekt.haushalt.core.model.Buchung;
 import org.meinprojekt.haushalt.core.model.BuchungsDaten.Buchungstyp;
 import org.meinprojekt.haushalt.core.model.Konto;
 import org.meinprojekt.haushalt.core.model.WiederkehrendeZahlung;
 import org.meinprojekt.haushalt.core.model.WiederkehrendeZahlung.Haeufigkeit;
 import org.meinprojekt.haushalt.core.service.BuchungsService;
-import org.meinprojekt.haushalt.core.service.KontoService;
 import org.meinprojekt.haushalt.core.service.WiederkehrendeZahlungenService;
 
 import javafx.collections.FXCollections;
@@ -26,7 +24,6 @@ import javafx.scene.control.Label;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.control.TextFormatter;
-import javafx.stage.Stage;
 
 public class DialogBuchung {
 
@@ -55,8 +52,7 @@ public class DialogBuchung {
 	ObservableList<Konto> alleKonten = FXCollections.observableArrayList();
 			
 
-	
-	private Stage stage; // wird vom MainController gesetzt
+
 	
 	private Buchung original;
 	private WiederkehrendeZahlung originalWiederkehrend;
@@ -75,9 +71,6 @@ public class DialogBuchung {
 		return isWiederkehrend;
 	}
 
-	public void setStage(Stage stage) {
-		this.stage = stage;
-	}
 	
 	public void setOriginal(Buchung b) {
 		this.original = b;
@@ -119,7 +112,7 @@ public class DialogBuchung {
 		cmbHaeufigkeit.setItems(FXCollections.observableArrayList(Haeufigkeit.values()));
 		cmbHaeufigkeit.setPromptText("Häufigkeit auswählen...");
 		setRowVisible(lblHaeufigkeit, cmbHaeufigkeit, false);
-		chkIsWiederkehrend.selectedProperty().addListener((obs, alt, neu) -> {
+		chkIsWiederkehrend.selectedProperty().addListener((_, _, neu) -> {
 		    setRowVisible(lblHaeufigkeit, cmbHaeufigkeit, neu);
 		});
 
@@ -306,13 +299,13 @@ public class DialogBuchung {
 		
 
 		// Zusätzliche Pflichtfelder pro Art kontrolliert deaktivieren:
-		if ("Einnahme".equals(buchungsart)) {
+		if (buchungsart == Buchungstyp.EINNAHME) {
 			btnOk.disableProperty().bind(dpDatum.valueProperty().isNull().or(txtBetrag.textProperty().isEmpty())
 					.or(cmbKategorie.getEditor().textProperty().isEmpty()).or(cmbZielKonto.valueProperty().isNull()));
-		} else if ("Ausgabe".equals(buchungsart)) {
+		} else if (buchungsart == Buchungstyp.AUSGABE) {
 			btnOk.disableProperty().bind(dpDatum.valueProperty().isNull().or(txtBetrag.textProperty().isEmpty())
 					.or(cmbKategorie.getEditor().textProperty().isEmpty()).or(cmbQuellKonto.valueProperty().isNull()));
-		} else if ("Umbuchung".equals(buchungsart)) {
+		} else if (buchungsart == Buchungstyp.UMBUCHUNG) {
 			btnOk.disableProperty().bind(dpDatum.valueProperty().isNull().or(txtBetrag.textProperty().isEmpty())
 					.or(cmbQuellKonto.valueProperty().isNull()).or(cmbZielKonto.valueProperty().isNull()));
 		}
