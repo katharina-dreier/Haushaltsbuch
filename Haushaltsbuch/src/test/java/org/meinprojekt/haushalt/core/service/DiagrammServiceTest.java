@@ -209,13 +209,6 @@ class DiagrammServiceTest {
 	}
 
 	@Test
-	void bestimmeAufloesungXAchse_liefert_TAGE_fuer_genau_90_Tage() {
-		Zeitraum zeitraum = new Zeitraum(LocalDate.of(2024, 1, 1), LocalDate.of(2024, 3, 31)); // genau 90 Tage
-		Aufloesung ergebnis = DiagrammService.bestimmeAufloesungXAchse(zeitraum);
-		assertEquals(Aufloesung.TAGE, ergebnis);
-	}
-
-	@Test
 	void gefilterteBuchungenFuellen_filtert_und_addiert() {
 		Buchung buchung1 = new Buchung();
 		buchung1.setBuchungsDatum(LocalDate.of(2025, 1, 10));

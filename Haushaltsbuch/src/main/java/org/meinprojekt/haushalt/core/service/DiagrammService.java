@@ -12,6 +12,10 @@ import org.meinprojekt.haushalt.core.model.DiagrammDaten;
 import org.meinprojekt.haushalt.core.model.DiagrammDaten.Aufloesung;
 
 public class DiagrammService {
+	
+	private DiagrammService() {
+	    throw new IllegalStateException("Utility class");
+	  }
 
 	public static DiagrammDaten berechneDiagrammDaten(List<Buchung> gefilterteBuchungsListe,
 			Zeitraum zeitraum) {
@@ -70,33 +74,33 @@ public class DiagrammService {
 		long tageImZeitraum = ChronoUnit.DAYS.between(start, ende);
 		long monateImZeitraum = ChronoUnit.MONTHS.between(start, ende);
 		if (tageImZeitraum <= 90) {
-			Aufloesung aufloesung = Aufloesung.TAGE;
-			return aufloesung;
+			return Aufloesung.TAGE;
+			
 		} else if (monateImZeitraum <= 12) {
-			Aufloesung aufloesung = Aufloesung.MONATE;
-			return aufloesung;
+			return Aufloesung.MONATE;
+			
 		} else {
-			Aufloesung aufloesung = Aufloesung.JAHRE;
-			return aufloesung;
+			return Aufloesung.JAHRE;
+			
 		}
 	}
 
 	static LocalDate bestimmeKey(Aufloesung aufloesung, LocalDate datum) {
-		LocalDate key = null;
+		LocalDate key = datum;
 			switch (aufloesung) {
-			case TAGE -> key = datum;
-			case MONATE -> key = LocalDate.of(datum.getYear(), datum.getMonth(), 1);
-			case JAHRE -> key = LocalDate.of(datum.getYear(), 1, 1);
+			case TAGE: return key;
+			case MONATE: return LocalDate.of(datum.getYear(), datum.getMonth(), 1);
+			case JAHRE: return LocalDate.of(datum.getYear(), 1, 1);
 			}
 		return key;
 	}
 
 	static double berechneMaxWert(Map<LocalDate, Double> gefilterteEinnahmen,
 			Map<LocalDate, Double> gefilterteAusgaben) {
-		double maxWert = Math.max(
+		return Math.max(
 				gefilterteEinnahmen.values().stream().mapToDouble(Double::doubleValue).max().orElse(0),
 				gefilterteAusgaben.values().stream().mapToDouble(Double::doubleValue).max().orElse(0));
-		return maxWert;
+		
 	}
 
 	static double berechneTickEinheit(double maxWert) {
