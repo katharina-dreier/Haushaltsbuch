@@ -4,23 +4,29 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
+import java.util.logging.Logger;
+
 import org.meinprojekt.haushalt.core.model.Buchung;
 import org.meinprojekt.haushalt.core.model.BuchungsDaten;
 import org.meinprojekt.haushalt.core.model.BuchungsDaten.Buchungstyp;
 import org.meinprojekt.haushalt.core.model.Konto;
-import org.meinprojekt.haushalt.core.model.Umbuchung;
 import org.meinprojekt.haushalt.speicher.Datenstroeme;
 
 import javafx.collections.transformation.FilteredList;
 
-public class BuchungsService {
-	// Logger logger = Logger.getLogger(getClass().getName());
+public final class BuchungsService {
+	private static final Logger logger = Logger.getLogger(BuchungsService.class.getName());
 	
+	private BuchungsService() {
+	    throw new IllegalStateException("Utility class");
+	  }
 	
 	//Notwendige Daten einlesen und Einnahme tätigen
 		
 		public static void einnahmeTaetigen(Double betragEin, String kategorie, String beschreibung, Konto konto, String sender,  LocalDate datum, String transferID, boolean isUmbuchung) {
 
+			logger.info("Einnahme buchen gestartet");
 			BuchungsDaten daten = BuchungsDaten
 				    .builder(betragEin, kategorie, datum, konto, Buchungstyp.EINNAHME)
 				    .beschreibung(beschreibung)
@@ -29,20 +35,14 @@ public class BuchungsService {
 				    .build();
 			Buchung einnahme = new Buchung(daten);
 			einnahme.kategorieHinzufuegen(kategorie);
-			konto.buchungen.add(einnahme);
+			konto.addBuchung(einnahme);
 			Datenstroeme.buchungHinzufuegen(einnahme);
+			logger.info("Einnahme auf Konto " + konto.getKontoName() + " getaetigt.");
 		}
 		
-		//Notwendige Daten einlesen und Ausgabe tätigen
-		/*public static void ausgabeTätigen(Double betrag, String kategorie, String beschreibung, Konto quell, String empfaenger, LocalDate datum, String transferID, boolean isUmbuchung) {
-			System.out.println("Ausgabe wird getätigt mit folgenden Daten: Betrag: " + betrag + ", Kategorie: " + kategorie + ", Konto: " + quell.getKontoName() + ", Empfänger: " + empfaenger + ", Datum: " + datum);
-			Ausgabe ausgabe = new Ausgabe(betrag, kategorie, beschreibung, quell, empfaenger, datum, transferID, isUmbuchung); // Ausgabe erstellen
-			ausgabe.setBuchungsart("Ausgabe");
-			Datenstroeme.buchungHinzufuegen(ausgabe);
-			System.out.println("Ausgabe wurde getätigt: " + ausgabe);
-		}*/
 		
 		public static void ausgabeTaetigen(Double betrag, String kategorie, String beschreibung, Konto konto, String empfaenger, LocalDate datum, String transferID, boolean isUmbuchung) {
+			logger.info("Ausgabe buchen gestartet");
 
 			BuchungsDaten daten = BuchungsDaten
 				    .builder(betrag, kategorie, datum, konto, Buchungstyp.AUSGABE)
@@ -52,85 +52,123 @@ public class BuchungsService {
 				    .build();
 			Buchung ausgabe = new Buchung(daten);
 			ausgabe.kategorieHinzufuegen(kategorie);
-			konto.buchungen.add(ausgabe);
+			konto.addBuchung(ausgabe);
 			Datenstroeme.buchungHinzufuegen(ausgabe);
+			logger.info("Ausgabe auf Konto " + konto.getKontoName() + " getaetigt.");
+
 		}
 		
 		//Umbuchung tätigen
-		public static void umbuchungTätigen(Double betrag, String beschreibung, Konto quell, Konto ziel, LocalDate datum) {
-			System.out.println("Umbuchung wird getätigt mit folgenden Daten: Betrag: " + betrag + ", Von Konto: " + quell.getKontoName() + ", Zu Konto: " + ziel.getKontoName() + ", Datum: " + datum);
-			Umbuchung umbuchung = new Umbuchung(betrag, quell, ziel,  datum);
-			String ID = umbuchung.getTransferID();
-			ausgabeTaetigen(betrag, "Umbuchung", beschreibung, quell, umbuchung.getEmpfaenger(), datum, ID, true);
-			einnahmeTaetigen(betrag, "Umbuchung", beschreibung, ziel, umbuchung.getSender(), datum, ID, true) ;
-			System.out.println("Umbuchung wurde getätigt: " + umbuchung);
+		
+		
+		public static void umbuchungTaetigen(Double betrag, String beschreibung, Konto quell, Konto ziel, LocalDate datum) {
+			logger.info("Umbuchung buchen gestartet");
+
+			String transferId = UUID.randomUUID().toString();
+
+		    String quellLabel = quell.kontoLabel();
+		    String zielLabel  = ziel.kontoLabel();
+
+		    // 1) Ausgabe vom Quellkonto
+		    BuchungsDaten ausgabeDaten = BuchungsDaten
+		            .builder(betrag, "Umbuchung", datum, quell, Buchungstyp.AUSGABE)
+		            .beschreibung(beschreibung)
+		            .gegenpartei(zielLabel)
+		            .transfer(transferId, true)
+		            .build();
+
+		    Buchung ausgabe = new Buchung(ausgabeDaten);
+
+		    // 2) Einnahme im Zielkonto
+		    BuchungsDaten einnahmeDaten = BuchungsDaten
+		            .builder(betrag, "Umbuchung", datum, ziel, Buchungstyp.EINNAHME)
+		            .beschreibung(beschreibung)
+		            .gegenpartei(quellLabel)
+		            .transfer(transferId, true)
+		            .build();
+
+		    Buchung einnahme = new Buchung(einnahmeDaten);
+
+		    // 3) verbuchen/speichern 
+		    Datenstroeme.buchungHinzufuegen(ausgabe);
+		    Datenstroeme.buchungHinzufuegen(einnahme);
+
+		    quell.addBuchung(ausgabe);
+		    ziel.addBuchung(einnahme);
+
+			logger.info("Umbuchung wurde getätigt.");
 		}
 		
 		public static void loescheBuchung(Buchung buchung) {
-			System.out.println("Starte mit Löschen von Buchung: " + buchung);
+			logger.info("Starte mit Löschen von Buchung");
 		    if (buchung.getIsUmbuchung()) {
-		    	String transferId = buchung.getTransferID();
-		    	List<Buchung> buchungen = findeBuchungenZuTransferID(transferId);
-				if (buchungen.size() != 2) {
-					System.out.println("Fehler: Umbuchung nicht gefunden oder unvollständig.");
-					return;
-				}
-				Buchung buchung1 = buchungen.get(0);
-				Buchung buchung2 = buchungen.get(1);
-				
-				Buchung buchungOriginal;
-				Buchung buchungGegenpart;
-				
-				// Originalbuchung und Gegenpart identifizieren
-				if (buchung1 == buchung) {
-					buchungOriginal = buchung1;
-					buchungGegenpart = buchung2;
-				} else if (buchung2 == buchung) {
-					buchungOriginal = buchung2;
-					buchungGegenpart = buchung1;
-				} else {
-					System.out.println("Fehler: Originalbuchung nicht in der Umbuchung gefunden.");
-					return;
-				}
-		    	
-		        // Beide Buchungen der Umbuchung rückgängig machen
-				Konto konto1 = buchungOriginal.getKonto();
-				Konto konto2 = buchungGegenpart.getKonto();
-
-		        // Buchung aus zu löschendem Konto entfernen
-		        if (konto1 != null)  konto1.getBuchungen().remove(buchungOriginal);
-		        //Gegenbuchung ändern
-		        buchungGegenpart.setIsUmbuchung(false);
-		        buchungGegenpart.setTransferID("");
-		        String beteiligterGegenpart = buchungGegenpart.getBuchungstyp()== Buchungstyp.EINNAHME ? "gelöschtes Konto: " + buchungGegenpart.getSender() : "gelöschtes Konto: " + buchungGegenpart.getEmpfaenger();
-		        if (buchungGegenpart.getBuchungstyp()== Buchungstyp.EINNAHME) {
-		        	buchungGegenpart.setSender(beteiligterGegenpart);
-				} else if (buchungGegenpart.getBuchungstyp()== Buchungstyp.AUSGABE) {
-					buchungGegenpart.setEmpfaenger(beteiligterGegenpart);
-		                     }
-		        // CSV neu schreiben (beide)
-		        if (konto2 != null) Datenstroeme.kontoBuchungenNeuSpeichern(konto2);
-		        
-		        System.out.println("Umbuchung gelöscht: " + buchungOriginal + " und geändert" + buchungGegenpart);
+		    	umbuchungLoeschen(buchung);
 
 		    } else {
 		        Konto k = buchung.getKonto();
 		        if (k == null) {
 		           
-		            System.out.println("Warnung: Buchung ohne Konto, Abbruch.");
+		            logger.info("Warnung: Buchung ohne Konto, Abbruch.");
 		            return;
 		        }
 		        k.getBuchungen().remove(buchung);
 		        Datenstroeme.kontoBuchungenNeuSpeichern(k);
-		        System.out.println("Buchung gelöscht: " + buchung);
+		      logger.info("Buchung gelöscht");
 		    }
 		    // Kontenübersicht neu schreiben
 		    Datenstroeme.kontenNeuSpeichern();
 		}
 
+
+		private static void umbuchungLoeschen(Buchung buchung) {
+			String transferId = buchung.getTransferID();
+			List<Buchung> buchungen = findeBuchungenZuTransferID(transferId);
+			if (buchungen.size() != 2) {
+				logger.info("Fehler: Umbuchung nicht gefunden oder unvollständig.");
+				return;
+			}
+			Buchung buchung1 = buchungen.get(0);
+			Buchung buchung2 = buchungen.get(1);
+			
+			Buchung buchungOriginal;
+			Buchung buchungGegenpart;
+			
+			// Originalbuchung und Gegenpart identifizieren
+			if (buchung1 == buchung) {
+				buchungOriginal = buchung1;
+				buchungGegenpart = buchung2;
+			} else if (buchung2 == buchung) {
+				buchungOriginal = buchung2;
+				buchungGegenpart = buchung1;
+			} else {
+				logger.info("Fehler: Originalbuchung nicht in der Umbuchung gefunden.");
+				return;
+			}
+			
+			// Beide Buchungen der Umbuchung rückgängig machen
+			Konto konto1 = buchungOriginal.getKonto();
+			Konto konto2 = buchungGegenpart.getKonto();
+
+			// Buchung aus zu löschendem Konto entfernen
+			if (konto1 != null)  konto1.getBuchungen().remove(buchungOriginal);
+			//Gegenbuchung ändern
+			buchungGegenpart.setIsUmbuchung(false);
+			buchungGegenpart.setTransferID("");
+			String beteiligterGegenpart = buchungGegenpart.getBuchungstyp()== Buchungstyp.EINNAHME ? "gelöschtes Konto: " + buchungGegenpart.getSender() : "gelöschtes Konto: " + buchungGegenpart.getEmpfaenger();
+			if (buchungGegenpart.getBuchungstyp()== Buchungstyp.EINNAHME) {
+				buchungGegenpart.setSender(beteiligterGegenpart);
+			} else if (buchungGegenpart.getBuchungstyp()== Buchungstyp.AUSGABE) {
+				buchungGegenpart.setEmpfaenger(beteiligterGegenpart);
+			             }
+			// CSV neu schreiben (beide)
+			if (konto2 != null) Datenstroeme.kontoBuchungenNeuSpeichern(konto2);
+			
+			logger.info("Buchung gelöscht und Gegenbuchung geändert");
+		}
+
 		public static void buchungBearbeiten(Buchung original, double betrag, String kat, String beschreibung, Konto konto, String beteiligter,
 				LocalDate datum) {
-			System.out.println("Starte mit Bearbeiten der Buchung: " + original);
+			logger.info("Starte mit Bearbeiten der Buchung");
 			Konto altesKonto = original.getKonto();
 
 			// Neue Buchungsdaten setzen
@@ -157,16 +195,16 @@ public class BuchungsService {
 				Datenstroeme.kontoBuchungenNeuSpeichern(altesKonto);
 			}
 			Datenstroeme.kontenNeuSpeichern();
-			System.out.println("Buchung bearbeitet: " + original);
+			logger.info("Buchung bearbeitet");
 		}
 		
 		
 		public static void umbuchungBearbeiten(Buchung original,String beschreibung, Konto konto, double betrag, LocalDate datum) {
-			System.out.println("Starte mit Bearbeiten der Umbuchung, Originalbuchung: " + original);
+			logger.info("Starte mit Bearbeiten der Umbuchung");
 			// Beide Buchungen der Umbuchung finden
 			List<Buchung> buchungen = findeBuchungenZuTransferID(original.getTransferID());
 			if (buchungen.size() != 2) {
-				System.out.println("Fehler: Umbuchung nicht gefunden oder unvollständig.");
+				logger.info("Fehler: Umbuchung nicht gefunden oder unvollständig.");
 				return;
 			}
 			Buchung buchung1 = buchungen.get(0);
@@ -182,7 +220,7 @@ public class BuchungsService {
 				buchungOriginal = buchung2;
 				buchungGegenpart = buchung1;
 			} else {
-				System.out.println("Fehler: Originalbuchung nicht in der Umbuchung gefunden.");
+				logger.info("Fehler: Originalbuchung nicht in der Umbuchung gefunden.");
 				return;
 			}
 			
@@ -200,7 +238,7 @@ public class BuchungsService {
 			else  beteiligter2 = buchungGegenpart.getBuchungstyp()== Buchungstyp.EINNAHME ? buchungGegenpart.getSender() : buchungGegenpart.getEmpfaenger();
 			
 			buchungBearbeiten(buchungGegenpart, betrag, buchungGegenpart.getKategorie(), beschreibung, buchungGegenpart.getKonto(), beteiligter2, datum);
-			System.out.println("Umbuchung bearbeitet: " + buchungOriginal + " und " + buchungGegenpart);
+			logger.info("Umbuchung bearbeitet");
 		}
 		
 		// Alle Buchungen mit einer bestimmten transferId finden 

@@ -228,7 +228,7 @@ public class DialogBuchung {
 					new Alert(Alert.AlertType.WARNING, "Quelle und Ziel dürfen nicht gleich sein.").showAndWait();
 					return;
 				}
-				BuchungsService.umbuchungTätigen(betrag, beschreibung, quell, ziel, datum);
+				BuchungsService.umbuchungTaetigen(betrag, beschreibung, quell, ziel, datum);
 				break;
 
 			}

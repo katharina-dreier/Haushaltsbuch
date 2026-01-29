@@ -149,6 +149,12 @@ public class Konto {
 		Konto.konten = konten;
 	}
 
+	public  String kontoLabel() {
+	    return getKontoName() + " (" + getKreditinstitut() + ")";
+	}
 	
+	public void addBuchung(Buchung buchung) {
+		buchungen.add(buchung);
+	}
 	
 }
