@@ -2,7 +2,7 @@ package org.meinprojekt.haushalt.core.service;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.List;
+import java.util.logging.Logger;
 
 import org.meinprojekt.haushalt.core.model.Buchung;
 import org.meinprojekt.haushalt.core.model.Konto;
@@ -10,44 +10,48 @@ import org.meinprojekt.haushalt.speicher.Datenstroeme;
 
 public class KontoService {
 	
+	private static final Logger logger = Logger.getLogger(KontoService.class.getName());
+	
+	private KontoService() {
+	    throw new IllegalStateException("Utility class");
+	  }
+	
 	//Aus Dialogfenster erhaltene Daten verwenden um Konto zu erstellen
 		public static void kontoErstellen(String kontoName, String inhaber, double kontostand, String kreditinstitut) {
-			System.out.println("Kontoerstellung gestartet mit folgenden Daten: " + kontoName + ", " + inhaber + ", " + kontostand + ", " + kreditinstitut);
+			logger.info("Kontoerstellung gestartet");
 			Konto konto = new Konto(kontoName, inhaber, kontostand, kreditinstitut);
 			Konto.getKonten().put(konto.getKontonummer(), konto);
 			BuchungsService.einnahmeTaetigen(kontostand, "Kontoerstellung", "Initiale Buchung zu diesem Konto", konto, inhaber, LocalDate.now() , "", false);
-			System.out.println("Konto wurde erstellt: " + konto);
+			logger.info("Konto wurde erstellt");
 		}
 		
 		
 
 		public static void loescheKonto(Konto k) {
-			System.out.println("Starte mit Löschen von Konto: " + k);
+			logger.info("Starte mit Löschen von Konto");
 			for (Buchung b : new ArrayList<>(k.buchungen)) {
 				BuchungsService.loescheBuchung(b);
 				}
 			Datenstroeme.kontoLoeschen(k);
 			Konto.getKonten().remove(k.getKontonummer());
 			Datenstroeme.kontenNeuSpeichern();
-			System.out.println("Konto wurde gelöscht: " + k);
+			logger.info("Konto wurde gelöscht");
 		}
 		
 		public static void kontoBearbeiten(Konto kontoAlt, double saldo, String inhaber) {
-			System.out.println("Konto wird bearbeitet: " + kontoAlt + "Saldo: " + saldo + ", Inhaber: " + inhaber);
+			logger.info("Konto wird bearbeitet");
 			kontoAlt.setKontostandBeiErstellung(saldo);
-			System.out.println("Kontostand bei Erstellung gesetzt auf: " + kontoAlt.getKontostandBeiErstellung());
 			kontoAlt.setInhaber(inhaber);
 			for (Buchung b : new ArrayList<>(kontoAlt.getBuchungen())) {
 				if (b.getKategorie().contains("Kontoerstellung")) {
 					b.setBetrag(saldo);
-					System.out.println("Kontoerstellungsbuchung angepasst: " + b);
+					logger.info("Kontoerstellungsbuchung angepasst");
 				}
 			}
-			System.out.println("Konto nach Bearbeitung: " + kontoAlt);
 			Datenstroeme.kontoBuchungenNeuSpeichern(kontoAlt);
 			Datenstroeme.kontenNeuSpeichern();
-			System.out.println("Datenströme wurden aktualisiert. Konto: " + kontoAlt);
-			System.out.println("Konto wurde erfoglreich bearbeitet: " + kontoAlt);
+			logger.info("Datenströme wurden aktualisiert.");
+			logger.info("Konto wurde erfoglreich bearbeitet");
 		}
 
 		public static double getStartSaldoMonatsanfang(Konto konto) {
