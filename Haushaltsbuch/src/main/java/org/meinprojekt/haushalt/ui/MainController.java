@@ -1,10 +1,7 @@
 package org.meinprojekt.haushalt.ui;
 
 import java.io.IOException;
-import java.nio.file.DirectoryNotEmptyException;
-import java.nio.file.NoSuchFileException;
 import java.text.NumberFormat;
-import java.text.ParseException;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
@@ -30,6 +27,9 @@ import org.meinprojekt.haushalt.core.service.FilterService;
 import org.meinprojekt.haushalt.core.service.KontoService;
 import org.meinprojekt.haushalt.core.service.WiederkehrendeZahlungenService;
 import org.meinprojekt.haushalt.speicher.Datenstroeme;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javafx.beans.property.ReadOnlyObjectWrapper;
 import javafx.collections.FXCollections;
@@ -71,7 +71,13 @@ import javafx.util.Duration;
 public class MainController {
 
 	@FXML
-	private VBox kontenArea, buchungenArea, ansichtenArea, uebersichtArea;
+	private VBox kontenArea;
+	@FXML
+	private VBox buchungenArea;
+	@FXML
+	private VBox ansichtenArea;
+	@FXML
+	private VBox uebersichtArea;
 	@FXML
 	private HBox diagrammLegende;
 	@FXML
@@ -81,31 +87,89 @@ public class MainController {
 	@FXML
 	private NumberAxis yAchseEinnahmenAusgabenDiagramm;
 	@FXML
-	TabPane tabPaneBuchungen, tabPaneAnsichten;
+	TabPane tabPaneBuchungen;
 	@FXML
-	private Tab tabGesamt, tabEinnahmen, tabAusgaben, tabUmbuchungen, tabDiagramme, tabWiederkehrendeZahlungen,
-			tabBuchungen;
+	TabPane tabPaneAnsichten;
+	@FXML
+	private Tab tabGesamt;
+	@FXML
+	private Tab tabEinnahmen;
+	@FXML
+	private Tab tabAusgaben;
+	@FXML
+	private Tab tabUmbuchungen;
+	@FXML
+	private Tab tabDiagramme;
+	@FXML
+	private Tab tabWiederkehrendeZahlungen;
+	@FXML
+	private Tab tabBuchungen;
 
 	@FXML
-	private Label summeAlleKontenLbl, summeBuchungenLbl;
+	private Label summeAlleKontenLbl;
 	@FXML
-	private Label legendeEinnahmenlbl, legendeAusgabenlbl, legendeDifferenzlbl;
+	private Label summeBuchungenLbl;
 	@FXML
-	private Label lblVon, lblBis;
+	private Label legendeEinnahmenlbl;
 	@FXML
-	private Label lblEinnahmenUebersicht, lblNochOffeneEinnahmenUebersicht, summeNochOffeneEinnahmenUebersicht,
-			lblAusgabenUebersicht, lblKontostandNachFixkostenUebersicht, summeEinnahmenUebersicht,
-			summeAusgabenUebersicht, summeNachFixkostenUebersicht, summeNachFixkostenVeraenderungUebersicht,
-			lblNochOffeneFixkostenUebersicht, summeNochOffeneFixkostenUebersicht;
+	private Label legendeAusgabenlbl;
 	@FXML
-	private Label lblTopKat1Name, lblTopKat1Betrag, lblTopKat2Name, lblTopKat2Betrag, lblTopKat3Name, lblTopKat3Betrag;
+	private Label legendeDifferenzlbl;
 	@FXML
-	private Button btnNeuesKonto, btnNeueAusgabe, btnNeueEinnahme, btnNeueUmbuchung, btnAuswahlAnwenden;
+	private Label lblVon;
+	@FXML
+	private Label lblBis;
+	@FXML
+	private Label lblEinnahmenUebersicht;
+	@FXML
+	private Label lblNochOffeneEinnahmenUebersicht;
+	@FXML
+	private Label summeNochOffeneEinnahmenUebersicht;
+	@FXML
+	private Label lblAusgabenUebersicht;
+	@FXML
+	private Label lblKontostandNachFixkostenUebersicht;
+	@FXML
+	private Label summeEinnahmenUebersicht;
+	@FXML
+	private Label summeAusgabenUebersicht;
+	@FXML
+	private Label summeNachFixkostenUebersicht;
+	@FXML
+	private Label summeNachFixkostenVeraenderungUebersicht;
+	@FXML
+	private Label lblNochOffeneFixkostenUebersicht;
+	@FXML
+	private Label summeNochOffeneFixkostenUebersicht;
+	@FXML
+	private Label lblTopKat1Name;
+	@FXML
+	private Label lblTopKat1Betrag;
+	@FXML
+	private Label lblTopKat2Name;
+	@FXML
+	private Label lblTopKat2Betrag;
+	@FXML
+	private Label lblTopKat3Name;
+	@FXML
+	private Label lblTopKat3Betrag;
+	@FXML
+	private Button btnNeuesKonto;
+	@FXML
+	private Button btnNeueAusgabe;
+	@FXML
+	private Button btnNeueEinnahme;
+	@FXML
+	private Button btnNeueUmbuchung;
+	@FXML
+	private Button btnAuswahlAnwenden;
 
 	@FXML
 	private ChoiceBox<ZeitraumArt> auswahlBox;
 	@FXML
-	private DatePicker startDatumPicker, endDatumPicker;
+	private DatePicker startDatumPicker;
+	@FXML
+	private DatePicker endDatumPicker;
 	@FXML
 	private MenuButton kategorieFilterButton;
 	@FXML
@@ -164,7 +228,7 @@ public class MainController {
 	private final ObservableList<WiederkehrendeZahlung> wiederkehrendeBuchungsListe = FXCollections
 			.observableArrayList();
 	private FilteredList<Buchung> gefilterteBuchungsListe;
-	private SortedList<Buchung> sortierteBuchungsListe;
+	
 	private final NumberFormat euro = NumberFormat.getCurrencyInstance(Locale.GERMANY);
 	private final FilterService filterService = new FilterService();
 	private Predicate<Buchung> aktuellerTabFilter = _ -> true;
@@ -173,16 +237,27 @@ public class MainController {
 	private Predicate<Buchung> kombinierterFilter = _ -> true;
 	private final Map<CheckMenuItem, String> kategoriemap = new HashMap<>();
 	private Zeitraum aktuellerZeitraum = null;
+	private static final Logger logger = LoggerFactory.getLogger(MainController.class);
+	private String styleclassWkzStatus = "wkz-status";
+	String fxmlPfadDialogBuchung = "/org/meinprojekt/haushalt/ui/buchung-dialog.fxml";
+	String fxmlPfadDialogKonto = "/org/meinprojekt/haushalt/ui/konto-dialog.fxml";
 
 	@FXML
 	private void initialize() {
 
+		logger.info("Starte MainController");
 		Datenstroeme.kontenUebersichtAnlegen();
+		logger.info("Kontenübersicht angelegt");
 		Datenstroeme.kategorieUebersichtAnlegen();
+		logger.info("Kategorien Übersicht angelegt");
 		Datenstroeme.ladeKontenAusDatei();
+		logger.info("Konten geladen");
 		Datenstroeme.ladeKategorienAusDatei();
+		logger.info("Kategorien geladen");
 		Datenstroeme.ladeBuchungenFuerAlleKonten();
+		logger.info("Buchungen für alle Konten geladen");
 		Datenstroeme.ladeWiederkehrendeZahlungenFuerAlleKonten();
+		logger.info("Wiederkehrende Zahlungen geladen");
 
 		ladeBuchungenListe();
 		ladeWiederkehrendeBuchungenListe();
@@ -190,7 +265,7 @@ public class MainController {
 		initialisiereZeitraumAuswahlBox();
 
 		tabPaneAnsichten.getSelectionModel().select(tabDiagramme);
-		tabPaneAnsichten.getSelectionModel().selectedItemProperty().addListener((obs, alt, neu) -> {
+		tabPaneAnsichten.getSelectionModel().selectedItemProperty().addListener((_, _, neu) -> {
 			if (neu == tabDiagramme) {
 				ladeEinnahmenAusgabenDiagramm();
 			}
@@ -203,9 +278,7 @@ public class MainController {
 		});
 
 		tabPaneBuchungen.getSelectionModel().select(tabGesamt);
-		tabPaneBuchungen.getSelectionModel().selectedItemProperty().addListener((obs, alt, neu) -> {
-			applyTabFilter();
-		});
+		tabPaneBuchungen.getSelectionModel().selectedItemProperty().addListener((_, _, _) -> applyTabFilter());
 
 		setupKontenTabelle();
 		setupKontoLoeschen();
@@ -226,7 +299,7 @@ public class MainController {
 		updateGesamtSummeLabel();
 
 		// Listener für die Auswahl eines Kontos in der Tabelle
-		tblKonten.getSelectionModel().selectedItemProperty().addListener((obs, altesKonto, neuesKonto) -> {
+		tblKonten.getSelectionModel().selectedItemProperty().addListener((_, _, neuesKonto) -> {
 			buchungenAnzeigen(neuesKonto);
 			ansichtAktualisieren();
 		});
@@ -250,11 +323,11 @@ public class MainController {
 	}
 
 	private void updateAusgabenNachKategorienUebersicht() {
-		FilterService filterService = new FilterService();
 		Zeitraum zeitraum = Zeitraum.aktuellerMonat();
 		Predicate<Buchung> predicate = filterService.predicateFuerZeitraum(zeitraum);
-		FilteredList<Buchung> gefilterteBuchungsListeFuerÜbersicht = new FilteredList<>(buchungsListe, predicate);
-		List<Map.Entry<String, Double>> topAusgabenNachKategorien = BuchungsService.bestimmeAusgabenNachKategorien(gefilterteBuchungsListeFuerÜbersicht);
+		FilteredList<Buchung> gefilterteBuchungsListeFuerUebersicht = new FilteredList<>(buchungsListe, predicate);
+		List<Map.Entry<String, Double>> topAusgabenNachKategorien = BuchungsService
+				.bestimmeAusgabenNachKategorien(gefilterteBuchungsListeFuerUebersicht);
 		clearTopKategorieLabels();
 		setTopKategorieLabel(lblTopKat1Name, lblTopKat1Betrag, topAusgabenNachKategorien, 0);
 		setTopKategorieLabel(lblTopKat2Name, lblTopKat2Betrag, topAusgabenNachKategorien, 1);
@@ -271,8 +344,9 @@ public class MainController {
 		lblTopKat3Betrag.setText("");
 	}
 
-	private void setTopKategorieLabel(Label nameLabel, Label valueLabel, List<Map.Entry<String, Double>> liste, int index) {
-			if (index >= liste.size()) {
+	private void setTopKategorieLabel(Label nameLabel, Label valueLabel, List<Map.Entry<String, Double>> liste,
+			int index) {
+		if (index >= liste.size()) {
 			// Falls es weniger als 3 Kategorien gibt: Zeile leer lassen
 			return;
 		}
@@ -294,12 +368,10 @@ public class MainController {
 	}
 
 	private double berechneSummeEinnahmenAktuellerMonat() {
-		FilterService filterService = new FilterService();
 		Zeitraum zeitraum = Zeitraum.aktuellerMonat();
 		Predicate<Buchung> predicate = filterService.predicateFuerZeitraum(zeitraum);
-		FilteredList<Buchung> gefilterteBuchungsListeFuerÜbersicht = new FilteredList<>(buchungsListe, predicate);
-		double summeEinnahmen = BuchungsService.berechneSummeEinnahmen(gefilterteBuchungsListeFuerÜbersicht);
-		return summeEinnahmen;
+		FilteredList<Buchung> gefilterteBuchungsListeFuerUebersicht = new FilteredList<>(buchungsListe, predicate);
+		return BuchungsService.berechneSummeEinnahmen(gefilterteBuchungsListeFuerUebersicht);
 	}
 
 	private void updateUebersichtNochOffeneEinnahmen() {
@@ -310,7 +382,6 @@ public class MainController {
 			double summeNochOffeneEinnahmen = WiederkehrendeZahlungenService
 					.berechneNochOffeneEinnahmenImAktuellenMonat(konto);
 			summeNochOffeneEinnahmenUebersicht.setText(euro.format(summeNochOffeneEinnahmen));
-			return;
 		} else {
 			double summeNochOffeneEinnahmen = WiederkehrendeZahlungenService
 					.berechneNochOffeneEinnahmenImAktuellenMonat();
@@ -326,12 +397,10 @@ public class MainController {
 	}
 
 	private double berechneSummeAusgabenAktuellerMonat() {
-		FilterService filterService = new FilterService();
 		Zeitraum zeitraum = Zeitraum.aktuellerMonat();
 		Predicate<Buchung> predicate = filterService.predicateFuerZeitraum(zeitraum);
-		FilteredList<Buchung> gefilterteBuchungsListeFuerÜbersicht = new FilteredList<>(buchungsListe, predicate);
-		double summeAusgaben = BuchungsService.berechneSummeAusgaben(gefilterteBuchungsListeFuerÜbersicht);
-		return summeAusgaben;
+		FilteredList<Buchung> gefilterteBuchungsListeFuerUebersicht = new FilteredList<>(buchungsListe, predicate);
+		return BuchungsService.berechneSummeAusgaben(gefilterteBuchungsListeFuerUebersicht);
 	}
 
 	private void updateUebersichtNochOffeneFixkosten() {
@@ -342,7 +411,6 @@ public class MainController {
 			double summeNochOffeneFixkosten = WiederkehrendeZahlungenService
 					.berechneNochOffeneFixkostenImAktuellenMonat(konto);
 			summeNochOffeneFixkostenUebersicht.setText(euro.format(summeNochOffeneFixkosten));
-			return;
 		} else {
 			double summeNochOffeneFixkosten = WiederkehrendeZahlungenService
 					.berechneNochOffeneFixkostenImAktuellenMonat();
@@ -394,7 +462,7 @@ public class MainController {
 		for (String kat : Buchung.getListeMitKategorien()) {
 			CheckMenuItem item = new CheckMenuItem(kat);
 			item.setSelected(true); // standardmäßig alle an
-			item.selectedProperty().addListener((obs, alt, neu) -> aktualisiereKategorieFilter());
+			item.selectedProperty().addListener((_, _, _) -> aktualisiereKategorieFilter());
 			kategorieFilterButton.getItems().add(item);
 			kategoriemap.put(item, kat);
 		}
@@ -457,7 +525,7 @@ public class MainController {
 
 	private void setupBuchungBearbeiten() {
 		// Doppelklick auf Buchung zum Bearbeiten
-		tblBuchungen.setRowFactory(tv -> {
+		tblBuchungen.setRowFactory(_ -> {
 			TableRow<Buchung> row = new TableRow<>();
 			row.setOnMouseClicked(event -> {
 				// Nur echte Zeilen + Doppelklick
@@ -473,7 +541,7 @@ public class MainController {
 
 	private void setupWiederkehrendeZahlungBearbeiten() {
 		// Doppelklick auf Buchung zum Bearbeiten
-		tblWiederkehrendeBuchungen.setRowFactory(tv -> {
+		tblWiederkehrendeBuchungen.setRowFactory(_ -> {
 			TableRow<WiederkehrendeZahlung> row = new TableRow<>();
 			row.setOnMouseClicked(event -> {
 				// Nur echte Zeilen + Doppelklick
@@ -505,36 +573,29 @@ public class MainController {
 
 	private void initialisiereZeitraumAuswahlBox() {
 		auswahlBox.getItems().setAll(ZeitraumArt.values());
-		System.out.println("Auswahlbox Werte gesetzt.");
+		logger.info("Auswahlbox Werte gesetzt.");
 		auswahlBox.setValue(ZeitraumArt.AKTUELLER_MONAT); // Standardauswahl
 		aktuellerZeitraum = ZeitraumArt.zeitraumAusArt(auswahlBox.getValue());
-		System.out.println("Aktueller Zeitraum gesetzt: " + aktuellerZeitraum);
+		logger.info("Aktueller Zeitraum gesetzt: {}",  aktuellerZeitraum);
 		setzeFilterSichtbarkeiten(auswahlBox.getValue());
 		applyZeitraumFilter(auswahlBox.getValue());
-		System.out.println("Zeitraumfilter angewendet für: " + auswahlBox.getValue());
-		prefillDatumPicker(auswahlBox.getValue());
-		System.out.println("DatumPicker vorbefüllt.");
+		logger.info("Zeitraumfilter angewendet für: {}", auswahlBox.getValue());
+		prefillDatumPicker();
+		logger.info("DatumPicker vorbefüllt.");
 
-		auswahlBox.getSelectionModel().selectedItemProperty().addListener((obs, alt, neu) -> {
-			handleZeitraumAuswahlAenderung(alt, neu);
-
-		});
+		auswahlBox.getSelectionModel().selectedItemProperty().addListener((_, _, neu) -> handleZeitraumAuswahlAenderung(neu));
 	}
 
-	private void handleZeitraumAuswahlAenderung(ZeitraumArt alt, ZeitraumArt neu) {
+	private void handleZeitraumAuswahlAenderung(ZeitraumArt neu) {
 
 		if (neu == null) {
 			return;
 		}
-		ZeitraumArt vorherigeAuswahl = alt;
 		ZeitraumArt neueAuswahl = neu;
 
 		setzeFilterSichtbarkeiten(neueAuswahl);
 		switch (neueAuswahl) {
-		case BENUTZERDEFINIERT -> {
-			prefillDatumPicker(vorherigeAuswahl);
-
-		}
+		case BENUTZERDEFINIERT -> prefillDatumPicker();
 		case ALLE_ZEITEN -> {
 			applyZeitraumFilter(ZeitraumArt.ALLE_ZEITEN);
 			LocalDate minDatum = getMinDatum(gefilterteBuchungsListe);
@@ -547,13 +608,11 @@ public class MainController {
 			applyZeitraumFilter(neueAuswahl);
 
 		}
-		default -> {
 
-		}
 		}
 	}
 
-	private void prefillDatumPicker(ZeitraumArt value) {
+	private void prefillDatumPicker() {
 		if (aktuellerZeitraum != null) {
 			startDatumPicker.setValue(aktuellerZeitraum.getVon());
 			endDatumPicker.setValue(aktuellerZeitraum.getBis());
@@ -585,7 +644,6 @@ public class MainController {
 
 	private void applyZeitraumFilter(ZeitraumArt zeitraumArt) {
 
-		// if (zeitraumArt == ZeitraumArt.BENUTZERDEFINIERT) {
 		switch (zeitraumArt) {
 		case BENUTZERDEFINIERT -> {
 			LocalDate von = startDatumPicker.getValue();
@@ -656,14 +714,14 @@ public class MainController {
 			Buchung b = cellData.getValue();
 			double value = b.getBetrag();
 
-			if (b.getBuchungsart().equalsIgnoreCase("Ausgabe")) {
+			if (b.getBuchungstyp() == Buchungstyp.AUSGABE) {
 				value = -value;
 			}
 
 			return new ReadOnlyObjectWrapper<>(value);
 		});
 
-		colBetrag.setCellFactory(column -> new TableCell<>() {
+		colBetrag.setCellFactory(_ -> new TableCell<>() {
 			@Override
 			protected void updateItem(Double betrag, boolean empty) {
 				super.updateItem(betrag, empty);
@@ -696,14 +754,14 @@ public class MainController {
 			WiederkehrendeZahlung zahlung = cellData.getValue();
 			double value = zahlung.getBetrag();
 
-			if (zahlung.getBuchungsart().equalsIgnoreCase("Ausgabe")) {
+			if (zahlung.getBuchungstyp() == Buchungstyp.AUSGABE) {
 				value = -value;
 			}
 
 			return new ReadOnlyObjectWrapper<>(value);
 		});
 
-		colWKBetrag.setCellFactory(column -> new TableCell<>() {
+		colWKBetrag.setCellFactory(_ -> new TableCell<>() {
 			@Override
 			protected void updateItem(Double betrag, boolean empty) {
 				super.updateItem(betrag, empty);
@@ -729,7 +787,7 @@ public class MainController {
 		colKontoName.setCellValueFactory(new PropertyValueFactory<>("kontoName"));
 		colInstitut.setCellValueFactory(new PropertyValueFactory<>("kreditinstitut"));
 		colKontostand.setCellValueFactory(new PropertyValueFactory<>("kontostand"));
-		colKontostand.setCellFactory(tc -> new TableCell<Konto, Double>() {
+		colKontostand.setCellFactory(_ -> new TableCell<Konto, Double>() {
 			private final Label lblWert = new Label();
 			private final Label lblDiff = new Label();
 			private final HBox box = new HBox(6, lblWert, lblDiff);
@@ -746,7 +804,7 @@ public class MainController {
 					setGraphic(null);
 					return;
 				}
-				Konto konto = (Konto) getTableRow().getItem();
+				Konto konto = getTableRow().getItem();
 				if (konto == null) {
 					setGraphic(null);
 					return;
@@ -769,6 +827,7 @@ public class MainController {
 
 	private void ladeBuchungenListe() {
 		Konto konto = tblKonten.getSelectionModel().getSelectedItem();
+		 SortedList<Buchung> sortierteBuchungsListe;
 		if (konto != null) {
 			buchungsListe.setAll(konto.getBuchungen());
 		} else
@@ -797,8 +856,6 @@ public class MainController {
 		einnahmenAusgabenDiagramm.setTitle(null);
 		einnahmenAusgabenDiagramm.setLegendVisible(false);
 		einnahmenAusgabenDiagramm.setAnimated(false);
-
-		// achsenLabelSetzenEinnahmenAusgabenDiagramm(diagrammDaten);
 
 		double summeEinnahmen = diagrammDaten.getSummeEinnahmen();
 		double summeAusgaben = diagrammDaten.getSummeAusgaben();
@@ -891,9 +948,8 @@ public class MainController {
 
 	@FXML
 	private void handleNeueEinnahme() {
-		String fxmlPfad = "/org/meinprojekt/haushalt/ui/buchung-dialog.fxml";
 		String titel = "Neue Einnahme anlegen";
-		dialogOeffnen(btnNeueEinnahme, fxmlPfad, titel, (DialogBuchung c) -> {
+		dialogOeffnen(btnNeueEinnahme, fxmlPfadDialogBuchung, titel, (DialogBuchung c) -> {
 			c.setBuchungsart(Buchungstyp.EINNAHME);
 			c.applyBuchungsart();
 		});
@@ -905,9 +961,8 @@ public class MainController {
 
 	@FXML
 	private void handleNeueAusgabe() {
-		String fxmlPfad = "/org/meinprojekt/haushalt/ui/buchung-dialog.fxml";
 		String titel = "Neue Ausgabe anlegen";
-		dialogOeffnen(btnNeueAusgabe, fxmlPfad, titel, (DialogBuchung c) -> {
+		dialogOeffnen(btnNeueAusgabe, fxmlPfadDialogBuchung, titel, (DialogBuchung c) -> {
 			c.setBuchungsart(Buchungstyp.AUSGABE);
 			c.applyBuchungsart();
 		});
@@ -919,9 +974,8 @@ public class MainController {
 
 	@FXML
 	private void handleNeueUmbuchung() {
-		String fxmlPfad = "/org/meinprojekt/haushalt/ui/buchung-dialog.fxml";
 		String titel = "Neue Umbuchung anlegen";
-		dialogOeffnen(btnNeueUmbuchung, fxmlPfad, titel, (DialogBuchung c) -> {
+		dialogOeffnen(btnNeueUmbuchung, fxmlPfadDialogBuchung, titel, (DialogBuchung c) -> {
 			c.setBuchungsart(Buchungstyp.UMBUCHUNG);
 			c.applyBuchungsart();
 		});
@@ -990,7 +1044,7 @@ public class MainController {
 
 	private void applyTabFilter() {
 		if (gefilterteBuchungsListe == null) {
-			System.out.println("⚠️ Gefilterte Buchungsliste ist null!");
+			logger.warn("Gefilterte Buchungsliste ist null!");
 			return;
 		}
 
@@ -1003,7 +1057,7 @@ public class MainController {
 		} else if (aktTab == tabUmbuchungen) {
 			aktuellerTabFilter = filterService.predicateFuerKategorie("UMBUCHUNG");
 		} else {
-			aktuellerTabFilter = b -> true;
+			aktuellerTabFilter = _ -> true;
 		}
 		aktualisiereFilter();
 		ansichtAktualisieren();
@@ -1019,7 +1073,7 @@ public class MainController {
 		colBuchungLoeschen.setSortable(false);
 		colBuchungLoeschen.setResizable(false);
 
-		colBuchungLoeschen.setCellFactory(tc -> new TableCell<>() {
+		colBuchungLoeschen.setCellFactory(_ -> new TableCell<>() {
 			private final Button btnBuchungLoeschen = new Button("\uD83D\uDDD1");
 			private final HBox box = new HBox(btnBuchungLoeschen);
 			{
@@ -1032,7 +1086,7 @@ public class MainController {
 				Tooltip tooltip = new Tooltip("Löschen");
 				Tooltip.install(btnBuchungLoeschen, tooltip);
 
-				btnBuchungLoeschen.setOnAction(e -> {
+				btnBuchungLoeschen.setOnAction(_ -> {
 					Buchung buchung = getTableView().getItems().get(getIndex());
 					bestaetigeUndLoesche(buchung);
 				});
@@ -1062,7 +1116,7 @@ public class MainController {
 		colKontoLoeschen.setSortable(false);
 		colKontoLoeschen.setResizable(false);
 
-		colKontoLoeschen.setCellFactory(tc -> new TableCell<>() {
+		colKontoLoeschen.setCellFactory(_ -> new TableCell<>() {
 			private final Button btnKontoLoeschen = new Button("\uD83D\uDDD1"); // oder "X"
 			private final HBox box = new HBox(btnKontoLoeschen);
 			{
@@ -1075,7 +1129,7 @@ public class MainController {
 				Tooltip tooltip = new Tooltip("Löschen");
 				Tooltip.install(btnKontoLoeschen, tooltip);
 
-				btnKontoLoeschen.setOnAction(e -> {
+				btnKontoLoeschen.setOnAction(_ -> {
 					Konto k = getTableView().getItems().get(getIndex());
 					bestaetigeUndLoesche(k);
 				});
@@ -1104,7 +1158,7 @@ public class MainController {
 		colWKAusfuehren.setSortable(false);
 		colWKAusfuehren.setResizable(false);
 
-		colWKAusfuehren.setCellFactory(tc -> new TableCell<WiederkehrendeZahlung, Void>() {
+		colWKAusfuehren.setCellFactory(_ -> new TableCell<WiederkehrendeZahlung, Void>() {
 
 			private final Label statusLabel = new Label();
 			private final Button btnBuchen = new Button("\u21BB"); // ↻ „ausführen“
@@ -1114,7 +1168,7 @@ public class MainController {
 				box.setAlignment(Pos.CENTER);
 				box.getStyleClass().add("wkz-cell");
 
-				statusLabel.getStyleClass().add("wkz-status");
+				statusLabel.getStyleClass().add(styleclassWkzStatus);
 
 				btnBuchen.getStyleClass().add("wkz-action-button");
 				btnBuchen.setFocusTraversable(false);
@@ -1123,7 +1177,7 @@ public class MainController {
 				tooltip.setShowDelay(Duration.millis(150));
 				Tooltip.install(btnBuchen, tooltip);
 
-				btnBuchen.setOnAction(e -> {
+				btnBuchen.setOnAction(_ -> {
 					WiederkehrendeZahlung wz = getTableView().getItems().get(getIndex());
 					WiederkehrendeZahlungenService.wiederkehrendeZahlungAusfuehren(wz);
 					ansichtAktualisieren();
@@ -1139,18 +1193,18 @@ public class MainController {
 					return;
 				}
 
-				WiederkehrendeZahlung wz = (WiederkehrendeZahlung) getTableRow().getItem();
+				WiederkehrendeZahlung wz =  getTableRow().getItem();
 
 				boolean faellig = WiederkehrendeZahlungenService.isNochFaellig(wz);
 
 				if (faellig) {
 					statusLabel.setText("\u23F3"); // ⏳
-					statusLabel.getStyleClass().setAll("wkz-status", "wkz-status-pending");
+					statusLabel.getStyleClass().setAll(styleclassWkzStatus, "wkz-status-pending");
 					btnBuchen.setVisible(true);
 					btnBuchen.setManaged(true);
 				} else {
 					statusLabel.setText("\u2713"); // ✓
-					statusLabel.getStyleClass().setAll("wkz-status", "wkz-status-done");
+					statusLabel.getStyleClass().setAll(styleclassWkzStatus, "wkz-status-done");
 					btnBuchen.setVisible(false); // Button ausblenden
 					btnBuchen.setManaged(false);
 				}
@@ -1189,14 +1243,8 @@ public class MainController {
 			if (result == ButtonType.OK) {
 				try {
 					KontoService.loescheKonto(k);
-				} catch (NoSuchFileException e) {
-					
-					e.printStackTrace();
-				} catch (DirectoryNotEmptyException e) {
-					
-					e.printStackTrace();
 				} catch (IOException e) {
-					
+
 					e.printStackTrace();
 				}
 			}
@@ -1210,13 +1258,11 @@ public class MainController {
 
 	private void oeffneBearbeitenDialog(Buchung b) {
 
-		// String art = b.getBuchungsart();
-		String fxmlPfad = "/org/meinprojekt/haushalt/ui/buchung-dialog.fxml";
 		String titel = "Buchung bearbeiten";
 
-		switch (b.getBuchungsart()) {
-		case "Einnahme":
-			dialogOeffnen(btnNeueEinnahme, fxmlPfad, titel, (DialogBuchung c) -> {
+		switch (b.getBuchungstyp()) {
+		case EINNAHME:
+			dialogOeffnen(btnNeueEinnahme, fxmlPfadDialogBuchung, titel, (DialogBuchung c) -> {
 				c.setEditMode(true);
 				c.setIsWiederkehrend(false);
 				c.prefillFields(b);
@@ -1226,8 +1272,8 @@ public class MainController {
 			});
 			break;
 
-		case "Ausgabe":
-			dialogOeffnen(btnNeueAusgabe, fxmlPfad, titel, (DialogBuchung c) -> {
+		case AUSGABE:
+			dialogOeffnen(btnNeueAusgabe, fxmlPfadDialogBuchung, titel, (DialogBuchung c) -> {
 				c.setEditMode(true);
 				c.setIsWiederkehrend(false);
 				c.prefillFields(b);
@@ -1237,18 +1283,16 @@ public class MainController {
 			});
 			break;
 		default:
-			System.out.println("⚠️ Unbekannte Buchungsart: " + b.getBuchungsart());
+			logger.warn("Unbekannte Buchungsart: {}", b.getBuchungstyp());
 		}
 	}
 
 	private void oeffneBearbeitenDialog(WiederkehrendeZahlung zahlung) {
-
-		String fxmlPfad = "/org/meinprojekt/haushalt/ui/buchung-dialog.fxml";
 		String titel = "Wiederkehrende Zahlung bearbeiten";
 
-		switch (zahlung.getBuchungsart()) {
-		case "Einnahme":
-			dialogOeffnen(btnNeueEinnahme, fxmlPfad, titel, (DialogBuchung c) -> {
+		switch (zahlung.getBuchungstyp()) {
+		case EINNAHME:
+			dialogOeffnen(btnNeueEinnahme, fxmlPfadDialogBuchung, titel, (DialogBuchung c) -> {
 
 				c.setIsWiederkehrend(true);
 				c.prefillFields(zahlung);
@@ -1259,8 +1303,8 @@ public class MainController {
 			});
 			break;
 
-		case "Ausgabe":
-			dialogOeffnen(btnNeueAusgabe, fxmlPfad, titel, (DialogBuchung c) -> {
+		case AUSGABE:
+			dialogOeffnen(btnNeueAusgabe, fxmlPfadDialogBuchung, titel, (DialogBuchung c) -> {
 
 				c.setIsWiederkehrend(true);
 				c.prefillFields(zahlung);
@@ -1271,36 +1315,32 @@ public class MainController {
 			});
 			break;
 		default:
-			System.out.println("⚠️ Unbekannte Buchungsart: " + zahlung.getBuchungsart());
+			logger.warn("Unbekannte Buchungsart: {} ",  zahlung.getBuchungsart());
 		}
 		ansichtAktualisieren();
 	}
 
 	private void oeffneBearbeitenDialog(Konto konto) {
-		String fxmlPfad = "/org/meinprojekt/haushalt/ui/konto-dialog.fxml";
+
 		String titel = "Konto bearbeiten";
 
-		dialogOeffnen(btnNeuesKonto, fxmlPfad, titel, (DialogKonto c) -> {
+		dialogOeffnen(btnNeuesKonto, fxmlPfadDialogKonto, titel, (DialogKonto c) -> {
 			c.setEditMode(true);
-			try {
-				c.prefillKontodaten(konto);
-			} catch (ParseException e) {
-				e.printStackTrace();
-			}
+			c.prefillKontodaten(konto);
 			c.setOriginal(konto);
 		});
 		updateGesamtSummeLabel();
 	}
 
-	public double berechneSumme(FilteredList<Buchung> Liste) {
+	public double berechneSumme(FilteredList<Buchung> liste) {
 		double summe = 0.0;
 
-		for (Buchung b : Liste) {
+		for (Buchung b : liste) {
 			if (b == null)
 				continue;
 
 			double betrag = b.getBetrag();
-			if ("Ausgabe".equals(b.getBuchungsart())) {
+			if (b.getBuchungstyp() == Buchungstyp.AUSGABE) {
 				betrag *= -1; // Ausgaben negativ zählen
 			}
 
