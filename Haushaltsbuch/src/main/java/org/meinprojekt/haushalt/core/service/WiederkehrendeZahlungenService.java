@@ -3,6 +3,7 @@ package org.meinprojekt.haushalt.core.service;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.meinprojekt.haushalt.core.model.BuchungsDaten;
@@ -20,47 +21,12 @@ public class WiederkehrendeZahlungenService {
 	    throw new IllegalStateException("Utility class");
 	  }
 	
-	public static void wiederkehrendeZahlungAnlegen(LocalDate datum, Haeufigkeit haeufigkeit, Buchungstyp typ,
-			String kategorie, String beschreibung, String empfaenger, String sender, double betrag, Konto konto) {
-		String gegenpartei = "";
-		switch (typ) {
-		case Buchungstyp.EINNAHME:  gegenpartei = sender; break;
-		case Buchungstyp.AUSGABE: gegenpartei = empfaenger; break;
-		case Buchungstyp.UMBUCHUNG: gegenpartei = "nicht bekannt"; break;
-		}
-		BuchungsDaten daten = BuchungsDaten
-			    .builder(betrag, kategorie, datum, konto, typ)
-			    .beschreibung(beschreibung)
-			    .gegenpartei(gegenpartei)
-			    .build();
-		WiederkehrendeZahlung wkz = new WiederkehrendeZahlung(daten, haeufigkeit);
-		konto.addWiederkehrendeZahlung(wkz);
-		Datenstroeme.wiederkehrendeBuchungHinzufuegen(wkz);
-
-	}
 	
 	public static void wiederkehrendeZahlungAnlegen(BuchungsDaten daten, Haeufigkeit haeufigkeit) {
 		
 		WiederkehrendeZahlung wkz = new WiederkehrendeZahlung(daten, haeufigkeit);
 		daten.getKonto().addWiederkehrendeZahlung(wkz);
 		Datenstroeme.wiederkehrendeBuchungHinzufuegen(wkz);
-
-	}
-
-	public static void wiederkehrendeZahlungBearbeiten(WiederkehrendeZahlung zahlung, LocalDate datum,
-			Haeufigkeit haeufigkeit, String buchungsart, String kategorie, String beschreibung, String empfaenger,
-			String sender, double betrag) {
-
-		zahlung.setNaechsteZahlungAm(datum);
-		zahlung.setHaeufigkeit(haeufigkeit);
-		zahlung.setBuchungsart(buchungsart);
-		zahlung.setKategorie(kategorie);
-		zahlung.setBeschreibung(beschreibung);
-		zahlung.setEmpfaenger(empfaenger);
-		zahlung.setSender(sender);
-		zahlung.setBetrag(betrag);
-
-		Datenstroeme.kontoWiederkehrendeZahlungenNeuSpeichern(zahlung.getKonto());
 
 	}
 	
@@ -74,7 +40,7 @@ public class WiederkehrendeZahlungenService {
 		switch (daten.getTyp()) {
 		case Buchungstyp.EINNAHME:  zahlung.setEmpfaenger(daten.getKonto().getInhaber()); zahlung.setSender(daten.getGegenpartei()); break;
 		case Buchungstyp.AUSGABE: zahlung.setEmpfaenger(daten.getGegenpartei()); zahlung.setSender(daten.getKonto().getInhaber()); break;
-		case Buchungstyp.UMBUCHUNG: System.out.println("nicht bekannt"); break;
+		case Buchungstyp.UMBUCHUNG: logger.log(Level.WARNING, "Wiederkehrende Umbuchung nicht implementiert"); break;
 		}
 		zahlung.setBetrag(daten.getBetrag());
 
@@ -113,15 +79,19 @@ public class WiederkehrendeZahlungenService {
 		Buchungstyp typ = zahlung.getBuchungstyp();
 		switch (typ) {
 		case EINNAHME:
-			BuchungsService.einnahmeTaetigen(zahlung.getBetrag(), zahlung.getKategorie(), zahlung.getBeschreibung(),
-					zahlung.getKonto(), zahlung.getSender(), zahlung.getNaechsteZahlungAm(), "", false); break;
+			BuchungsDaten einnahmedaten = BuchungsDaten.builder(zahlung.getBetrag(), zahlung.getKategorie(), zahlung.getNaechsteZahlungAm(), zahlung.getKonto(), Buchungstyp.EINNAHME)
+			.beschreibung(zahlung.getBeschreibung())
+			.gegenpartei(zahlung.getSender())
+			.build();
+			BuchungsService.einnahmeTaetigen(einnahmedaten); break;
 
 		case AUSGABE:
-			BuchungsService.ausgabeTaetigen(zahlung.getBetrag(), zahlung.getKategorie(), zahlung.getBeschreibung(),
-					zahlung.getKonto(), zahlung.getEmpfaenger(), zahlung.getNaechsteZahlungAm(), "", false); break;
+			BuchungsDaten ausgabedaten = BuchungsDaten.builder(zahlung.getBetrag(), zahlung.getKategorie(), zahlung.getNaechsteZahlungAm(), zahlung.getKonto(), Buchungstyp.AUSGABE)
+			.beschreibung(zahlung.getBeschreibung()).gegenpartei(zahlung.getEmpfaenger()).build();
+			BuchungsService.ausgabeTaetigen(ausgabedaten); break;
 
 		default:
-			logger.info("Fehler: Unbekannte Buchungsart bei wiederkehrender Zahlung");
+			logger.log(Level.WARNING, "Fehler: Unbekannte Buchungsart bei wiederkehrender Zahlung: {}", zahlung);
 
 		}
 		naechstesZahlDatumAktualisieren(zahlung);

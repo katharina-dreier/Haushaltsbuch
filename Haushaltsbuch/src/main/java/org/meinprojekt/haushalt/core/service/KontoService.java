@@ -3,10 +3,13 @@ package org.meinprojekt.haushalt.core.service;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.meinprojekt.haushalt.core.model.Buchung;
+import org.meinprojekt.haushalt.core.model.BuchungsDaten;
 import org.meinprojekt.haushalt.core.model.Konto;
+import org.meinprojekt.haushalt.core.model.BuchungsDaten.Buchungstyp;
 import org.meinprojekt.haushalt.speicher.Datenstroeme;
 
 public class KontoService {
@@ -22,8 +25,11 @@ public class KontoService {
 			logger.info("Kontoerstellung gestartet");
 			Konto konto = new Konto(kontoName, inhaber, kontostand, kreditinstitut);
 			Konto.getKonten().put(konto.getKontonummer(), konto);
-			BuchungsService.einnahmeTaetigen(kontostand, "Kontoerstellung", "Initiale Buchung zu diesem Konto", konto, inhaber, LocalDate.now() , "", false);
-			logger.info("Konto wurde erstellt");
+			BuchungsDaten daten = BuchungsDaten.builder(kontostand, "Kontoerstellung", LocalDate.now(), konto, Buchungstyp.EINNAHME)
+					.beschreibung("Initiale Buchung zu diesem Konto").gegenpartei(inhaber)
+					.build();
+			BuchungsService.einnahmeTaetigen(daten);
+			logger.log(Level.INFO, "Konto {} wurde erstellt", konto);
 		}
 		
 		
