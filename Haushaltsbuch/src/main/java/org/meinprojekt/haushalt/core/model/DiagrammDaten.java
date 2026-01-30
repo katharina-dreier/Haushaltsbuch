@@ -5,74 +5,69 @@ import java.util.List;
 import java.util.Map;
 
 public class DiagrammDaten {
-	
-	 public enum Aufloesung {
-	        TAGE, MONATE, JAHRE
-	    }
-	
-	private final Map<LocalDate, Double> gefilterteEinnahmen;
-    private final Map<LocalDate, Double> gefilterteAusgaben;
-    private final double summeEinnahmen;
-    private final double summeAusgaben;
-    private final double summeDifferenz;
-    private final double maxWert;
-    private final double tickEinheitYAchse;
-    private final List<LocalDate> xWerteSortiert;
-    private final Aufloesung aufloesung;
 
-    
-	public DiagrammDaten(Map<LocalDate, Double> gefilterteEinnahmen, Map<LocalDate, Double> gefilterteAusgaben,
-			double summeEinnahmen, double summeAusgaben, double summeDifferenz, double maxWert, double tickEinheit,
-			List<LocalDate> xWerteSortiert, Aufloesung aufloesung) {
-		this.gefilterteEinnahmen = gefilterteEinnahmen;
-		this.gefilterteAusgaben = gefilterteAusgaben;
-		this.summeEinnahmen = summeEinnahmen;
-		this.summeAusgaben = summeAusgaben;
-		this.summeDifferenz = summeDifferenz;
-		this.maxWert = maxWert;
-		this.tickEinheitYAchse = tickEinheit;
-		this.xWerteSortiert = xWerteSortiert;
-		this.aufloesung = aufloesung;
+	public enum Aufloesung {
+		TAGE, MONATE, JAHRE
+	}
+
+	public record Reihen(Map<LocalDate, Double> einnahmen, Map<LocalDate, Double> ausgaben) {
+	}
+
+	public record Summen(double einnahmen, double ausgaben, double differenz) {
+	}
+
+	public record Skalierung(double maxWert, double tickEinheitYAchse) {
+	}
+
+	public record Achse(List<LocalDate> xWerteSortiert, Aufloesung aufloesung) {
+	}
+
+	private final Reihen reihen;
+	private final Summen summen;
+	private final Skalierung skalierung;
+	private final Achse achse;
+
+	public DiagrammDaten(Reihen reihen, Summen summen, Skalierung skalierung, Achse achse) {
+		this.reihen = reihen;
+		this.summen = summen;
+		this.skalierung = skalierung;
+		this.achse = achse;
 	}
 
 	public Map<LocalDate, Double> getGefilterteEinnahmen() {
-		return gefilterteEinnahmen;
+		return reihen.einnahmen();
 	}
 
 	public Map<LocalDate, Double> getGefilterteAusgaben() {
-		return gefilterteAusgaben;
+		return reihen.ausgaben();
 	}
 
 	public double getSummeEinnahmen() {
-		return summeEinnahmen;
+		return summen.einnahmen();
 	}
 
 	public double getSummeAusgaben() {
-		return summeAusgaben;
+		return summen.ausgaben();
 	}
 
 	public double getSummeDifferenz() {
-		return summeDifferenz;
+		return summen.differenz();
 	}
 
 	public double getMaxWert() {
-		return maxWert;
+		return skalierung.maxWert();
 	}
-	
 
 	public double getTickEinheit() {
-		return tickEinheitYAchse;
+		return skalierung.tickEinheitYAchse();
 	}
-	
 
 	public List<LocalDate> getxWerteSortiert() {
-		return xWerteSortiert;
+		return achse.xWerteSortiert();
 	}
-	
-	public Aufloesung getAufloesung() {
-		return aufloesung;
-	}
-	
 
-	
+	public Aufloesung getAufloesung() {
+		return achse.aufloesung();
+	}
+
 }

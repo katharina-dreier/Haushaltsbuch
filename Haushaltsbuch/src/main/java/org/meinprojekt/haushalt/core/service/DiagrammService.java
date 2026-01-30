@@ -32,9 +32,16 @@ public class DiagrammService {
 		double tickEinheit = berechneTickEinheit(maxWert);
 		List<LocalDate> xWerteSortiert = bestimmeXWerte(zeitraum, aufloesung);
 
-		return new DiagrammDaten(gefilterteEinnahmen, gefilterteAusgaben, summeEinnahmen, summeAusgaben, summeDifferenz,
-				maxWert, tickEinheit, xWerteSortiert, aufloesung);
+		return new DiagrammDaten(
+			    new DiagrammDaten.Reihen(gefilterteEinnahmen, gefilterteAusgaben),
+			    new DiagrammDaten.Summen(summeEinnahmen, summeAusgaben, summeDifferenz),
+			    new DiagrammDaten.Skalierung(maxWert, tickEinheit),
+			    new DiagrammDaten.Achse(xWerteSortiert, aufloesung)
+			);
+
 	}
+	
+
 
 	
 	static List<LocalDate> bestimmeXWerte(Zeitraum zeitraum, Aufloesung aufloesung) {
