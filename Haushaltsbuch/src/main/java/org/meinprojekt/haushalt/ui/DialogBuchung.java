@@ -2,6 +2,9 @@ package org.meinprojekt.haushalt.ui;
 
 import java.text.ParseException;
 import java.time.LocalDate;
+import java.util.Objects;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import org.meinprojekt.haushalt.core.model.Buchung;
 import org.meinprojekt.haushalt.core.model.BuchungsDaten;
@@ -25,11 +28,14 @@ import javafx.scene.control.Label;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.control.TextFormatter;
+import javafx.util.StringConverter;
 
 public class DialogBuchung {
 
 	@FXML
-	private ComboBox<Konto> cmbQuellKonto, cmbZielKonto;
+	private ComboBox<Konto> cmbQuellKonto;
+	@FXML
+	private ComboBox<Konto>cmbZielKonto;
 	@FXML
 	private CheckBox chkIsWiederkehrend;
 	@FXML
@@ -41,10 +47,31 @@ public class DialogBuchung {
 	@FXML
 	private TextArea txtBeschreibung;
 	@FXML
-	TextField txtEmpfaenger, txtSender, txtBetrag;
+	private TextField txtEmpfaenger;
 	@FXML
-	private Label lblQuellKonto, lblZielKonto, lblIsWiederkehrend, lblHaeufigkeit, lblEmpfaenger, lblSender, lblKategorie, lblBeschreibung, lblBetrag,
-			lblDatum;
+	private TextField txtSender;
+	@FXML
+	private TextField txtBetrag;
+	@FXML
+	private Label lblQuellKonto;
+	@FXML
+	private Label lblZielKonto;
+	@FXML
+	private Label lblIsWiederkehrend;
+	@FXML
+	private Label lblHaeufigkeit;
+	@FXML
+	private Label lblEmpfaenger;
+	@FXML
+	private Label lblSender;
+	@FXML
+	private Label lblKategorie;
+	@FXML
+	private Label lblBeschreibung;
+	@FXML
+	private Label lblBetrag;
+	@FXML
+	private Label lblDatum;
 
 	@FXML
 	Button btnAbbrechen;
@@ -52,6 +79,7 @@ public class DialogBuchung {
 	Button btnOk;
 	ObservableList<Konto> alleKonten = FXCollections.observableArrayList();
 			
+	private static final Logger logger = Logger.getLogger(DialogBuchung.class.getName());
 
 
 	
@@ -95,11 +123,20 @@ public class DialogBuchung {
 	
 	public void setBuchungsart(Buchungstyp typ) {
 		this.buchungsart = typ;
-		System.out.println("Set Buchungsart: " + buchungsart);
+		logger.log(Level.INFO, "Buchungsart gesetzt auf: {}", buchungsart);
 	}
 
 	@FXML
 	private void initialize() {
+		
+		Objects.requireNonNull(btnOk, "btnOk wurde nicht aus dem FXML injiziert");
+	    Objects.requireNonNull(btnAbbrechen, "btnAbbrechen wurde nicht aus dem FXML injiziert");
+	    Objects.requireNonNull(dpDatum, "dpDatum wurde nicht aus dem FXML injiziert");
+	    Objects.requireNonNull(txtBetrag, "txtBetrag wurde nicht aus dem FXML injiziert");
+	    Objects.requireNonNull(cmbKategorie, "cmbKategorie wurde nicht aus dem FXML injiziert");
+
+	    btnOk.setDefaultButton(true);
+	    btnAbbrechen.setCancelButton(true);
 		
 		alleKonten.addAll(Konto.getAlleKonten());
 		cmbQuellKonto.setItems(alleKonten);
@@ -113,20 +150,13 @@ public class DialogBuchung {
 		cmbHaeufigkeit.setItems(FXCollections.observableArrayList(Haeufigkeit.values()));
 		cmbHaeufigkeit.setPromptText("Häufigkeit auswählen...");
 		setRowVisible(lblHaeufigkeit, cmbHaeufigkeit, false);
-		chkIsWiederkehrend.selectedProperty().addListener((_, _, neu) -> {
-		    setRowVisible(lblHaeufigkeit, cmbHaeufigkeit, neu);
-		});
+		chkIsWiederkehrend.selectedProperty().addListener((_, _, neu) -> setRowVisible(lblHaeufigkeit, cmbHaeufigkeit, neu));
 
 		dpDatum.setValue(LocalDate.now());
 
 		cmbKategorie.setEditable(true);
 		cmbKategorie.setItems(javafx.collections.FXCollections.observableArrayList(Buchung.getListeMitKategorien()));
 		cmbKategorie.setPromptText("Kategorie eingeben...");
-
-		if (btnOk != null)
-			btnOk.setDefaultButton(true);
-		if (btnAbbrechen != null)
-			btnAbbrechen.setCancelButton(true);
 
 		// Button nur aktivieren, wenn alle Felder ausgefüllt sind
 		btnOk.disableProperty().bind(dpDatum.valueProperty().isNull().or(txtBetrag.textProperty().isEmpty())
@@ -178,8 +208,6 @@ public class DialogBuchung {
 					    .build();
 				if (!editMode) {neueAusgabeAnlegen(daten, haeufigkeit);}
 				 else {bestehendeBuchungBearbeiten(daten, haeufigkeit);
-					
-				
 				}
 				break;
 			}
@@ -248,7 +276,7 @@ public class DialogBuchung {
 	}
 
 	public void applyBuchungsart() {
-		System.out.println("Apply Buchungsart: " + buchungsart);
+		logger.log(Level.INFO, "Apply Buchungsart: {}", buchungsart);
 		if (buchungsart == null)
 			return;
 		
@@ -328,10 +356,12 @@ public class DialogBuchung {
 
 //Anzeigeformat für Konten im ComboBox festlegen
 	public void kontoListeKonvertieren(ComboBox<Konto> comboBox) {
-		comboBox.setConverter(new javafx.util.StringConverter<Konto>() {
+		comboBox.setConverter(new StringConverter<Konto>() {
+			
+			
 			@Override
 			public String toString(Konto k) {
-				return k == null ? "" : k.getKontoName() + "(" + k.getKreditinstitut() + ")";
+				return k.kontoLabel();
 			}
 
 			@Override
@@ -354,21 +384,21 @@ public class DialogBuchung {
 		txtBeschreibung.setText(buchung.getBeschreibung());
 
 		switch (buchung.getBuchungstyp()) {
-		case EINNAHME-> {
+		case EINNAHME: {
 			cmbZielKonto.setValue(buchung.getKonto());
 			txtSender.setText(buchung.getSender());
 			setBuchungsart(Buchungstyp.EINNAHME);
 			break;
 		}
 
-		case AUSGABE -> {
+		case AUSGABE: {
 			cmbQuellKonto.setValue(buchung.getKonto());
 			txtEmpfaenger.setText(buchung.getEmpfaenger());
 			setBuchungsart(Buchungstyp.AUSGABE);
 			break;
 		}
-		default -> {
-			System.out.println("Fehler beim befüllen. Unbekannte Buchungsart: " + buchung.getBuchungsart());
+		default: {
+			logger.log(Level.WARNING, "Fehler beim befüllen. Unbekannte Buchungsart: {}", buchung.getBuchungsart());
 		}
 
 		}
@@ -385,22 +415,21 @@ public class DialogBuchung {
 		txtBeschreibung.setText(wkz.getBeschreibung());
 		
 		
-		switch (wkz.getBuchungsart()) {
-		case "Einnahme" -> {
+		switch (wkz.getBuchungstyp()) {
+		case EINNAHME: {
             cmbZielKonto.setValue(wkz.getKonto());
             txtSender.setText(wkz.getSender());
             setBuchungsart(Buchungstyp.EINNAHME);
             break;
 		}
-		case "Ausgabe" -> {
+		case AUSGABE: {
             cmbQuellKonto.setValue(wkz.getKonto());
             txtEmpfaenger.setText(wkz.getEmpfaenger());
             setBuchungsart(Buchungstyp.AUSGABE);
             break;
         }
-		default -> {
-			System.out.println("Fehler beim befüllen. Unbekannte Buchungsart: " + wkz.getBuchungsart());
-		}
+		default: logger.log(Level.WARNING, "Fehler beim befüllen. Unbekannte Buchungsart: {}", wkz.getBuchungsart());
+		
 		}
 
 		
