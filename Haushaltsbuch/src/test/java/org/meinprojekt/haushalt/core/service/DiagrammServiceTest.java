@@ -10,6 +10,7 @@ import java.util.Map;
 import org.junit.jupiter.api.Test;
 import org.meinprojekt.haushalt.core.filter.Zeitraum;
 import org.meinprojekt.haushalt.core.model.Buchung;
+import org.meinprojekt.haushalt.core.model.BuchungsDaten.Buchungstyp;
 import org.meinprojekt.haushalt.core.model.DiagrammDaten;
 import org.meinprojekt.haushalt.core.model.DiagrammDaten.Aufloesung;
 
@@ -225,7 +226,7 @@ class DiagrammServiceTest {
 
 		List<Buchung> buchungen = List.of(buchung1, buchung2, buchung3);
 
-		Map<LocalDate, Double> result = DiagrammService.gefilterteBuchungenFuellen(buchungen, "Einnahme",
+		Map<LocalDate, Double> result = DiagrammService.gefilterteBuchungenFuellen(buchungen, Buchungstyp.EINNAHME,
 				Aufloesung.TAGE);
 
 		assertEquals(1, result.size());
@@ -245,7 +246,7 @@ class DiagrammServiceTest {
 
 		List<Buchung> buchungen = List.of(buchung1, buchung2);
 
-		Map<LocalDate, Double> result = DiagrammService.gefilterteBuchungenFuellen(buchungen, "Ausgabe",
+		Map<LocalDate, Double> result = DiagrammService.gefilterteBuchungenFuellen(buchungen, Buchungstyp.AUSGABE,
 				Aufloesung.TAGE);
 
 		assertTrue(result.isEmpty());
@@ -268,7 +269,7 @@ class DiagrammServiceTest {
 
 		List<Buchung> buchungen = List.of(buchung1, buchung2, buchung3);
 
-		Map<LocalDate, Double> result = DiagrammService.gefilterteBuchungenFuellen(buchungen, "Einnahme",
+		Map<LocalDate, Double> result = DiagrammService.gefilterteBuchungenFuellen(buchungen, Buchungstyp.EINNAHME,
 				Aufloesung.MONATE);
 
 		assertEquals(2, result.size());
@@ -293,7 +294,7 @@ class DiagrammServiceTest {
 
 		List<Buchung> buchungen = List.of(buchung1, buchung2, buchung3);
 
-		Map<LocalDate, Double> result = DiagrammService.gefilterteBuchungenFuellen(buchungen, "Ausgabe",
+		Map<LocalDate, Double> result = DiagrammService.gefilterteBuchungenFuellen(buchungen, Buchungstyp.AUSGABE,
 				Aufloesung.JAHRE);
 
 		assertEquals(2, result.size());
@@ -305,7 +306,7 @@ class DiagrammServiceTest {
 	void gefilterteBuchungenFuellen_gibt_leere_Map_fuer_leere_Buchungsliste() {
 		List<Buchung> buchungen = List.of();
 
-		Map<LocalDate, Double> result = DiagrammService.gefilterteBuchungenFuellen(buchungen, "Einnahme",
+		Map<LocalDate, Double> result = DiagrammService.gefilterteBuchungenFuellen(buchungen, Buchungstyp.EINNAHME,
 				Aufloesung.TAGE);
 
 		assertTrue(result.isEmpty());
