@@ -308,16 +308,17 @@ public static WiederkehrendeZahlung wiederkehrendeBuchungAusCSV(Konto konto, Str
 				}
 				logger.info("Buchungen für Konto {} geladen.", konto.getKontoName());
 			} catch (IOException e) {
-				logger.info("Fehler beim Laden der Buchungen für Konto {}: {}",  new Object[] {konto.getKontoName(), e.getMessage()});
+				logger.info("Fehler beim Laden der Buchungen für Konto {}: {}", konto.getKontoName(), e.getMessage());
 			}
 		}
 	}
 	
 	public static void ladeWiederkehrendeZahlungenFuerAlleKonten() {
 		for (Konto konto : Konto.getKonten().values()) {
-			File dateiWiederkehrendeBuchungen = new File(bildeDateiPfad(bildeDateiNameWiederkehrendeZahlungen(konto)));
+			String dateipfad = bildeDateiPfad(bildeDateiNameWiederkehrendeZahlungen(konto));
+			File dateiWiederkehrendeBuchungen = new File(dateipfad);
 			if (!dateiWiederkehrendeBuchungen.exists()) {
-				logger.warn("Buchungsdatei für Konto {} nicht gefunden.", bildeDateiPfad(bildeDateiNameWiederkehrendeZahlungen(konto)));
+				logger.warn("Buchungsdatei für Konto {} nicht gefunden.", dateipfad);
 				continue;
 			}
 			try (BufferedReader br = new BufferedReader(new FileReader(dateiWiederkehrendeBuchungen))) {
@@ -384,7 +385,7 @@ public static WiederkehrendeZahlung wiederkehrendeBuchungAusCSV(Konto konto, Str
 				bw.newLine();
 			}
 		} catch (IOException e) {
-			logger.warn("Fehler beim Speichern der Buchungen für Konto {}: {}", new Object[] {konto.getKontoName(), e.getMessage()});
+			logger.warn("Fehler beim Speichern der Buchungen für Konto {}: {}", konto.getKontoName(), e.getMessage());
 		}
 	}
 
@@ -405,7 +406,7 @@ public static WiederkehrendeZahlung wiederkehrendeBuchungAusCSV(Konto konto, Str
 				bw.newLine();
 			}
 		} catch (IOException e) {
-			logger.warn("Fehler beim Speichern der wiederkehrenden Zahlungen für Konto {}: {} ", new Object[] {konto.getKontoName(), e.getMessage()});
+			logger.warn("Fehler beim Speichern der wiederkehrenden Zahlungen für Konto {}: {} ", konto.getKontoName(), e.getMessage());
 		}
 	}
 	
