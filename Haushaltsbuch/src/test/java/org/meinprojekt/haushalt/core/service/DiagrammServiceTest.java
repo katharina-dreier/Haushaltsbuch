@@ -347,17 +347,17 @@ class DiagrammServiceTest {
 		Buchung buchung1 = new Buchung();
 		buchung1.setBuchungsDatum(LocalDate.of(2024, 1, 10));
 		buchung1.setBetrag(500);
-		buchung1.setBuchungsart("Einnahme");
+		buchung1.setBuchungstyp(Buchungstyp.EINNAHME);
 
 		Buchung buchung2 = new Buchung();
 		buchung2.setBuchungsDatum(LocalDate.of(2024, 1, 15));
 		buchung2.setBetrag(200);
-		buchung2.setBuchungsart("Ausgabe");
+		buchung2.setBuchungstyp(Buchungstyp.AUSGABE);
 
 		Buchung buchung3 = new Buchung();
 		buchung3.setBuchungsDatum(LocalDate.of(2024, 2, 5));
 		buchung3.setBetrag(300);
-		buchung3.setBuchungsart("Einnahme");
+		buchung3.setBuchungstyp(Buchungstyp.EINNAHME);
 
 		List<Buchung> buchungen = List.of(buchung1, buchung2, buchung3);
 		Zeitraum zeitraum = new Zeitraum(LocalDate.of(2024, 1, 1), LocalDate.of(2024, 2, 28));
