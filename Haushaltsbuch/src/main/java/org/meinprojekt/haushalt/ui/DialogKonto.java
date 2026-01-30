@@ -3,22 +3,25 @@ package org.meinprojekt.haushalt.ui;
 import java.text.NumberFormat;
 import java.text.ParseException;
 import java.util.Locale;
-
+import java.util.Objects;
 import org.meinprojekt.haushalt.core.model.Konto;
 import org.meinprojekt.haushalt.core.service.KontoService;
-
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.TextField;
 import javafx.scene.control.TextFormatter;
-import javafx.stage.Stage;
 
 public class DialogKonto {
 
-	@FXML TextField txtName, txtInhaber, txtSaldo, txtInstitut;
-	@FXML Button btnAbbrechen, btnOk;
+	@FXML TextField txtName;
+	@FXML TextField txtInhaber;
+	@FXML TextField txtSaldo;
+	@FXML TextField txtInstitut;
+	@FXML Button btnAbbrechen;
+	@FXML Button btnOk;
+	
 
-	private Stage stage; // wird vom MainController gesetzt
+	
 	private boolean saved = false;
 	private boolean editMode = false;
 	
@@ -36,9 +39,7 @@ public class DialogKonto {
 		this.editMode = editMode;
 	}
 
-	public void setStage(Stage stage) {
-		this.stage = stage;
-	}
+
 
 	public boolean isSaved() {
 		return saved;
@@ -46,21 +47,22 @@ public class DialogKonto {
 
 	@FXML
 	private void initialize() {
+		
+		Objects.requireNonNull(btnOk, "btnOk wurde nicht aus dem FXML injiziert");
+	    Objects.requireNonNull(btnAbbrechen, "btnAbbrechen wurde nicht aus dem FXML injiziert");
 
-		if (btnOk != null)
-			btnOk.setDefaultButton(true);
-		if (btnAbbrechen != null)
-			btnAbbrechen.setCancelButton(true);
+	    btnOk.setDefaultButton(true);
+	    btnAbbrechen.setCancelButton(true);
 
 		txtName.requestFocus();
 		// Button nur aktivieren, wenn alle Felder ausgefüllt sind
 		btnOk.disableProperty().bind(txtName.textProperty().isEmpty().or(txtInstitut.textProperty().isEmpty())
 				.or(txtInhaber.textProperty().isEmpty()).or(txtSaldo.textProperty().isEmpty()));
 		// Enter-Taste springt zum nächsten Feld
-		txtName.setOnAction(e -> txtInhaber.requestFocus());
-		txtInhaber.setOnAction(e -> txtSaldo.requestFocus());
-		txtSaldo.setOnAction(e -> txtInstitut.requestFocus());
-		txtInstitut.setOnAction(e -> {
+		txtName.setOnAction(_ -> txtInhaber.requestFocus());
+		txtInhaber.setOnAction(_ -> txtSaldo.requestFocus());
+		txtSaldo.setOnAction(_ -> txtInstitut.requestFocus());
+		txtInstitut.setOnAction(_ -> {
 			try {
 				handleButtonActionOK();
 			} catch (ParseException e1) {
@@ -79,12 +81,10 @@ public class DialogKonto {
 
 	@FXML
 	private void handleButtonActionOK() throws ParseException {
-		System.out.println("handleButtonActionOK aufgerufen");
+
 		var nf = NumberFormat.getNumberInstance(Locale.GERMANY);
 		nf.setGroupingUsed(true);
-		System.out.println("txtSaldo raw: [" + txtSaldo.getText() + "]");
 		Number n = nf.parse(txtSaldo.getText());
-		System.out.println("parsed saldo: " + n.doubleValue());
 
 		double saldo = n.doubleValue();
 		String kontoname = txtName.getText();
@@ -103,7 +103,7 @@ public class DialogKonto {
 
 	}
 	
-	public void prefillKontodaten(Konto konto) throws ParseException {
+	public void prefillKontodaten(Konto konto) {
         txtName.setText(konto.getKontoName());
         txtInhaber.setText(konto.getInhaber());
     	txtSaldo.setText(String.format("%.2f", konto.getKontostandBeiErstellung()));
