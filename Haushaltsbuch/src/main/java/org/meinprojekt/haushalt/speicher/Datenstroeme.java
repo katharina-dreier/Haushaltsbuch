@@ -6,8 +6,8 @@ import java.nio.file.Path;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.Locale;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import org.meinprojekt.haushalt.core.model.Buchung;
 import org.meinprojekt.haushalt.core.model.BuchungsDaten;
@@ -24,7 +24,7 @@ public class Datenstroeme {
 	
 	
 	
-	private static final Logger logger = Logger.getLogger(Datenstroeme.class.getName());
+	private static final Logger logger = LoggerFactory.getLogger(Datenstroeme.class);
 	
 	private Datenstroeme() {
 	    throw new IllegalStateException("Utility class");
@@ -101,7 +101,7 @@ public class Datenstroeme {
 				bw.newLine();
 				logger.info("Datei wurde erstellt");
 			} catch (IOException e) {
-				logger.log(Level.WARNING, "Fehler beim Erstellen der Datei: {}", e.getMessage());
+				logger.warn("Fehler beim Erstellen der Datei: {}", e.getMessage());
 			}
 		}
 		return datei;
@@ -114,7 +114,7 @@ public class Datenstroeme {
 			bw.newLine();
 			logger.info("Datei wurde neu erstellt");
 		} catch (IOException e) {
-			logger.log(Level.WARNING, "Fehler beim Erstellen der Datei: {}", e.getMessage());
+			logger.warn("Fehler beim Erstellen der Datei: {}", e.getMessage());
 		}
 		return datei;
 	}
@@ -126,7 +126,7 @@ public class Datenstroeme {
 			bw.newLine();
 			logger.info("Zeile wurde angehängt");
 		} catch (IOException e) {
-			logger.log(Level.WARNING, "Fehler beim Schreiben in der Datei: {}", e.getMessage());
+			logger.warn("Fehler beim Schreiben in der Datei: {}", e.getMessage());
 		}
 	}
 	
@@ -217,7 +217,7 @@ public class Datenstroeme {
 			}
 
 		} catch (IOException e) {
-			logger.log(Level.WARNING, "Fehler beim Ledaen der Konten: {}", e.getMessage());
+			logger.warn("Fehler beim Ledaen der Konten: {}", e.getMessage());
 		}
 	}
 
@@ -290,7 +290,7 @@ public static WiederkehrendeZahlung wiederkehrendeBuchungAusCSV(Konto konto, Str
 		for (Konto konto : Konto.getKonten().values()) {
 			File buchungsDatei = new File(bildeDateiPfad(bildeDateiNameBuchungsliste(konto)));
 			if (!buchungsDatei.exists()) {
-				logger.log(Level.WARNING, "⚠️ Buchungsdatei für Konto {} nicht gefunden.", konto);
+				logger.warn("Buchungsdatei für Konto {} nicht gefunden.", konto);
 				continue;
 			}
 			try (BufferedReader br = new BufferedReader(new FileReader(buchungsDatei))) {
@@ -302,13 +302,13 @@ public static WiederkehrendeZahlung wiederkehrendeBuchungAusCSV(Konto konto, Str
 						ersteZeile = false; // Header überspringen
 						continue;
 					}
-					logger.log(Level.INFO, "Lade Buchung: {}", zeile);
+					logger.info("Lade Buchung: {}", zeile);
 					Buchung buchung = buchungAusCSV(konto, zeile);
 					konto.getBuchungen().add(buchung);
 				}
-				logger.info("✅ Buchungen für Konto " + konto.getKontoName() + " geladen.");
+				logger.info("Buchungen für Konto {} geladen.", konto.getKontoName());
 			} catch (IOException e) {
-				logger.log(Level.WARNING, "Fehler beim Laden der Buchungen für Konto {}: {}",  new Object[] {konto.getKontoName(), e.getMessage()});
+				logger.info("Fehler beim Laden der Buchungen für Konto {}: {}",  new Object[] {konto.getKontoName(), e.getMessage()});
 			}
 		}
 	}
@@ -317,7 +317,7 @@ public static WiederkehrendeZahlung wiederkehrendeBuchungAusCSV(Konto konto, Str
 		for (Konto konto : Konto.getKonten().values()) {
 			File dateiWiederkehrendeBuchungen = new File(bildeDateiPfad(bildeDateiNameWiederkehrendeZahlungen(konto)));
 			if (!dateiWiederkehrendeBuchungen.exists()) {
-				logger.log(Level.WARNING, "⚠️ Buchungsdatei für Konto {} nicht gefunden.", bildeDateiPfad(bildeDateiNameWiederkehrendeZahlungen(konto)));
+				logger.warn("Buchungsdatei für Konto {} nicht gefunden.", bildeDateiPfad(bildeDateiNameWiederkehrendeZahlungen(konto)));
 				continue;
 			}
 			try (BufferedReader br = new BufferedReader(new FileReader(dateiWiederkehrendeBuchungen))) {
@@ -333,7 +333,7 @@ public static WiederkehrendeZahlung wiederkehrendeBuchungAusCSV(Konto konto, Str
 					WiederkehrendeZahlung zahlung = wiederkehrendeBuchungAusCSV(konto, zeile);
 					konto.getWiederkehrendeZahlungen().add(zahlung);
 				}
-				logger.info("✅ Buchungen für Konto geladen.");
+				logger.info("Buchungen für Konto geladen.");
 			} catch (IOException e) {
 				logger.info("Fehler beim Laden der Buchungen");
 				e.printStackTrace();
@@ -344,7 +344,7 @@ public static WiederkehrendeZahlung wiederkehrendeBuchungAusCSV(Konto konto, Str
 	public static void ladeKategorienAusDatei() {
 		File kategorienDatei = new File(kategorieUebersichtAnlegen());
 		if (!kategorienDatei.exists()) {
-			logger.log(Level.WARNING, "⚠️ Kategorien-Datei nicht gefunden.");
+			logger.warn("Kategorien-Datei nicht gefunden.");
 			return;
 		}
 		try (BufferedReader br = new BufferedReader(new FileReader(kategorienDatei))) {
@@ -362,10 +362,10 @@ public static WiederkehrendeZahlung wiederkehrendeBuchungAusCSV(Konto konto, Str
 				}
 			}
 
-			logger.info("✅ Kategorien geladen.");
+			logger.info("Kategorien geladen.");
 
 		} catch (IOException e) {
-			logger.log(Level.WARNING, "Fehler beim Ledaen der Kategorien: {}", e.getMessage());
+			logger.warn("Fehler beim Ledaen der Kategorien: {}", e.getMessage());
 		}
 	}
 
@@ -384,8 +384,7 @@ public static WiederkehrendeZahlung wiederkehrendeBuchungAusCSV(Konto konto, Str
 				bw.newLine();
 			}
 		} catch (IOException e) {
-			logger.log(Level.WARNING,
-					"Fehler beim Speichern der Buchungen für Konto {0}: {1}", new Object[] {konto.getKontoName(), e.getMessage()});
+			logger.warn("Fehler beim Speichern der Buchungen für Konto {}: {}", new Object[] {konto.getKontoName(), e.getMessage()});
 		}
 	}
 
@@ -406,8 +405,7 @@ public static WiederkehrendeZahlung wiederkehrendeBuchungAusCSV(Konto konto, Str
 				bw.newLine();
 			}
 		} catch (IOException e) {
-			logger.info("Fehler beim Speichern der wiederkehrenden Zahlungen für Konto "
-					+ konto.getKontoName() + ": " + e.getMessage());
+			logger.warn("Fehler beim Speichern der wiederkehrenden Zahlungen für Konto {}: {} ", new Object[] {konto.getKontoName(), e.getMessage()});
 		}
 	}
 	
