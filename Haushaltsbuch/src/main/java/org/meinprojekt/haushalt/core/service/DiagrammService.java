@@ -9,6 +9,7 @@ import java.util.Map;
 import org.meinprojekt.haushalt.core.filter.Zeitraum;
 import org.meinprojekt.haushalt.core.model.Buchung;
 import org.meinprojekt.haushalt.core.model.DiagrammDaten;
+import org.meinprojekt.haushalt.core.model.BuchungsDaten.Buchungstyp;
 import org.meinprojekt.haushalt.core.model.DiagrammDaten.Aufloesung;
 
 public class DiagrammService {
@@ -22,9 +23,9 @@ public class DiagrammService {
 
 		Aufloesung aufloesung = bestimmeAufloesungXAchse(zeitraum);
 		Map<LocalDate, Double> gefilterteEinnahmen = gefilterteBuchungenFuellen(gefilterteBuchungsListe,
-				"Einnahme", aufloesung);
+				Buchungstyp.EINNAHME, aufloesung);
 		Map<LocalDate, Double> gefilterteAusgaben = gefilterteBuchungenFuellen(gefilterteBuchungsListe,
-				"Ausgabe", aufloesung);
+				Buchungstyp.AUSGABE, aufloesung);
 		double summeEinnahmen = summeAusMapBerechnen(gefilterteEinnahmen);
 		double summeAusgaben = summeAusMapBerechnen(gefilterteAusgaben);
 		double summeDifferenz = summeEinnahmen - summeAusgaben;
@@ -61,14 +62,14 @@ public class DiagrammService {
 		return dates;
 	}
 
-	static Map<LocalDate, Double> gefilterteBuchungenFuellen(List<Buchung> gefilterteBuchungsListe, String buchungsart, Aufloesung aufloesung) {
+	static Map<LocalDate, Double> gefilterteBuchungenFuellen(List<Buchung> gefilterteBuchungsListe, Buchungstyp typ, Aufloesung aufloesung) {
 
 		Map<LocalDate, Double> gefilterteBuchungen = new HashMap<>();
 
 		for (Buchung buchung : gefilterteBuchungsListe) {
 			LocalDate datum = buchung.getBuchungsDatum();
 			LocalDate key = bestimmeKey(aufloesung, datum);
-			if (buchungsart.equalsIgnoreCase(buchung.getBuchungsart())) {
+			if (typ == buchung.getBuchungstyp()) {
 				gefilterteBuchungen.merge(key, buchung.getBetrag(), Double::sum);
 			}
 		}
