@@ -428,8 +428,8 @@ public class MainController {
 			double summeAusgaben = berechneSummeAusgabenAktuellerMonat();
 			double summeEinnahmenOffen = WiederkehrendeZahlungenService.berechneNochOffeneEinnahmenImAktuellenMonat();
 			double summeAusgabenOffen = WiederkehrendeZahlungenService.berechneNochOffeneFixkostenImAktuellenMonat();
-			double summeNochOffeneZahlungen = summeEinnahmenOffen - summeAusgabenOffen;
-			double summeVeraenderung = summeEinnahmen + summeEinnahmenOffen - summeAusgaben - summeAusgabenOffen;
+			double summeNochOffeneZahlungen = summeEinnahmenOffen + summeAusgabenOffen;
+			double summeVeraenderung = summeEinnahmen + summeEinnahmenOffen + summeAusgaben + summeAusgabenOffen;
 			double summeNachFixkosten = aktuellerKontostand + summeNochOffeneZahlungen;
 			summeNachFixkostenUebersicht.setText(euro.format(summeNachFixkosten));
 			summeNachFixkostenVeraenderungUebersicht.setText(euro.format(summeVeraenderung));
@@ -445,8 +445,8 @@ public class MainController {
 					.berechneNochOffeneEinnahmenImAktuellenMonat(konto);
 			double summeAusgabenOffen = WiederkehrendeZahlungenService
 					.berechneNochOffeneFixkostenImAktuellenMonat(konto);
-			double summeNochOffeneZahlungen = summeEinnahmenOffen - summeAusgabenOffen;
-			double summeVeraenderung = summeEinnahmen + summeEinnahmenOffen - summeAusgaben - summeAusgabenOffen;
+			double summeNochOffeneZahlungen = summeEinnahmenOffen + summeAusgabenOffen;
+			double summeVeraenderung = summeEinnahmen + summeEinnahmenOffen + summeAusgaben + summeAusgabenOffen;
 			double summeNachFixkosten = aktuellerKontostand + summeNochOffeneZahlungen;
 			summeNachFixkostenUebersicht.setText(euro.format(summeNachFixkosten));
 			summeNachFixkostenVeraenderungUebersicht.setText(euro.format(summeVeraenderung));
@@ -713,11 +713,6 @@ public class MainController {
 		colBetrag.setCellValueFactory(cellData -> {
 			Buchung b = cellData.getValue();
 			double value = b.getBetrag();
-
-			if (b.getBuchungstyp() == Buchungstyp.AUSGABE) {
-				value = -value;
-			}
-
 			return new ReadOnlyObjectWrapper<>(value);
 		});
 
@@ -753,10 +748,6 @@ public class MainController {
 		colWKBetrag.setCellValueFactory(cellData -> {
 			WiederkehrendeZahlung zahlung = cellData.getValue();
 			double value = zahlung.getBetrag();
-
-			if (zahlung.getBuchungstyp() == Buchungstyp.AUSGABE) {
-				value = -value;
-			}
 
 			return new ReadOnlyObjectWrapper<>(value);
 		});
@@ -1050,10 +1041,10 @@ public class MainController {
 
 		var aktTab = tabPaneBuchungen.getSelectionModel().getSelectedItem();
 		if (aktTab == tabEinnahmen) {
-			aktuellerTabFilter = filterService.predicateFuerBuchungsArt("EINNAHME");
+			aktuellerTabFilter = filterService.predicateFuerBuchungsArt(Buchungstyp.EINNAHME);
 
 		} else if (aktTab == tabAusgaben) {
-			aktuellerTabFilter = filterService.predicateFuerBuchungsArt("AUSGABE");
+			aktuellerTabFilter = filterService.predicateFuerBuchungsArt(Buchungstyp.AUSGABE);
 		} else if (aktTab == tabUmbuchungen) {
 			aktuellerTabFilter = filterService.predicateFuerKategorie("UMBUCHUNG");
 		} else {
@@ -1315,7 +1306,7 @@ public class MainController {
 			});
 			break;
 		default:
-			logger.warn("Unbekannte Buchungsart: {} ",  zahlung.getBuchungsart());
+			logger.warn("Unbekannte Buchungsart: {} ",  zahlung.getBuchungstyp());
 		}
 		ansichtAktualisieren();
 	}
@@ -1340,9 +1331,6 @@ public class MainController {
 				continue;
 
 			double betrag = b.getBetrag();
-			if (b.getBuchungstyp() == Buchungstyp.AUSGABE) {
-				betrag *= -1; // Ausgaben negativ zählen
-			}
 
 			summe += betrag;
 		}

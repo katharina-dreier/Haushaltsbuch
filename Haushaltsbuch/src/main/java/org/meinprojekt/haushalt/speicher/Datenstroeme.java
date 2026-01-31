@@ -250,6 +250,8 @@ public class Datenstroeme {
 			    .build();
 		Buchung buchung = new Buchung(daten);
 		buchung.setBuchungsart(art);
+		logger.info("Buchung aus CSV geladen: {}", buchung);
+		logger.info("Buchungstyp: {}", typ);
 		return buchung;
 
 		

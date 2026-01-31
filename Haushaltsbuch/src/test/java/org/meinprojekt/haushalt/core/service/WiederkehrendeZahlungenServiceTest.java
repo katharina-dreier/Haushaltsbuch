@@ -10,6 +10,7 @@ import java.util.Map;
 
 import org.junit.jupiter.api.Test;
 import org.meinprojekt.haushalt.core.model.BuchungsDaten.Buchungstyp;
+import org.meinprojekt.haushalt.core.model.BuchungsDaten;
 import org.meinprojekt.haushalt.core.model.Konto;
 import org.meinprojekt.haushalt.core.model.WiederkehrendeZahlung;
 import org.meinprojekt.haushalt.core.model.WiederkehrendeZahlung.Haeufigkeit;
@@ -120,25 +121,23 @@ class WiederkehrendeZahlungenServiceTest {
 	void berechnung_Einnahmen_und_Ausgaben_korrekt() {
         Konto konto = new Konto();
         Konto konto2 = new Konto();
-        WiederkehrendeZahlung zahlung1 = new WiederkehrendeZahlung();
-        zahlung1.setBuchungstyp(Buchungstyp.EINNAHME);
-        zahlung1.setBetrag(100.0);
-        zahlung1.setNaechsteZahlungAm(LocalDate.now());
         
-        WiederkehrendeZahlung zahlung2 = new WiederkehrendeZahlung();
-        zahlung2.setBuchungstyp(Buchungstyp.EINNAHME);
-        zahlung2.setBetrag(200.0);
-        zahlung2.setNaechsteZahlungAm(LocalDate.now().plusMonths(1));
+        BuchungsDaten daten1 = BuchungsDaten.builder(100.0, "Test", LocalDate.now(), konto, Buchungstyp.EINNAHME)
+			    .build();
+        WiederkehrendeZahlung zahlung1 = new WiederkehrendeZahlung(daten1, Haeufigkeit.MONATLICH);
         
-        WiederkehrendeZahlung zahlung3 = new WiederkehrendeZahlung();
-        zahlung3.setBuchungstyp(Buchungstyp.AUSGABE);
-        zahlung3.setBetrag(150.0);
-        zahlung3.setNaechsteZahlungAm(LocalDate.now().plusMonths(1));
-        
-        WiederkehrendeZahlung zahlung4 = new WiederkehrendeZahlung();
-        zahlung4.setBuchungstyp(Buchungstyp.AUSGABE);
-        zahlung4.setBetrag(50.0);
-        zahlung4.setNaechsteZahlungAm(LocalDate.now());
+        BuchungsDaten daten2 = BuchungsDaten.builder(200.0, "Test", LocalDate.now().plusMonths(1), konto, Buchungstyp.EINNAHME)
+			    .build();
+        WiederkehrendeZahlung zahlung2 = new WiederkehrendeZahlung(daten2, Haeufigkeit.MONATLICH);
+       
+        BuchungsDaten daten3 = BuchungsDaten.builder(150.0, "Test", LocalDate.now().plusMonths(1), konto, Buchungstyp.AUSGABE)
+			    .build();
+        WiederkehrendeZahlung zahlung3 = new WiederkehrendeZahlung(daten3, Haeufigkeit.MONATLICH);
+     
+        BuchungsDaten daten4 = BuchungsDaten.builder(50.0, "Test", LocalDate.now(), konto, Buchungstyp.AUSGABE)
+			    .build();
+        WiederkehrendeZahlung zahlung4 = new WiederkehrendeZahlung(daten4, Haeufigkeit.MONATLICH);
+       
         
        List<WiederkehrendeZahlung> wkzListe = new ArrayList<>();
        wkzListe.add(zahlung1);
@@ -154,19 +153,19 @@ class WiederkehrendeZahlungenServiceTest {
         double summeNochOffeneEinnahmenImAktuellenMonatKonto1 = WiederkehrendeZahlungenService.berechneNochOffeneEinnahmenImAktuellenMonat(konto);
         assertEquals(100.0, summeNochOffeneEinnahmenImAktuellenMonatKonto1);
         double summeNochOffeneFixkostenImAktuellenMonatKonto = WiederkehrendeZahlungenService.berechneNochOffeneFixkostenImAktuellenMonat(konto);
-        assertEquals(50.0, summeNochOffeneFixkostenImAktuellenMonatKonto);
+        assertEquals(-50.0, summeNochOffeneFixkostenImAktuellenMonatKonto);
         double summeNochOffeneEinnahmenImAktuellenMonat = WiederkehrendeZahlungenService.berechneNochOffeneEinnahmenImAktuellenMonat();
         assertEquals(200.0, summeNochOffeneEinnahmenImAktuellenMonat);
         double summeNochOffeneFixkostenImAktuellenMonat = WiederkehrendeZahlungenService.berechneNochOffeneFixkostenImAktuellenMonat();
-        assertEquals(100.0, summeNochOffeneFixkostenImAktuellenMonat);
+        assertEquals(-100.0, summeNochOffeneFixkostenImAktuellenMonat);
         double summeNochOffeneWKZImAktuellenMonatKonto = WiederkehrendeZahlungenService.berechneNochOffeneWKZImAktuellenMonat(konto);
         assertEquals(-50.0, summeNochOffeneWKZImAktuellenMonatKonto);
         double summeNochOffeneWKZImAktuellenMonat = WiederkehrendeZahlungenService.berechneNochOffeneWKZImAktuellenMonat();
         assertEquals(-100.0, summeNochOffeneWKZImAktuellenMonat);
         double summeFixkostenImAktuellenMonatKonto = WiederkehrendeZahlungenService.berechneFixkostenImAktuellenMonat(konto);
-        assertEquals(150.0, summeFixkostenImAktuellenMonatKonto);
+        assertEquals(-150.0, summeFixkostenImAktuellenMonatKonto);
         double summeFixkostenImAktuellenMonat = WiederkehrendeZahlungenService.berechneFixkostenImAktuellenMonat();
-        assertEquals(300.0, summeFixkostenImAktuellenMonat);
+        assertEquals(-300.0, summeFixkostenImAktuellenMonat);
 	}
 	
 	

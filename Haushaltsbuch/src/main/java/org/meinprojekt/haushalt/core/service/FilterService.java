@@ -5,12 +5,20 @@ import java.util.function.Predicate;
 
 import org.meinprojekt.haushalt.core.filter.Zeitraum;
 import org.meinprojekt.haushalt.core.model.Buchung;
+import org.meinprojekt.haushalt.core.model.BuchungsDaten.Buchungstyp;
+import org.meinprojekt.haushalt.ui.MainController;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class FilterService {
 	
-	public Predicate<Buchung> predicateFuerBuchungsArt(String buchungsart) {
-		if (buchungsart != null && !buchungsart.isEmpty()) {
-			return buchung -> buchungsart.equalsIgnoreCase(buchung.getBuchungsart());
+	private static final Logger logger = LoggerFactory.getLogger(FilterService.class);
+	
+	public Predicate<Buchung> predicateFuerBuchungsArt(Buchungstyp typ) {
+		if (typ != null) {
+			logger.info("predicate wird angewendet fuer Buchungstyp {}", typ);
+			return buchung -> typ == buchung.getBuchungstyp();
+			
 		}
 		return _ -> true; 
 	}

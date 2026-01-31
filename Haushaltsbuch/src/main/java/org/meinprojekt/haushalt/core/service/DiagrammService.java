@@ -28,7 +28,7 @@ public class DiagrammService {
 				Buchungstyp.AUSGABE, aufloesung);
 		double summeEinnahmen = summeAusMapBerechnen(gefilterteEinnahmen);
 		double summeAusgaben = summeAusMapBerechnen(gefilterteAusgaben);
-		double summeDifferenz = summeEinnahmen - summeAusgaben;
+		double summeDifferenz = summeEinnahmen + summeAusgaben;
 		double maxWert = berechneMaxWert(gefilterteEinnahmen, gefilterteAusgaben);
 		double tickEinheit = berechneTickEinheit(maxWert);
 		List<LocalDate> xWerteSortiert = bestimmeXWerte(zeitraum, aufloesung);

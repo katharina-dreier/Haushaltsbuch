@@ -130,17 +130,8 @@ public class WiederkehrendeZahlungenService {
 		double summe = 0.0;
 		for (WiederkehrendeZahlung zahlung : getAlleWiederkehrendeZahlungen()) {
 			LocalDate zahlungsMonat = zahlung.getNaechsteZahlungAm().withDayOfMonth(1);
-			Buchungstyp typ = zahlung.getBuchungstyp();
 			if (!zahlungsMonat.isAfter(aktuellerMonat)) {
-				switch (typ) {
-				case EINNAHME:
 					summe -= zahlung.getBetrag();
-					break;
-				case AUSGABE:
-					summe += zahlung.getBetrag();
-					break;
-				default: logger.info("fehlerhafte Buchungsart");
-				}
 			}
 		}
 		return summe;
@@ -153,17 +144,8 @@ public class WiederkehrendeZahlungenService {
 		double summe = 0.0;
 		for (WiederkehrendeZahlung zahlung : konto.getWiederkehrendeZahlungen()) {
 			LocalDate zahlungsMonat = zahlung.getNaechsteZahlungAm().withDayOfMonth(1);
-			Buchungstyp typ = zahlung.getBuchungstyp();
 			if (!zahlungsMonat.isAfter(aktuellerMonat)) {
-				switch (typ) {
-				case EINNAHME:
 					summe -= zahlung.getBetrag();
-					break;
-				case AUSGABE:
-					summe += zahlung.getBetrag();
-					break;
-				default: logger.info("fehlerhafte Buchungsart");
-				}
 			}
 		}
 		return summe;

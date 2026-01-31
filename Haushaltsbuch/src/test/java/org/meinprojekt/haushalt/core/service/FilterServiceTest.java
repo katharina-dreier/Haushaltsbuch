@@ -10,6 +10,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.meinprojekt.haushalt.core.filter.Zeitraum;
 import org.meinprojekt.haushalt.core.model.Buchung;
+import org.meinprojekt.haushalt.core.model.BuchungsDaten.Buchungstyp;
 
 class FilterServiceTest {
 
@@ -20,22 +21,13 @@ class FilterServiceTest {
 		filterService = new FilterService();
 	}
 
-	@Test
-	void predicateFuerBuchungsArt_filtert_case_insensitive() {
-		Predicate<Buchung> predicate = filterService.predicateFuerBuchungsArt("Einnahme");
-
-		Buchung buchung = new Buchung();
-		buchung.setBuchungsart("eInNaHmE");
-
-		assertTrue(predicate.test(buchung));
-	}
 
 	@Test
 	void predicateFuerBuchungsArt_gibt_false_wenn_andere_art() {
-		Predicate<Buchung> predicate = filterService.predicateFuerBuchungsArt("Einnahme");
+		Predicate<Buchung> predicate = filterService.predicateFuerBuchungsArt(Buchungstyp.EINNAHME);
 
 		Buchung buchung = new Buchung();
-		buchung.setBuchungsart("Ausgabe");
+		buchung.setBuchungstyp(Buchungstyp.AUSGABE);
 
 		assertFalse(predicate.test(buchung));
 	}
@@ -45,20 +37,11 @@ class FilterServiceTest {
 		Predicate<Buchung> predicate = filterService.predicateFuerBuchungsArt(null);
 
 		Buchung buchung = new Buchung();
-		buchung.setBuchungsart("Ausgabe");
+		buchung.setBuchungstyp(Buchungstyp.AUSGABE);
 
 		assertTrue(predicate.test(buchung));
 	}
 
-	@Test
-	void predicateFuerBuchungsArt_leer_laesst_alles_durch() {
-		Predicate<Buchung> predicate = filterService.predicateFuerBuchungsArt("");
-
-		Buchung buchung = new Buchung();
-		buchung.setBuchungsart("Ausgabe");
-
-		assertTrue(predicate.test(buchung));
-	}
 
 	@Test
 	void predicateFuerZeitraum_null_laesst_alles_durch() {

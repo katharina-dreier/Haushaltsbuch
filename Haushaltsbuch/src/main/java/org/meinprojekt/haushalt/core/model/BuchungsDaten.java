@@ -18,9 +18,9 @@ public final class BuchungsDaten {
 		        return label;  
 		    }
 		 public static Buchungstyp typAusString(String typ) {
-			 if (typ.equalsIgnoreCase("Einnahme")) {
+			 if (typ.equalsIgnoreCase(EINNAHME.toString())) {
 				 return Buchungstyp.EINNAHME;}
-			 else if (typ.equalsIgnoreCase("Ausgbe")) {
+			 else if (typ.equalsIgnoreCase(AUSGABE.toString())) {
 					 return Buchungstyp.AUSGABE;
 				 }
 			 else return Buchungstyp.UMBUCHUNG;

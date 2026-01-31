@@ -6,6 +6,9 @@ import java.util.List;
 import java.util.UUID;
 
 import org.meinprojekt.haushalt.core.model.BuchungsDaten.Buchungstyp;
+import org.meinprojekt.haushalt.ui.MainController;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class Buchung {
 	
@@ -22,6 +25,8 @@ public class Buchung {
 	private Konto konto; 
 	private boolean isUmbuchung = false;
 	private String transferID = "";
+	
+	private static final Logger logger = LoggerFactory.getLogger(Buchung.class);
 	
 	private static List<String> listeMitKategorien = new ArrayList<>();
 
@@ -60,12 +65,14 @@ public class Buchung {
 	            this.betrag = Math.abs(daten.getBetrag());
 	            this.sender = daten.getGegenpartei();
 	            this.empfaenger = konto.getInhaber();
-	        } else {
+	        } 
+	        if (typ == Buchungstyp.AUSGABE){
 	            this.betrag = -Math.abs(daten.getBetrag());
 	            this.sender = konto.getInhaber();
 	            this.empfaenger = daten.getGegenpartei();
 		
 	}
+	        logger.info("Buchung mit Konstruktor (BuchungsDaten) erstellt. Buchungstyp: {}, Betrag: {}", this.typ, this.betrag);
 	}
 
 	public String getTransferID() {
