@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.junit.jupiter.api.Test;
+import org.meinprojekt.haushalt.core.model.BuchungsDaten.Buchungstyp;
 import org.meinprojekt.haushalt.core.model.Konto;
 import org.meinprojekt.haushalt.core.model.WiederkehrendeZahlung;
 import org.meinprojekt.haushalt.core.model.WiederkehrendeZahlung.Haeufigkeit;
@@ -120,22 +121,22 @@ class WiederkehrendeZahlungenServiceTest {
         Konto konto = new Konto();
         Konto konto2 = new Konto();
         WiederkehrendeZahlung zahlung1 = new WiederkehrendeZahlung();
-        zahlung1.setBuchungsart("Einnahme");
+        zahlung1.setBuchungstyp(Buchungstyp.EINNAHME);
         zahlung1.setBetrag(100.0);
         zahlung1.setNaechsteZahlungAm(LocalDate.now());
         
         WiederkehrendeZahlung zahlung2 = new WiederkehrendeZahlung();
-        zahlung2.setBuchungsart("Einnahme");
+        zahlung2.setBuchungstyp(Buchungstyp.EINNAHME);
         zahlung2.setBetrag(200.0);
         zahlung2.setNaechsteZahlungAm(LocalDate.now().plusMonths(1));
         
         WiederkehrendeZahlung zahlung3 = new WiederkehrendeZahlung();
-        zahlung3.setBuchungsart("Ausgabe");
+        zahlung3.setBuchungstyp(Buchungstyp.AUSGABE);
         zahlung3.setBetrag(150.0);
         zahlung3.setNaechsteZahlungAm(LocalDate.now().plusMonths(1));
         
         WiederkehrendeZahlung zahlung4 = new WiederkehrendeZahlung();
-        zahlung4.setBuchungsart("Ausgabe");
+        zahlung4.setBuchungstyp(Buchungstyp.AUSGABE);
         zahlung4.setBetrag(50.0);
         zahlung4.setNaechsteZahlungAm(LocalDate.now());
         

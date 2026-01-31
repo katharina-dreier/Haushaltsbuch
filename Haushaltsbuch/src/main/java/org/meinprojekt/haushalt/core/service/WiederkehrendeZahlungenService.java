@@ -188,7 +188,7 @@ public class WiederkehrendeZahlungenService {
 			}
 			LocalDate monatLetzteZahlung = zahlung.getLetzteZahlungAm().withDayOfMonth(1);
 			Buchungstyp typ = zahlung.getBuchungstyp();
-			if (!monatNaechsteZahlung.equals(aktuellerMonat) || !monatLetzteZahlung.equals(aktuellerMonat) && typ == Buchungstyp.AUSGABE) {
+			if (typ == Buchungstyp.AUSGABE && !monatNaechsteZahlung.equals(aktuellerMonat) || !monatLetzteZahlung.equals(aktuellerMonat) && typ == Buchungstyp.AUSGABE) {
 				
 					gesamtFixkosten += zahlung.getBetrag();
 				}

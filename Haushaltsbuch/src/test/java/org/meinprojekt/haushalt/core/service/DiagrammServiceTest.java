@@ -214,15 +214,15 @@ class DiagrammServiceTest {
 		Buchung buchung1 = new Buchung();
 		buchung1.setBuchungsDatum(LocalDate.of(2025, 1, 10));
 		buchung1.setBetrag(100);
-		buchung1.setBuchungsart("Einnahme");
+		buchung1.setBuchungstyp(Buchungstyp.EINNAHME);
 		Buchung buchung2 = new Buchung();
 		buchung2.setBuchungsDatum(LocalDate.of(2025, 1, 10));
 		buchung2.setBetrag(50);
-		buchung2.setBuchungsart("Einnahme");
+		buchung2.setBuchungstyp(Buchungstyp.EINNAHME);
 		Buchung buchung3 = new Buchung();
 		buchung3.setBuchungsDatum(LocalDate.of(2025, 1, 10));
 		buchung3.setBetrag(999);
-		buchung3.setBuchungsart("Ausgabe");
+		buchung3.setBuchungstyp(Buchungstyp.AUSGABE);
 
 		List<Buchung> buchungen = List.of(buchung1, buchung2, buchung3);
 
@@ -238,11 +238,11 @@ class DiagrammServiceTest {
 		Buchung buchung1 = new Buchung();
 		buchung1.setBuchungsDatum(LocalDate.of(2025, 1, 10));
 		buchung1.setBetrag(100);
-		buchung1.setBuchungsart("Einnahme");
+		buchung1.setBuchungstyp(Buchungstyp.EINNAHME);
 		Buchung buchung2 = new Buchung();
 		buchung2.setBuchungsDatum(LocalDate.of(2025, 1, 10));
 		buchung2.setBetrag(50);
-		buchung2.setBuchungsart("Einnahme");
+		buchung2.setBuchungstyp(Buchungstyp.EINNAHME);
 
 		List<Buchung> buchungen = List.of(buchung1, buchung2);
 
@@ -257,15 +257,15 @@ class DiagrammServiceTest {
 		Buchung buchung1 = new Buchung();
 		buchung1.setBuchungsDatum(LocalDate.of(2025, 1, 15));
 		buchung1.setBetrag(200);
-		buchung1.setBuchungsart("Einnahme");
+		buchung1.setBuchungstyp(Buchungstyp.AUSGABE);
 		Buchung buchung2 = new Buchung();
 		buchung2.setBuchungsDatum(LocalDate.of(2025, 1, 20));
 		buchung2.setBetrag(300);
-		buchung2.setBuchungsart("Einnahme");
+		buchung2.setBuchungstyp(Buchungstyp.EINNAHME);
 		Buchung buchung3 = new Buchung();
 		buchung3.setBuchungsDatum(LocalDate.of(2025, 2, 10));
 		buchung3.setBetrag(400);
-		buchung3.setBuchungsart("Einnahme");
+		buchung3.setBuchungstyp(Buchungstyp.EINNAHME);
 
 		List<Buchung> buchungen = List.of(buchung1, buchung2, buchung3);
 
@@ -273,7 +273,7 @@ class DiagrammServiceTest {
 				Aufloesung.MONATE);
 
 		assertEquals(2, result.size());
-		assertEquals(500.0, result.get(LocalDate.of(2025, 1, 1)));
+		assertEquals(300.0, result.get(LocalDate.of(2025, 1, 1)));
 		assertEquals(400.0, result.get(LocalDate.of(2025, 2, 1)));
 	}
 
@@ -282,15 +282,15 @@ class DiagrammServiceTest {
 		Buchung buchung1 = new Buchung();
 		buchung1.setBuchungsDatum(LocalDate.of(2024, 3, 15));
 		buchung1.setBetrag(500);
-		buchung1.setBuchungsart("Ausgabe");
+		buchung1.setBuchungstyp(Buchungstyp.AUSGABE);
 		Buchung buchung2 = new Buchung();
 		buchung2.setBuchungsDatum(LocalDate.of(2024, 7, 20));
 		buchung2.setBetrag(700);
-		buchung2.setBuchungsart("Ausgabe");
+		buchung2.setBuchungstyp(Buchungstyp.AUSGABE);
 		Buchung buchung3 = new Buchung();
 		buchung3.setBuchungsDatum(LocalDate.of(2025, 1, 10));
 		buchung3.setBetrag(300);
-		buchung3.setBuchungsart("Ausgabe");
+		buchung3.setBuchungstyp(Buchungstyp.AUSGABE);
 
 		List<Buchung> buchungen = List.of(buchung1, buchung2, buchung3);
 
